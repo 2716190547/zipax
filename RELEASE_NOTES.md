@@ -1,4 +1,4 @@
-# zipax v0.1.0
+# zipax v0.1.1
 
 Preview release for macOS 26+.
 
@@ -10,6 +10,7 @@ Preview release for macOS 26+.
 - PNG and WebP support through optional external tools.
 - Workflow options: copy output after compression and skip files marked with `#C`.
 - Appearance mode: system, light, dark.
+- About page with GitHub and support links.
 
 ## Dependencies
 

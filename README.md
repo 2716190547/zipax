@@ -34,5 +34,14 @@ If a dependency is missing, zipax still runs; only the related format is unavail
 ```bash
 swift build
 ./script/build_and_run.sh --verify
-./script/package_release.sh 0.1.0
+./script/package_release.sh 0.1.1
 ```
+
+## Support
+
+If zipax saves you a little time, you can buy me a coffee.
+
+<p>
+  <img src="Resources/Support/alipay.png" alt="Alipay" width="220">
+  <img src="Resources/Support/wechat.png" alt="WeChat Pay" width="220">
+</p>

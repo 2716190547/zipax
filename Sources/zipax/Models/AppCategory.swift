@@ -6,7 +6,7 @@ enum AppCategory: String, CaseIterable, Identifiable {
     case workflow = "工作流"
     case automation = "自动化"
     case dependencies = "依赖"
-    case license = "许可"
+    case about = "关于"
 
     var id: String { rawValue }
 
@@ -17,7 +17,7 @@ enum AppCategory: String, CaseIterable, Identifiable {
         case .workflow: "rectangle.split.2x2"
         case .automation: "square.stack.3d.down.right"
         case .dependencies: "shippingbox"
-        case .license: "viewfinder"
+        case .about: "sparkles"
         }
     }
 

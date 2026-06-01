@@ -96,7 +96,9 @@ struct DependenciesView: View {
     }
 }
 
-struct LicenseEasterEggView: View {
+struct AboutView: View {
+    @State private var showsSupportSheet = false
+
     var body: some View {
         SettingsCard {
             VStack(spacing: 12) {
@@ -125,10 +127,111 @@ struct LicenseEasterEggView: View {
                 Text("愿每一张图片都轻一点，清晰一点。")
                     .font(.system(size: 12))
                     .foregroundStyle(.secondary)
+
+                HStack(spacing: 8) {
+                    Button {
+                        openURL("https://github.com/2716190547/zipax")
+                    } label: {
+                        Label("GitHub 仓库", systemImage: "chevron.left.forwardslash.chevron.right")
+                    }
+
+                    Button {
+                        showsSupportSheet = true
+                    } label: {
+                        Label("请我喝一杯", systemImage: "cup.and.saucer")
+                    }
+                }
+                .controlSize(.small)
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 10)
         }
+        .sheet(isPresented: $showsSupportSheet) {
+            SupportSheetView()
+        }
+    }
+
+    private func openURL(_ string: String) {
+        guard let url = URL(string: string) else { return }
+        NSWorkspace.shared.open(url)
+    }
+}
+
+private struct SupportSheetView: View {
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        VStack(spacing: 14) {
+            HStack(spacing: 10) {
+                Image(nsImage: NSApp.applicationIconImage)
+                    .resizable()
+                    .frame(width: 42, height: 42)
+                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("请我喝一杯")
+                        .font(.system(size: 16, weight: .semibold))
+                    Text("如果 zipax 让图片轻了一点，也欢迎让作者精神重一点。")
+                        .font(.system(size: 11))
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+
+            HStack(spacing: 12) {
+                SupportQRCodeView(title: "支付宝", imageName: "alipay")
+                SupportQRCodeView(title: "微信", imageName: "wechat")
+            }
+
+            Button("谢谢你") {
+                dismiss()
+            }
+            .keyboardShortcut(.defaultAction)
+            .controlSize(.small)
+        }
+        .padding(18)
+        .frame(width: 430)
+        .background(SettingsPalette.contentBackground)
+    }
+}
+
+private struct SupportQRCodeView: View {
+    let title: String
+    let imageName: String
+
+    var body: some View {
+        VStack(spacing: 8) {
+            Text(title)
+                .font(.system(size: 13, weight: .semibold))
+
+            if let image = supportImage {
+                Image(nsImage: image)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 180, height: 220)
+                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            } else {
+                Image(systemName: "qrcode")
+                    .font(.system(size: 46, weight: .light))
+                    .foregroundStyle(.secondary)
+                    .frame(width: 180, height: 220)
+            }
+        }
+        .padding(10)
+        .frame(maxWidth: .infinity)
+        .background(SettingsPalette.subtleFill, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+    }
+
+    private var supportImage: NSImage? {
+        guard let url = Bundle.main.url(
+            forResource: imageName,
+            withExtension: "png",
+            subdirectory: "Support"
+        ) else {
+            return nil
+        }
+
+        return NSImage(contentsOf: url)
     }
 }
 

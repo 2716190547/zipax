@@ -18,6 +18,7 @@ APP_BINARY="$APP_MACOS/$APP_NAME"
 INFO_PLIST="$APP_CONTENTS/Info.plist"
 DMG_PATH="$DIST_DIR/${APP_NAME}-${VERSION}-macOS-arm64.dmg"
 APP_ICON_SOURCE="$ROOT_DIR/Resources/AppIcon.icns"
+SUPPORT_RESOURCES_SOURCE="$ROOT_DIR/Resources/Support"
 
 cd "$ROOT_DIR"
 swift build -c release
@@ -28,6 +29,9 @@ mkdir -p "$APP_MACOS" "$APP_RESOURCES"
 cp "$BUILD_BINARY" "$APP_BINARY"
 chmod +x "$APP_BINARY"
 cp "$APP_ICON_SOURCE" "$APP_RESOURCES/AppIcon.icns"
+if [[ -d "$SUPPORT_RESOURCES_SOURCE" ]]; then
+  cp -R "$SUPPORT_RESOURCES_SOURCE" "$APP_RESOURCES/Support"
+fi
 
 cat >"$INFO_PLIST" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>

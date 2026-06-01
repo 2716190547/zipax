@@ -15,6 +15,7 @@ APP_RESOURCES="$APP_CONTENTS/Resources"
 APP_BINARY="$APP_MACOS/$APP_NAME"
 INFO_PLIST="$APP_CONTENTS/Info.plist"
 APP_ICON_SOURCE="$ROOT_DIR/Resources/AppIcon.icns"
+SUPPORT_RESOURCES_SOURCE="$ROOT_DIR/Resources/Support"
 
 pkill -x "$APP_NAME" >/dev/null 2>&1 || true
 
@@ -28,6 +29,9 @@ cp "$BUILD_BINARY" "$APP_BINARY"
 chmod +x "$APP_BINARY"
 if [[ -f "$APP_ICON_SOURCE" ]]; then
   cp "$APP_ICON_SOURCE" "$APP_RESOURCES/AppIcon.icns"
+fi
+if [[ -d "$SUPPORT_RESOURCES_SOURCE" ]]; then
+  cp -R "$SUPPORT_RESOURCES_SOURCE" "$APP_RESOURCES/Support"
 fi
 
 cat >"$INFO_PLIST" <<PLIST

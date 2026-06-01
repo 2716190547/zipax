@@ -29,8 +29,8 @@ struct MainWindowView: View {
                     WorkflowView()
                 case .dependencies:
                     DependenciesView()
-                case .license:
-                    LicenseEasterEggView()
+                case .about:
+                    AboutView()
                 }
             }
             .padding(SettingsPalette.edgeSpacing)
