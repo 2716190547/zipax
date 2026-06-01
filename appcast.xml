@@ -1,0 +1,44 @@
+<?xml version="1.0" standalone="yes"?>
+<rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
+    <channel>
+        <title>zipax</title>
+        <item>
+            <title>0.1.2</title>
+            <pubDate>Mon, 01 Jun 2026 14:16:40 +0800</pubDate>
+            <link>https://github.com/2716190547/zipax/releases/latest</link>
+            <sparkle:version>0.1.2</sparkle:version>
+            <sparkle:shortVersionString>0.1.2</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
+            <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
+            <description sparkle:format="markdown"><![CDATA[# zipax v0.1.2
+
+Preview release for macOS 26+.
+
+## Highlights
+
+- Manual image compression with drag, paste, file picker, and batch save.
+- Folder automation for newly added images.
+- Optional PDF compression through Ghostscript.
+- PNG and WebP support through optional external tools.
+- Workflow options: copy output after compression and skip files marked with `#C`.
+- Appearance mode: system, light, dark.
+- About page with GitHub and support links.
+- Bundled PNG, WebP, and PDF compression tools.
+- Sparkle automatic updates.
+
+## Dependencies
+
+Bundled tools:
+
+- `pngquant` for PNG compression.
+- `cwebp` from the `webp` package for WebP output.
+- `Ghostscript` for PDF compression.
+
+## Security Notice
+
+This preview build is ad-hoc signed and not notarized. On another Mac, use right click > Open if Gatekeeper blocks the first launch.
+]]></description>
+            <enclosure url="https://github.com/2716190547/zipax/releases/download/v0.1.2/zipax-0.1.2-macOS-arm64.dmg" length="29521793" type="application/octet-stream" sparkle:edSignature="hWVv9ZedqMrKSsginSrVj7SS7oBmEXHNAQr1AzXEwDYDpiwYCFZ6Cz/EXvhc8yhZXMjUTkdLv6jDTeDuIFLqAg=="/>
+        </item>
+    </channel>
+</rss>

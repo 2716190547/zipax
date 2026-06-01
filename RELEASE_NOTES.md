@@ -1,4 +1,4 @@
-# zipax v0.1.1
+# zipax v0.1.2
 
 Preview release for macOS 26+.
 
@@ -11,22 +11,16 @@ Preview release for macOS 26+.
 - Workflow options: copy output after compression and skip files marked with `#C`.
 - Appearance mode: system, light, dark.
 - About page with GitHub and support links.
+- Bundled PNG, WebP, and PDF compression tools.
+- Sparkle automatic updates.
 
 ## Dependencies
 
-Optional tools:
+Bundled tools:
 
 - `pngquant` for PNG compression.
 - `cwebp` from the `webp` package for WebP output.
 - `Ghostscript` for PDF compression.
-
-Install with Homebrew:
-
-```bash
-brew install pngquant webp ghostscript
-```
-
-Alternative install channels include MacPorts, official installer packages, manual PATH installation, or future bundled binaries.
 
 ## Security Notice
 

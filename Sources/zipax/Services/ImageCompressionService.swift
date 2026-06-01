@@ -423,6 +423,14 @@ struct ImageCompressionService: Sendable {
     }
 
     private func externalEncoderURL(executableName: String, candidates: [String]) -> URL? {
+        if let bundledURL = Bundle.main.url(
+            forResource: executableName,
+            withExtension: nil,
+            subdirectory: "Tools/bin"
+        ), FileManager.default.isExecutableFile(atPath: bundledURL.path) {
+            return bundledURL
+        }
+
         for path in candidates where FileManager.default.isExecutableFile(atPath: path) {
             return URL(fileURLWithPath: path)
         }
@@ -451,6 +459,7 @@ struct ImageCompressionService: Sendable {
         let process = Process()
         process.executableURL = executableURL
         process.arguments = arguments
+        process.environment = encoderEnvironment(for: executableURL)
 
         let errorPipe = Pipe()
         process.standardError = errorPipe
@@ -468,6 +477,31 @@ struct ImageCompressionService: Sendable {
                 .trimmingCharacters(in: .whitespacesAndNewlines)
             throw failed(message?.isEmpty == false ? message! : "退出码 \(process.terminationStatus)")
         }
+    }
+
+    private func encoderEnvironment(for executableURL: URL) -> [String: String] {
+        var environment = ProcessInfo.processInfo.environment
+
+        guard let toolsURL = Bundle.main.resourceURL?
+            .appendingPathComponent("Tools", isDirectory: true) else {
+            return environment
+        }
+
+        let binPath = toolsURL.appendingPathComponent("bin", isDirectory: true).path
+        let libPath = toolsURL.appendingPathComponent("lib", isDirectory: true).path
+        let existingPath = environment["PATH"] ?? "/usr/bin:/bin:/usr/sbin:/sbin"
+        environment["PATH"] = "\(binPath):\(existingPath)"
+        environment["DYLD_LIBRARY_PATH"] = libPath
+
+        if executableURL.lastPathComponent == "gs" {
+            let ghostscriptPath = toolsURL.appendingPathComponent("share/ghostscript", isDirectory: true).path
+            let resourcePath = toolsURL.appendingPathComponent("share/ghostscript/Resource", isDirectory: true).path
+            let initPath = toolsURL.appendingPathComponent("share/ghostscript/Resource/Init", isDirectory: true).path
+            let libResourcePath = toolsURL.appendingPathComponent("share/ghostscript/lib", isDirectory: true).path
+            environment["GS_LIB"] = [initPath, resourcePath, libResourcePath, ghostscriptPath].joined(separator: ":")
+        }
+
+        return environment
     }
 
     private func encodeWithImageIO(sourceURL: URL, outputURL: URL, rule: FolderRule, kind: ImageKind) throws {

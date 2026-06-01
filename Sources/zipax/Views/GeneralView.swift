@@ -2,6 +2,7 @@ import SwiftUI
 
 struct GeneralView: View {
     @EnvironmentObject private var store: AppStore
+    @EnvironmentObject private var updater: SparkleUpdater
     @State private var showResetConfirmation = false
 
     var body: some View {
@@ -43,6 +44,30 @@ struct GeneralView: View {
                     .pickerStyle(.menu)
                     .controlSize(.small)
                     .fixedSize()
+                }
+            }
+
+            SettingsCard {
+                HStack {
+                    SettingTitle(
+                        icon: "arrow.triangle.2.circlepath",
+                        title: "自动更新",
+                        info: "发现新版本后由 Sparkle 下载并安装。"
+                    )
+
+                    Spacer()
+
+                    Toggle("", isOn: Binding(
+                        get: { updater.automaticallyChecksForUpdates },
+                        set: { updater.automaticallyChecksForUpdates = $0 }
+                    ))
+                    .toggleStyle(.switch)
+                    .labelsHidden()
+
+                    Button("检查更新") {
+                        updater.checkForUpdates()
+                    }
+                    .controlSize(.small)
                 }
             }
 
@@ -90,6 +115,7 @@ struct GeneralView: View {
             Button("取消", role: .cancel) {}
         }
     }
+
 }
 
 private struct StatisticMetricView: View {

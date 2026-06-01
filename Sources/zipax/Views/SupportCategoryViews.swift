@@ -48,51 +48,27 @@ struct WorkflowView: View {
 }
 
 struct DependenciesView: View {
-    private let tools = [
-        CompressionTool(
-            name: "pngquant",
-            purpose: "PNG 压缩",
-            executableNames: ["pngquant"],
-            candidatePaths: ["/opt/homebrew/bin/pngquant", "/usr/local/bin/pngquant"],
-            installCommand: "brew install pngquant"
-        ),
-        CompressionTool(
-            name: "cwebp",
-            purpose: "WebP 输出",
-            executableNames: ["cwebp"],
-            candidatePaths: ["/opt/homebrew/bin/cwebp", "/usr/local/bin/cwebp"],
-            installCommand: "brew install webp"
-        ),
-        CompressionTool(
-            name: "Ghostscript",
-            purpose: "PDF 压缩",
-            executableNames: ["gs"],
-            candidatePaths: ["/opt/homebrew/bin/gs", "/usr/local/bin/gs", "/usr/bin/gs"],
-            installCommand: "brew install ghostscript"
-        )
-    ]
-
     var body: some View {
         VStack(spacing: 10) {
             SettingsCard {
                 VStack(alignment: .leading, spacing: 10) {
                     SettingTitle(
                         icon: "shippingbox",
-                        title: "外部工具",
-                        info: "zipax 会优先使用轻量命令行工具处理 PNG 和 WebP。"
+                        title: "外部依赖地址",
+                        info: "zipax 会优先使用 App 内置依赖。"
                     )
 
-                    Text("推荐用 Homebrew；也可用 MacPorts、官方安装包、随 App 打包，或手动放入 PATH。")
-                        .font(.system(size: 11))
-                        .foregroundStyle(.secondary)
-
-                    ForEach(tools) { tool in
-                        DependencyToolRow(tool: tool)
-                    }
+                    DependencyPathRow(path: toolsPath)
                 }
             }
         }
         .frame(maxWidth: .infinity)
+    }
+
+    private var toolsPath: String {
+        Bundle.main.resourceURL?
+            .appendingPathComponent("Tools", isDirectory: true)
+            .path ?? "zipax.app/Contents/Resources/Tools"
     }
 }
 
@@ -235,71 +211,18 @@ private struct SupportQRCodeView: View {
     }
 }
 
-private struct CompressionTool: Identifiable {
-    let name: String
-    let purpose: String
-    let executableNames: [String]
-    let candidatePaths: [String]
-    let installCommand: String
-
-    var id: String { name }
-
-    var installedPath: String? {
-        for path in candidatePaths where FileManager.default.isExecutableFile(atPath: path) {
-            return path
-        }
-
-        let pathEntries = (ProcessInfo.processInfo.environment["PATH"] ?? "")
-            .split(separator: ":")
-            .map(String.init)
-
-        for directory in pathEntries {
-            for executableName in executableNames {
-                let path = URL(fileURLWithPath: directory)
-                    .appendingPathComponent(executableName)
-                    .path
-                if FileManager.default.isExecutableFile(atPath: path) {
-                    return path
-                }
-            }
-        }
-
-        return nil
-    }
-}
-
-private struct DependencyToolRow: View {
-    let tool: CompressionTool
+private struct DependencyPathRow: View {
+    let path: String
 
     var body: some View {
-        let installedPath = tool.installedPath
-
-        HStack(spacing: 10) {
-            Image(systemName: installedPath == nil ? "exclamationmark.circle" : "checkmark.circle.fill")
-                .font(.system(size: 16, weight: .medium))
-                .foregroundStyle(installedPath == nil ? Color.orange : Color.green)
-                .frame(width: 18)
-
-            VStack(alignment: .leading, spacing: 2) {
-                HStack(spacing: 6) {
-                    Text(tool.name)
-                        .font(.system(size: 13, weight: .semibold))
-                    Text(tool.purpose)
-                        .font(.system(size: 11))
-                        .foregroundStyle(.secondary)
-                }
-
-                Text(installedPath ?? tool.installCommand)
-                    .font(.system(size: 11))
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
-                    .truncationMode(.middle)
-            }
-
-            Spacer()
-        }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 8)
-        .background(SettingsPalette.subtleFill, in: RoundedRectangle(cornerRadius: 10))
+        Text(path)
+            .font(.system(size: 11, design: .monospaced))
+            .foregroundStyle(.secondary)
+            .lineLimit(2)
+            .textSelection(.enabled)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 8)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(SettingsPalette.subtleFill, in: RoundedRectangle(cornerRadius: 10))
     }
 }

@@ -8,33 +8,24 @@ This preview build is distributed as a DMG. It is not notarized yet, so macOS ma
 
 ## Optional Dependencies
 
-zipax can use external tools for stronger compression:
+zipax bundles external tools for stronger compression:
 
 - `pngquant`: PNG compression
 - `cwebp`: WebP output
 - `Ghostscript`: PDF compression
 
-Recommended install path:
+The bundled tools live in `zipax.app/Contents/Resources/Tools`.
 
-```bash
-brew install pngquant webp ghostscript
-```
+## Updates
 
-Alternative channels:
-
-- MacPorts
-- official installer packages
-- manually placing tools in `/opt/homebrew/bin`, `/usr/local/bin`, or another `PATH` directory
-- future bundled binaries inside the app
-
-If a dependency is missing, zipax still runs; only the related format is unavailable.
+zipax uses Sparkle for automatic updates. The appcast is published from this repository and update archives are signed with Sparkle EdDSA signatures.
 
 ## Build
 
 ```bash
 swift build
 ./script/build_and_run.sh --verify
-./script/package_release.sh 0.1.1
+./script/package_release.sh 0.1.2
 ```
 
 ## Support
