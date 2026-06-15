@@ -1,0 +1,131 @@
+import { useEffect, useRef, type RefObject } from "react";
+import { getCurrentWindow, LogicalSize } from "@tauri-apps/api/window";
+
+const SIZE_TOLERANCE = 1;
+const MIN_CONTENT_WIDTH = 430;
+const VISUAL_BLEED_ALLOWANCE = 2;
+const TITLEBAR_SAFE_AREA = 30;
+
+function readCssNumber(name: string) {
+  const styles = getComputedStyle(document.documentElement);
+  return Number.parseFloat(styles.getPropertyValue(name)) || 0;
+}
+
+function readContentWidth(element: HTMLElement) {
+  const tabList = element.querySelector(".zipax-tab-list");
+  const contentGap = readCssNumber("--zipax-gap");
+
+  if (tabList instanceof HTMLElement) {
+    return Math.ceil(Math.max(MIN_CONTENT_WIDTH, tabList.scrollWidth + contentGap * 2));
+  }
+
+  return Math.ceil(Math.max(MIN_CONTENT_WIDTH, element.scrollWidth));
+}
+
+function readContentSize(element: HTMLElement) {
+  const width = readContentWidth(element);
+
+  document.documentElement.style.setProperty("--zipax-content-width", `${width}px`);
+
+  const sentinel = element.querySelector(".zipax-measure-sentinel");
+  if (sentinel instanceof HTMLElement) {
+    const shellRect = element.getBoundingClientRect();
+    const sentinelRect = sentinel.getBoundingClientRect();
+    const contentGap = readCssNumber("--zipax-gap");
+
+    return {
+      width,
+      height: Math.ceil(sentinelRect.bottom - shellRect.top + contentGap + VISUAL_BLEED_ALLOWANCE),
+    };
+  }
+
+  const rect = element.getBoundingClientRect();
+  return {
+    width,
+    height: Math.ceil(Math.max(rect.height, element.scrollHeight) + VISUAL_BLEED_ALLOWANCE),
+  };
+}
+
+export function useAutoWindowSize(
+  contentRef: RefObject<HTMLElement | null>,
+  dependencies: readonly unknown[] = [],
+) {
+  const animationFrame = useRef<number | null>(null);
+  const didShowWindow = useRef(false);
+  const lastSize = useRef({ width: 0, height: 0 });
+
+  useEffect(() => {
+    const appWindow = getCurrentWindow();
+    let isDisposed = false;
+
+    const resizeToContent = async () => {
+      const content = contentRef.current;
+      if (!content || isDisposed) return;
+
+      const contentSize = readContentSize(content);
+      if (isDisposed) return;
+
+      const shouldResize =
+        Math.abs(contentSize.width - lastSize.current.width) > SIZE_TOLERANCE ||
+        Math.abs(contentSize.height - lastSize.current.height) > SIZE_TOLERANCE;
+      const targetSize = {
+        width: contentSize.width,
+        height: contentSize.height + TITLEBAR_SAFE_AREA,
+      };
+
+      if (shouldResize) {
+        await appWindow.setSizeConstraints({
+          minWidth: contentSize.width,
+          maxWidth: contentSize.width,
+        });
+        await appWindow.setSize(new LogicalSize(targetSize.width, targetSize.height));
+        lastSize.current = contentSize;
+      }
+
+      if (!didShowWindow.current) {
+        await appWindow.show();
+        didShowWindow.current = true;
+        await resizeToContent();
+      }
+    };
+
+    const syncWindowSize = () => {
+      if (animationFrame.current != null) {
+        cancelAnimationFrame(animationFrame.current);
+      }
+
+      animationFrame.current = requestAnimationFrame(() => {
+        resizeToContent()
+          .catch((error) => {
+            console.warn("Failed to sync zipax window size", error);
+            if (!didShowWindow.current) {
+              appWindow.show().catch((showError) => {
+                console.warn("Failed to show zipax window", showError);
+              });
+              didShowWindow.current = true;
+            }
+          });
+      });
+    };
+
+    const observer = new ResizeObserver(syncWindowSize);
+    const content = contentRef.current;
+    if (content) {
+      observer.observe(content);
+      content.addEventListener("animationend", syncWindowSize);
+    }
+
+    syncWindowSize();
+    window.addEventListener("zipax:resize", syncWindowSize);
+
+    return () => {
+      isDisposed = true;
+      observer.disconnect();
+      content?.removeEventListener("animationend", syncWindowSize);
+      window.removeEventListener("zipax:resize", syncWindowSize);
+      if (animationFrame.current != null) {
+        cancelAnimationFrame(animationFrame.current);
+      }
+    };
+  }, dependencies);
+}

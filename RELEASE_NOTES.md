@@ -1,27 +1,23 @@
-# zipax v0.1.2
+# zipax v0.2
 
-Preview release for macOS 26+.
+zipax 0.2 introduces the cross-platform desktop version powered by Tauri and a shared Rust compression core.
 
 ## Highlights
 
-- Manual image compression with drag, paste, file picker, and batch save.
-- Folder automation for newly added images.
-- Optional PDF compression through Ghostscript.
-- PNG and WebP support through optional external tools.
-- Workflow options: copy output after compression and skip files marked with `#C`.
-- Appearance mode: system, light, dark.
-- About page with GitHub and support links.
-- Bundled PNG, WebP, and PDF compression tools.
-- Sparkle automatic updates.
+- Added the new cross-platform app foundation for macOS, Windows, and Linux.
+- Added Rust-based compression planning and command handling.
+- Added manual image/PDF compression, folder automation, workflow options, and format conversion settings.
+- Added JPEG, PNG, WebP, AVIF, HEIC, TIFF, and PDF workflows where supported.
+- Refined the UI with compact cards, HeroUI-based controls, cleaner tabs, and subtle global motion.
+- Improved window sizing, short-page layout, and dependency page spacing.
+- Removed the visible supported-tools list from the dependency page.
 
-## Dependencies
+## Assets
 
-Bundled tools:
+- GitHub Actions builds native packages for macOS, Windows, and Linux from the `zipax-cross` Tauri app.
+- Local macOS verification can still produce an Apple Silicon app bundle from `zipax-cross/target/release/bundle/macos`.
 
-- `pngquant` for PNG compression.
-- `cwebp` from the `webp` package for WebP output.
-- `Ghostscript` for PDF compression.
+## Notes
 
-## Security Notice
-
-This preview build is ad-hoc signed and not notarized. On another Mac, use right click > Open if Gatekeeper blocks the first launch.
+- Windows and Linux installers are built on their target GitHub runners.
+- macOS local builds on Apple Silicon produce arm64 app bundles.

@@ -1,5 +1,12 @@
 .build/
+target/
 dist/
+node_modules/
+apps/desktop/dist/
+apps/desktop/node_modules/
+apps/desktop/src-tauri/gen/
+zipax-cross/src-tauri/gen/
+zipax-cross/.codex/
 .DS_Store
 *.xcuserdata/
 DerivedData/

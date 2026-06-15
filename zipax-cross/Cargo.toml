@@ -1,0 +1,58 @@
+[workspace]
+members = [
+    "crates/zipax-core",
+    "crates/zipax-cli",
+    "src-tauri",
+]
+resolver = "2"
+
+[workspace.package]
+version = "0.2.0"
+edition = "2021"
+license = "MIT"
+repository = "https://github.com/2716190547/zipax"
+
+[workspace.dependencies]
+# Async runtime
+tokio = { version = "1", features = ["full"] }
+
+# Serialization
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# Error handling
+anyhow = "1"
+thiserror = "2"
+
+# Image processing
+image = { version = "0.25", default-features = false, features = [
+    "jpeg",
+    "png",
+    "tiff",
+    "gif",
+    "webp",
+] }
+imagequant = "4"
+oxipng = "9"
+webp = "0.3"
+ravif = "0.11"
+rgb = "0.8"
+mozjpeg = "0.10"
+
+# File system
+walkdir = "2"
+notify = "7"
+tempfile = "3"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = "0.3"
+
+# CLI
+clap = { version = "4", features = ["derive"] }
+indicatif = "0.17"
+
+# Tauri
+tauri = { version = "2", features = ["tray-icon"] }
+tauri-plugin-shell = "2"
+tauri-plugin-dialog = "2"

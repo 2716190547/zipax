@@ -1,0 +1,29 @@
+[package]
+name = "zipax-app"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "zipax desktop application (Tauri)"
+
+[lib]
+name = "zipax_app_lib"
+crate-type = ["lib", "cdylib", "staticlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+zipax-core = { path = "../crates/zipax-core" }
+tauri = { workspace = true }
+tauri-plugin-shell = { workspace = true }
+tauri-plugin-dialog = { workspace = true }
+tauri-plugin-autostart = "2"
+auto-launch = "0.5"
+serde = { workspace = true }
+serde_json = { workspace = true }
+tokio = { workspace = true }
+anyhow = { workspace = true }
+tracing = { workspace = true }
+walkdir = { workspace = true }
+notify = { workspace = true }
+base64 = "0.22"

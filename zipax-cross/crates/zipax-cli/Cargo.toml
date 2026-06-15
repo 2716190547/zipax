@@ -1,0 +1,20 @@
+[package]
+name = "zipax-cli"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "CLI tool for zipax compression engine"
+
+[[bin]]
+name = "zipax"
+path = "src/main.rs"
+
+[dependencies]
+zipax-core = { path = "../zipax-core" }
+clap = { workspace = true }
+indicatif = { workspace = true }
+anyhow = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+serde_json = { workspace = true }
+tokio = { workspace = true }

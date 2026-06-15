@@ -1,0 +1,31 @@
+[package]
+name = "zipax-core"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Cross-platform image/PDF compression engine for zipax"
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+anyhow = { workspace = true }
+tracing = { workspace = true }
+
+# Image
+image = { workspace = true }
+imagequant = { workspace = true }
+oxipng = { workspace = true }
+webp = { workspace = true }
+ravif = { workspace = true }
+rgb = { workspace = true }
+mozjpeg = { workspace = true }
+png = "0.17"
+flate2 = "1"
+
+# File
+walkdir = { workspace = true }
+tempfile = { workspace = true }
+
+[dev-dependencies]
+tempfile = { workspace = true }
