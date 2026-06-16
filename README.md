@@ -44,11 +44,11 @@
 | --- | --- |
 | <img src="docs/assets/zipax-light.png" alt="zipax light mode"> | <img src="docs/assets/zipax-dark.png" alt="zipax dark mode"> |
 
-## v0.2
+## v0.2.1
 
-zipax v0.2 is the new cross-platform desktop version. It keeps the compact macOS-style workflow while moving the app shell to Tauri and the compression logic to a shared Rust core.
+zipax v0.2.1 brings internationalization, theme colors, tray menu enhancements, close-to-tray background running, software update checks, AVIF output, and a polished UI. Powered by Tauri and a shared Rust compression core.
 
-The v0.2 release is prepared for macOS, Windows, and Linux. Native installers are built on GitHub Actions from the same source tree.
+Native installers for macOS, Windows, and Linux are built on GitHub Actions from the same source tree.
 
 ## Features
 
@@ -143,11 +143,11 @@ If zipax saves you a little time, there is a small support page here: [Buy me a 
 | --- | --- |
 | <img src="docs/assets/zipax-light.png" alt="zipax 浅色模式"> | <img src="docs/assets/zipax-dark.png" alt="zipax 深色模式"> |
 
-## v0.2
+## v0.2.1
 
-zipax v0.2 是全新的跨平台桌面版本。它在保留简洁 macOS 风格工作流程的同时，将应用外壳迁移至 Tauri，压缩逻辑迁移至共享的 Rust 核心。
+zipax v0.2.1 新增国际化多语言、主题色选择、托盘菜单增强、关闭到托盘后台运行、软件更新检查、AVIF 输出格式，并对 UI 进行了全面打磨。基于 Tauri + 共享 Rust 压缩核心构建。
 
-v0.2 版本已为 macOS、Windows 和 Linux 做好准备。原生安装包通过 GitHub Actions 从同一源码构建。
+macOS、Windows、Linux 原生安装包通过 GitHub Actions 从同一源码自动构建。
 
 ## 功能
 
