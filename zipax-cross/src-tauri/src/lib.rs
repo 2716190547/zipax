@@ -7,8 +7,9 @@ mod watcher;
 
 use commands::{AppBehaviorState, TrayMenuState, WatcherState};
 use std::{thread, time::Duration};
+#[cfg(target_os = "macos")]
+use tauri::ActivationPolicy;
 use tauri::{
-    ActivationPolicy,
     image::Image,
     menu::{CheckMenuItemBuilder, MenuBuilder, MenuItemBuilder},
     tray::TrayIconBuilder,
@@ -51,6 +52,7 @@ pub fn run() {
                 if should_hide {
                     api.prevent_close();
                     let _ = window.hide();
+                    #[cfg(target_os = "macos")]
                     let _ = window
                         .app_handle()
                         .set_activation_policy(ActivationPolicy::Accessory);
@@ -97,6 +99,7 @@ pub fn run() {
                 .tooltip("zipax - 图片压缩")
                 .on_menu_event(move |app, event| match event.id().as_ref() {
                     "open" => {
+                        #[cfg(target_os = "macos")]
                         let _ = app.set_activation_policy(ActivationPolicy::Regular);
                         if let Some(window) = app.get_webview_window("main") {
                             let _ = window.show();
