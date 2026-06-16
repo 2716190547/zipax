@@ -4,7 +4,7 @@ import { Info } from "@/components/icons";
 
 export function ConfigPanel({ children }: { children: ReactNode }) {
   return (
-    <Card className="config-panel">
+    <Card className="zipax-card config-panel">
       <Card.Content className="config-panel-content">{children}</Card.Content>
     </Card>
   );
@@ -43,7 +43,7 @@ export function ConfigCard({
   ].filter(Boolean).join(" ");
 
   return (
-    <Card className={cardClassName}>
+    <Card className={`zipax-card ${cardClassName}`}>
       <Card.Content className="config-section-content">
         <div className="config-section-header">
           <ConfigTitle icon={icon} title={title} info={info} unit={unit} accessory={titleAccessory} infoSize={infoSize} />

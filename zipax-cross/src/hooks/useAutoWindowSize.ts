@@ -3,8 +3,11 @@ import { getCurrentWindow, LogicalSize } from "@tauri-apps/api/window";
 
 const SIZE_TOLERANCE = 1;
 const MIN_CONTENT_WIDTH = 430;
+const MAX_CONTENT_WIDTH = 540;
 const VISUAL_BLEED_ALLOWANCE = 2;
 const TITLEBAR_SAFE_AREA = 30;
+const HEIGHT_CONSTRAINT_FLOOR = 120;
+const HEIGHT_CONSTRAINT_CEILING = 900;
 
 function readCssNumber(name: string) {
   const styles = getComputedStyle(document.documentElement);
@@ -16,10 +19,10 @@ function readContentWidth(element: HTMLElement) {
   const contentGap = readCssNumber("--zipax-gap");
 
   if (tabList instanceof HTMLElement) {
-    return Math.ceil(Math.max(MIN_CONTENT_WIDTH, tabList.scrollWidth + contentGap * 2));
+    return Math.ceil(Math.min(MAX_CONTENT_WIDTH, Math.max(MIN_CONTENT_WIDTH, tabList.scrollWidth + contentGap * 2)));
   }
 
-  return Math.ceil(Math.max(MIN_CONTENT_WIDTH, element.scrollWidth));
+  return Math.ceil(Math.min(MAX_CONTENT_WIDTH, Math.max(MIN_CONTENT_WIDTH, element.scrollWidth)));
 }
 
 function readContentSize(element: HTMLElement) {
@@ -51,6 +54,9 @@ export function useAutoWindowSize(
   dependencies: readonly unknown[] = [],
 ) {
   const animationFrame = useRef<number | null>(null);
+  const resizeTimer = useRef<number | null>(null);
+  const isResizing = useRef(false);
+  const pendingResize = useRef(false);
   const didShowWindow = useRef(false);
   const lastSize = useRef({ width: 0, height: 0 });
 
@@ -59,33 +65,57 @@ export function useAutoWindowSize(
     let isDisposed = false;
 
     const resizeToContent = async () => {
+      if (isResizing.current) {
+        pendingResize.current = true;
+        return;
+      }
+      isResizing.current = true;
       const content = contentRef.current;
-      if (!content || isDisposed) return;
-
-      const contentSize = readContentSize(content);
-      if (isDisposed) return;
-
-      const shouldResize =
-        Math.abs(contentSize.width - lastSize.current.width) > SIZE_TOLERANCE ||
-        Math.abs(contentSize.height - lastSize.current.height) > SIZE_TOLERANCE;
-      const targetSize = {
-        width: contentSize.width,
-        height: contentSize.height + TITLEBAR_SAFE_AREA,
-      };
-
-      if (shouldResize) {
-        await appWindow.setSizeConstraints({
-          minWidth: contentSize.width,
-          maxWidth: contentSize.width,
-        });
-        await appWindow.setSize(new LogicalSize(targetSize.width, targetSize.height));
-        lastSize.current = contentSize;
+      if (!content || isDisposed) {
+        isResizing.current = false;
+        return;
       }
 
-      if (!didShowWindow.current) {
-        await appWindow.show();
-        didShowWindow.current = true;
-        await resizeToContent();
+      try {
+        const contentSize = readContentSize(content);
+        if (isDisposed) return;
+
+        const shouldResize =
+          Math.abs(contentSize.width - lastSize.current.width) > SIZE_TOLERANCE ||
+          Math.abs(contentSize.height - lastSize.current.height) > SIZE_TOLERANCE;
+        const targetSize = {
+          width: contentSize.width,
+          height: contentSize.height + TITLEBAR_SAFE_AREA,
+        };
+
+        if (shouldResize) {
+          await appWindow.setSizeConstraints({
+            minWidth: contentSize.width,
+            maxWidth: contentSize.width,
+            minHeight: HEIGHT_CONSTRAINT_FLOOR,
+            maxHeight: HEIGHT_CONSTRAINT_CEILING,
+          });
+          await appWindow.setSize(new LogicalSize(targetSize.width, targetSize.height));
+          await appWindow.setSizeConstraints({
+            minWidth: contentSize.width,
+            maxWidth: contentSize.width,
+            minHeight: targetSize.height,
+            maxHeight: targetSize.height,
+          });
+          lastSize.current = contentSize;
+        }
+
+        if (!didShowWindow.current) {
+          await appWindow.show();
+          didShowWindow.current = true;
+          pendingResize.current = true;
+        }
+      } finally {
+        isResizing.current = false;
+        if (pendingResize.current && !isDisposed) {
+          pendingResize.current = false;
+          syncWindowSize();
+        }
       }
     };
 
@@ -93,19 +123,24 @@ export function useAutoWindowSize(
       if (animationFrame.current != null) {
         cancelAnimationFrame(animationFrame.current);
       }
+      if (resizeTimer.current != null) {
+        window.clearTimeout(resizeTimer.current);
+      }
 
-      animationFrame.current = requestAnimationFrame(() => {
-        resizeToContent()
-          .catch((error) => {
-            console.warn("Failed to sync zipax window size", error);
-            if (!didShowWindow.current) {
-              appWindow.show().catch((showError) => {
-                console.warn("Failed to show zipax window", showError);
-              });
-              didShowWindow.current = true;
-            }
-          });
-      });
+      resizeTimer.current = window.setTimeout(() => {
+        animationFrame.current = requestAnimationFrame(() => {
+          resizeToContent()
+            .catch((error) => {
+              console.warn("Failed to sync zipax window size", error);
+              if (!didShowWindow.current) {
+                appWindow.show().catch((showError) => {
+                  console.warn("Failed to show zipax window", showError);
+                });
+                didShowWindow.current = true;
+              }
+            });
+        });
+      }, 16);
     };
 
     const observer = new ResizeObserver(syncWindowSize);
@@ -125,6 +160,9 @@ export function useAutoWindowSize(
       window.removeEventListener("zipax:resize", syncWindowSize);
       if (animationFrame.current != null) {
         cancelAnimationFrame(animationFrame.current);
+      }
+      if (resizeTimer.current != null) {
+        window.clearTimeout(resizeTimer.current);
       }
     };
   }, dependencies);

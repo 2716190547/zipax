@@ -26,8 +26,10 @@ SPARKLE_FEED_URL="https://raw.githubusercontent.com/2716190547/zipax/master/appc
 
 cd "$ROOT_DIR"
 swift build -c release
+cargo build -p zipax-cli --release
 BUILD_DIR="$(swift build -c release --show-bin-path)"
 BUILD_BINARY="$BUILD_DIR/$APP_NAME"
+RUST_CLI_BINARY="$ROOT_DIR/target/release/zipax-cli"
 SPARKLE_FRAMEWORK="$BUILD_DIR/Sparkle.framework"
 
 rm -rf "$RELEASE_DIR" "$DMG_PATH" "$DMG_PATH.sha256"
@@ -45,6 +47,9 @@ fi
 if [[ -d "$TOOLS_RESOURCES_SOURCE" ]]; then
   cp -R "$TOOLS_RESOURCES_SOURCE" "$APP_RESOURCES/Tools"
 fi
+mkdir -p "$APP_RESOURCES/Tools/bin"
+cp "$RUST_CLI_BINARY" "$APP_RESOURCES/Tools/bin/zipax-cli"
+chmod +x "$APP_RESOURCES/Tools/bin/zipax-cli"
 
 cat >"$INFO_PLIST" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>

@@ -1,5 +1,6 @@
 import { Button } from "@heroui/react";
 import { useAppStore } from "@/store/app";
+import { useI18n } from "@/i18n";
 import { SlidersHorizontal } from "@/components/icons";
 import { ConfigPanel } from "@/components/ui";
 import { CompressionSettingsEditor, type CompressionSettingsEditorValue } from "./CompressionSettingsEditor";
@@ -10,12 +11,13 @@ interface ManualCompressionConfigButtonProps {
 }
 
 export function ManualCompressionConfigButton({ isOpen, onToggle }: ManualCompressionConfigButtonProps) {
+  const { t } = useI18n();
   return (
     <Button
       isIconOnly
       size="sm"
       variant="tertiary"
-      aria-label="压缩设置"
+      aria-label={t("compression.settings")}
       aria-expanded={isOpen}
       className="tool-icon-button config-toggle-button"
       data-open={isOpen ? "true" : undefined}

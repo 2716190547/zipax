@@ -8,6 +8,7 @@ enum ImageKind: String, Codable {
     case heif
     case tiff
     case webp
+    case avif
     case gif
     case pdf
 
@@ -19,6 +20,7 @@ enum ImageKind: String, Codable {
         case .heif: "heif"
         case .tiff: "tiff"
         case .webp: "webp"
+        case .avif: "avif"
         case .gif: "gif"
         case .pdf: "pdf"
         }
@@ -35,6 +37,7 @@ enum ImageTypeResolver {
         case "heif": return .heif
         case "tif", "tiff": return .tiff
         case "webp": return .webp
+        case "avif": return .avif
         case "gif": return .gif
         case "pdf": return .pdf
         default:

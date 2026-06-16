@@ -46,7 +46,6 @@ fi
 if [[ -d "$TOOLS_RESOURCES_SOURCE" ]]; then
   cp -R "$TOOLS_RESOURCES_SOURCE" "$APP_RESOURCES/Tools"
 fi
-
 cat >"$INFO_PLIST" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">

@@ -40,10 +40,10 @@ export function HeroSelect<T extends string>({
         <Select.Value />
         <Select.Indicator />
       </Select.Trigger>
-      <Select.Popover>
-        <ListBox aria-label={ariaLabel} items={options}>
+      <Select.Popover className="hero-select-popover">
+        <ListBox aria-label={ariaLabel} items={options} className="hero-select-listbox">
           {(item) => (
-            <ListBox.Item id={item.key} textValue={item.label}>
+            <ListBox.Item id={item.key} textValue={item.label} className="hero-select-option">
               {item.label}
             </ListBox.Item>
           )}

@@ -1,9 +1,10 @@
 import { Button, Tooltip } from "@heroui/react";
+import { useI18n } from "@/i18n";
 import { Folder, Info, SlidersHorizontal, X } from "@/components/icons";
 import { HeroSwitch } from "./HeroSwitch";
 
 /**
- * FolderRuleRow — 文件夹规则行
+ * FolderRuleRow — folder automation rule row.
  */
 export function FolderRuleRow({
   path,
@@ -22,6 +23,7 @@ export function FolderRuleRow({
   onDelete: () => void;
   isConfigOpen?: boolean;
 }) {
+  const { t } = useI18n();
   const displayName = path.split(/[/\\]/).pop() || path;
 
   return (
@@ -40,7 +42,7 @@ export function FolderRuleRow({
               <Info size={14} strokeWidth={2} />
             </span>
           </Tooltip.Trigger>
-          <Tooltip.Content>最近处理: {lastProcessedAt}</Tooltip.Content>
+          <Tooltip.Content>{t("automation.lastProcessed", { time: lastProcessedAt })}</Tooltip.Content>
         </Tooltip>
       )}
 
@@ -51,7 +53,7 @@ export function FolderRuleRow({
         onPress={onEdit}
         className="tool-icon-button config-toggle-button"
         data-open={isConfigOpen ? "true" : undefined}
-        aria-label="配置文件夹规则"
+        aria-label={t("automation.configureFolderRule")}
         aria-expanded={isConfigOpen}
       >
         <SlidersHorizontal size={17} strokeWidth={1.85} />
@@ -69,7 +71,7 @@ export function FolderRuleRow({
         isIconOnly
         className="tool-icon-button is-danger"
         onPress={onDelete}
-        aria-label="删除文件夹规则"
+        aria-label={t("automation.deleteFolderRule")}
       >
         <X size={15} strokeWidth={1.9} />
       </Button>

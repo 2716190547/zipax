@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { Button, Tooltip } from "@heroui/react";
 import { open } from "@tauri-apps/plugin-dialog";
+import { useI18n } from "@/i18n";
 import { useAppStore, type FolderRule } from "@/store/app";
 import { watchFolder, stopAllWatchers, type WatchFolderRequest } from "@/lib/tauri";
 import { HeroSwitch, SettingsCard, SettingTitle, SettingRow, FolderRuleRow } from "@/components/ui";
@@ -8,6 +9,7 @@ import { CompressionSettingsEditor, type CompressionSettingsEditorValue } from "
 import { Zap, Folder, AlertTriangle, Plus, Trash2 } from "@/components/icons";
 
 export default function AutomationView() {
+  const { t } = useI18n();
   const {
     folderRules, addFolderRule, updateFolderRule, removeFolderRule,
     ensureUniqueFolderRuleIds,
@@ -118,7 +120,7 @@ export default function AutomationView() {
   return (
     <div className="view-stack">
       <SettingsCard>
-        <SettingRow icon={<Zap size={16} strokeWidth={1.75} />} title={`自动压缩 · 已节省 ${formatSaved(totalSaved)}`}>
+        <SettingRow icon={<Zap size={16} strokeWidth={1.75} />} title={t("automation.autoCompressionSaved", { saved: formatSaved(totalSaved) })}>
           <HeroSwitch isSelected={globalAutomationEnabled} onChange={handleToggleGlobal} />
         </SettingRow>
       </SettingsCard>
@@ -126,7 +128,7 @@ export default function AutomationView() {
       <SettingsCard>
         <div className="settings-section">
           <div className="flex items-center justify-between">
-            <SettingTitle icon={<Folder size={16} strokeWidth={1.75} />} title="文件夹自动压缩" info="只处理加入文件夹后的新图片。" />
+            <SettingTitle icon={<Folder size={16} strokeWidth={1.75} />} title={t("automation.folderCompression")} info={t("automation.folderCompressionInfo")} />
             <Tooltip>
               <Tooltip.Trigger>
                 <Button
@@ -135,19 +137,19 @@ export default function AutomationView() {
                   isIconOnly
                   className="tool-icon-button"
                   onPress={addFolder}
-                  aria-label="添加文件夹"
+                  aria-label={t("automation.addFolder")}
                 >
                   <Plus size={16} strokeWidth={1.75} />
                 </Button>
               </Tooltip.Trigger>
-              <Tooltip.Content>添加文件夹</Tooltip.Content>
+              <Tooltip.Content>{t("automation.addFolder")}</Tooltip.Content>
             </Tooltip>
           </div>
 
           {folderRules.length === 0 ? (
             <div className="surface-panel text-center py-5 text-default-400">
               <Folder size={28} strokeWidth={1.5} className="mx-auto mb-1.5" />
-              <p className="surface-detail">还没有文件夹</p>
+              <p className="surface-detail">{t("automation.noFolders")}</p>
             </div>
           ) : (
             <div className="surface-stack is-loose">
@@ -198,7 +200,7 @@ export default function AutomationView() {
         <SettingsCard>
           <div className="settings-section">
             <div className="flex items-center justify-between">
-              <SettingTitle icon={<AlertTriangle size={16} strokeWidth={1.75} />} title="最近错误" />
+              <SettingTitle icon={<AlertTriangle size={16} strokeWidth={1.75} />} title={t("automation.recentErrors")} />
               <Tooltip>
                 <Tooltip.Trigger>
                   <Button
@@ -207,12 +209,12 @@ export default function AutomationView() {
                     isIconOnly
                     className="tool-icon-button is-danger"
                     onPress={clearErrorRecords}
-                    aria-label="清除错误"
+                    aria-label={t("automation.clearErrors")}
                   >
                     <Trash2 size={16} strokeWidth={1.75} />
                   </Button>
                 </Tooltip.Trigger>
-                <Tooltip.Content>清除</Tooltip.Content>
+                <Tooltip.Content>{t("automation.clear")}</Tooltip.Content>
               </Tooltip>
             </div>
             <div className="surface-stack">

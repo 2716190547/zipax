@@ -48,6 +48,13 @@ export interface WatchFolderRequest {
   allow_upscale?: boolean;
 }
 
+export interface TrayStatus {
+  auto_check_updates: boolean;
+  global_automation_enabled: boolean;
+  total_saved: number;
+  total_count: number;
+}
+
 // --- Tauri command wrappers ---
 
 export async function compressFile(
@@ -92,4 +99,16 @@ export async function disableAutostart(): Promise<void> {
 
 export async function isAutostartEnabled(): Promise<boolean> {
   return invoke<boolean>("get_autostart_enabled");
+}
+
+export async function setCloseToTrayEnabled(enabled: boolean): Promise<void> {
+  await invoke<void>("set_close_to_tray_enabled", { enabled });
+}
+
+export async function getCloseToTrayEnabled(): Promise<boolean> {
+  return invoke<boolean>("get_close_to_tray_enabled");
+}
+
+export async function setTrayStatus(status: TrayStatus): Promise<void> {
+  await invoke<void>("set_tray_status", { status });
 }

@@ -5,6 +5,19 @@ import type { CompressResponse } from "@/lib/tauri";
 export type CompressionMode = "quality" | "balanced" | "size" | "advanced" | "target";
 export type OutputFormat = "original" | "jpeg" | "png" | "webp" | "avif" | "heic" | "pdf";
 export type AppearanceMode = "system" | "light" | "dark";
+export type ThemeColor = "blue" | "emerald" | "violet" | "amber" | "rose" | "slate" | "claude";
+export type LanguageMode =
+  | "system"
+  | "en-US"
+  | "zh-CN"
+  | "zh-TW"
+  | "es-ES"
+  | "ar"
+  | "id-ID"
+  | "pt-BR"
+  | "fr-FR"
+  | "ja-JP"
+  | "ko-KR";
 export type TabKey = "image" | "general" | "workflow" | "automation" | "dependencies" | "about";
 
 /** 检查文件名是否是已压缩文件（#C 后缀） */
@@ -20,9 +33,13 @@ export interface CompressionItem {
   path: string;
   originalBytes: number;
   result?: CompressResponse;
-  status: "pending" | "compressing" | "done" | "error";
+  status: "preparing" | "pending" | "compressing" | "done" | "error";
   error?: string;
 }
+
+type NewCompressionItem = Omit<CompressionItem, "id" | "status"> & {
+  status?: CompressionItem["status"];
+};
 
 export interface ErrorRecord {
   id: string;
@@ -79,10 +96,18 @@ interface AppState {
   autoCopyAfterCompression: boolean;
   skipCompressedFiles: boolean;
   appearanceMode: AppearanceMode;
+  themeColor: ThemeColor;
+  languageMode: LanguageMode;
+  autoCheckUpdates: boolean;
+  closeToTray: boolean;
   globalAutomationEnabled: boolean;
   setAutoCopyAfterCompression: (v: boolean) => void;
   setSkipCompressedFiles: (v: boolean) => void;
   setAppearanceMode: (v: AppearanceMode) => void;
+  setThemeColor: (v: ThemeColor) => void;
+  setLanguageMode: (v: LanguageMode) => void;
+  setAutoCheckUpdates: (v: boolean) => void;
+  setCloseToTray: (v: boolean) => void;
   setGlobalAutomationEnabled: (v: boolean) => void;
 
   // Folder rules (persisted)
@@ -94,7 +119,7 @@ interface AppState {
 
   // Items (transient — not persisted)
   items: CompressionItem[];
-  addItem: (item: Omit<CompressionItem, "id" | "status">) => void;
+  addItem: (item: NewCompressionItem) => string;
   removeItem: (id: string) => void;
   clearItems: () => void;
   updateItem: (id: string, patch: Partial<CompressionItem>) => void;
@@ -152,10 +177,18 @@ export const useAppStore = create<AppState>()(
       autoCopyAfterCompression: false,
       skipCompressedFiles: true,
       appearanceMode: "system",
+      themeColor: "blue",
+      languageMode: "system",
+      autoCheckUpdates: false,
+      closeToTray: true,
       globalAutomationEnabled: true,
       setAutoCopyAfterCompression: (v) => set({ autoCopyAfterCompression: v }),
       setSkipCompressedFiles: (v) => set({ skipCompressedFiles: v }),
       setAppearanceMode: (v) => set({ appearanceMode: v }),
+      setThemeColor: (v) => set({ themeColor: v }),
+      setLanguageMode: (v) => set({ languageMode: v }),
+      setAutoCheckUpdates: (v) => set({ autoCheckUpdates: v }),
+      setCloseToTray: (v) => set({ closeToTray: v }),
       setGlobalAutomationEnabled: (v) => set({ globalAutomationEnabled: v }),
 
       // Folder rules
@@ -192,8 +225,12 @@ export const useAppStore = create<AppState>()(
 
       // Manual items (transient)
       items: [],
-      addItem: (item) =>
-        set((s) => ({ items: [...s.items, { ...item, id: genId(), status: "pending" }] })),
+      addItem: (item) => {
+        const id = genId();
+        const { status = "pending", ...nextItem } = item;
+        set((s) => ({ items: [...s.items, { ...nextItem, id, status }] }));
+        return id;
+      },
       removeItem: (id) =>
         set((s) => ({ items: s.items.filter((i) => i.id !== id) })),
       clearItems: () => set({ items: [] }),
@@ -237,6 +274,10 @@ export const useAppStore = create<AppState>()(
         autoCopyAfterCompression: state.autoCopyAfterCompression,
         skipCompressedFiles: state.skipCompressedFiles,
         appearanceMode: state.appearanceMode,
+        themeColor: state.themeColor,
+        languageMode: state.languageMode,
+        autoCheckUpdates: state.autoCheckUpdates,
+        closeToTray: state.closeToTray,
         globalAutomationEnabled: state.globalAutomationEnabled,
         folderRules: state.folderRules,
         errorRecords: state.errorRecords,

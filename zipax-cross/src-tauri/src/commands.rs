@@ -5,7 +5,10 @@ use std::sync::{Arc, Mutex};
 
 use auto_launch::AutoLaunchBuilder;
 use serde::{Deserialize, Serialize};
-use tauri::State;
+use tauri::{
+    menu::{CheckMenuItem, MenuItem},
+    AppHandle, Emitter, Manager, State, Wry,
+};
 use zipax_core::{
     compress_file as core_compress, plan_compression as core_plan, CompressOptions,
     CompressionMode, OutputFormat, QualityLevel, ResizeOptions,
@@ -23,6 +26,113 @@ impl WatcherState {
         Self {
             watchers: Arc::new(Mutex::new(Vec::new())),
         }
+    }
+}
+
+/// Shared app behavior flags.
+pub struct AppBehaviorState {
+    close_to_tray: Arc<Mutex<bool>>,
+    tray_status: Arc<Mutex<TrayStatus>>,
+}
+
+impl AppBehaviorState {
+    pub fn new() -> Self {
+        Self {
+            close_to_tray: Arc::new(Mutex::new(true)),
+            tray_status: Arc::new(Mutex::new(TrayStatus::default())),
+        }
+    }
+
+    pub fn close_to_tray(&self) -> bool {
+        self.close_to_tray.lock().map(|value| *value).unwrap_or(true)
+    }
+
+    pub fn set_close_to_tray(&self, enabled: bool) {
+        if let Ok(mut value) = self.close_to_tray.lock() {
+            *value = enabled;
+        }
+    }
+
+    pub fn tray_status(&self) -> TrayStatus {
+        self.tray_status
+            .lock()
+            .map(|value| value.clone())
+            .unwrap_or_default()
+    }
+
+    pub fn set_tray_status(&self, status: TrayStatus) {
+        if let Ok(mut value) = self.tray_status.lock() {
+            *value = status;
+        }
+    }
+
+    pub fn set_auto_check_updates(&self, enabled: bool) -> TrayStatus {
+        let mut status = self.tray_status();
+        status.auto_check_updates = enabled;
+        self.set_tray_status(status.clone());
+        status
+    }
+
+    pub fn set_global_automation_enabled(&self, enabled: bool) -> TrayStatus {
+        let mut status = self.tray_status();
+        status.global_automation_enabled = enabled;
+        self.set_tray_status(status.clone());
+        status
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TrayStatus {
+    pub auto_check_updates: bool,
+    pub global_automation_enabled: bool,
+    pub total_saved: u64,
+    pub total_count: u64,
+}
+
+impl Default for TrayStatus {
+    fn default() -> Self {
+        Self {
+            auto_check_updates: false,
+            global_automation_enabled: true,
+            total_saved: 0,
+            total_count: 0,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct TrayTogglePayload {
+    pub key: String,
+    pub enabled: bool,
+}
+
+pub struct TrayMenuState {
+    stats_item: MenuItem<Wry>,
+    updates_item: CheckMenuItem<Wry>,
+    automation_item: CheckMenuItem<Wry>,
+}
+
+impl TrayMenuState {
+    pub fn new(
+        stats_item: MenuItem<Wry>,
+        updates_item: CheckMenuItem<Wry>,
+        automation_item: CheckMenuItem<Wry>,
+    ) -> Self {
+        Self {
+            stats_item,
+            updates_item,
+            automation_item,
+        }
+    }
+
+    pub fn refresh(&self, status: &TrayStatus) {
+        let _ = self
+            .stats_item
+            .set_text(format_tray_stats(status.total_count, status.total_saved));
+        let _ = self.updates_item.set_checked(status.auto_check_updates);
+        let _ = self
+            .automation_item
+            .set_checked(status.global_automation_enabled);
     }
 }
 
@@ -202,6 +312,64 @@ pub fn get_autostart_enabled() -> Result<bool, String> {
     build_autostart()?.is_enabled().map_err(|e| e.to_string())
 }
 
+/// Enable or disable hiding to the menu bar when the main window closes.
+#[tauri::command]
+pub fn set_close_to_tray_enabled(
+    enabled: bool,
+    state: State<'_, AppBehaviorState>,
+) -> Result<(), String> {
+    state.set_close_to_tray(enabled);
+    Ok(())
+}
+
+/// Read whether closing the main window hides it to the menu bar.
+#[tauri::command]
+pub fn get_close_to_tray_enabled(state: State<'_, AppBehaviorState>) -> bool {
+    state.close_to_tray()
+}
+
+/// Sync lightweight frontend state into the native tray menu.
+#[tauri::command]
+pub fn set_tray_status(
+    status: TrayStatus,
+    behavior_state: State<'_, AppBehaviorState>,
+    tray_menu_state: State<'_, TrayMenuState>,
+) -> Result<(), String> {
+    behavior_state.set_tray_status(status.clone());
+    tray_menu_state.refresh(&status);
+    Ok(())
+}
+
+pub fn toggle_tray_updates(app: &AppHandle) {
+    let behavior_state = app.state::<AppBehaviorState>();
+    let tray_menu_state = app.state::<TrayMenuState>();
+    let status = behavior_state.tray_status();
+    let next = behavior_state.set_auto_check_updates(!status.auto_check_updates);
+    tray_menu_state.refresh(&next);
+    let _ = app.emit(
+        "zipax://tray-toggle",
+        TrayTogglePayload {
+            key: "autoCheckUpdates".into(),
+            enabled: next.auto_check_updates,
+        },
+    );
+}
+
+pub fn toggle_tray_automation(app: &AppHandle) {
+    let behavior_state = app.state::<AppBehaviorState>();
+    let tray_menu_state = app.state::<TrayMenuState>();
+    let status = behavior_state.tray_status();
+    let next = behavior_state.set_global_automation_enabled(!status.global_automation_enabled);
+    tray_menu_state.refresh(&next);
+    let _ = app.emit(
+        "zipax://tray-toggle",
+        TrayTogglePayload {
+            key: "globalAutomationEnabled".into(),
+            enabled: next.global_automation_enabled,
+        },
+    );
+}
+
 pub fn refresh_autostart_registration() {
     if let Ok(autostart) = build_autostart() {
         if autostart.is_enabled().unwrap_or(false) {
@@ -221,6 +389,26 @@ fn build_autostart() -> Result<auto_launch::AutoLaunch, String> {
         .set_use_launch_agent(true)
         .build()
         .map_err(|e| e.to_string())
+}
+
+fn format_tray_stats(total_count: u64, total_saved: u64) -> String {
+    format!(
+        "已压缩 {} 张 · 已节省 {}",
+        total_count,
+        format_bytes(total_saved)
+    )
+}
+
+fn format_bytes(bytes: u64) -> String {
+    if bytes >= 1_073_741_824 {
+        format!("{:.1} GB", bytes as f64 / 1_073_741_824.0)
+    } else if bytes >= 1_048_576 {
+        format!("{:.1} MB", bytes as f64 / 1_048_576.0)
+    } else if bytes >= 1024 {
+        format!("{:.1} KB", bytes as f64 / 1024.0)
+    } else {
+        format!("{bytes} B")
+    }
 }
 
 fn preferred_autostart_path() -> Result<String, String> {

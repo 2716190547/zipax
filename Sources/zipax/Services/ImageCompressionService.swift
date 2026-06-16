@@ -63,6 +63,7 @@ struct ImageCompressionService: Sendable {
 
         let originalBytes = try fileSize(url)
         let outputKind = kind == .pdf ? .pdf : (rule.outputFormat.imageKind ?? kind)
+
         let overwriteURL = url
             .deletingPathExtension()
             .appendingPathExtension(outputKind.preferredPathExtension)
@@ -180,7 +181,7 @@ struct ImageCompressionService: Sendable {
         case .heif: return UTType.heif.identifier
         case .tiff: return UTType.tiff.identifier
         case .webp: return "org.webmproject.webp"
-        case .gif, .pdf: throw ImageCompressionError.unsupportedFormat
+        case .gif, .pdf, .avif: throw ImageCompressionError.unsupportedFormat
         }
     }
 

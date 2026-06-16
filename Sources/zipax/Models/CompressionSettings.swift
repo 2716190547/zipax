@@ -26,6 +26,7 @@ enum OutputFormat: String, Codable, CaseIterable, Identifiable {
     case png
     case heic
     case webp
+    case avif
 
     var id: String { rawValue }
 
@@ -36,6 +37,7 @@ enum OutputFormat: String, Codable, CaseIterable, Identifiable {
         case .png: "PNG"
         case .heic: "HEIC"
         case .webp: "WebP"
+        case .avif: "AVIF"
         }
     }
 
@@ -46,6 +48,7 @@ enum OutputFormat: String, Codable, CaseIterable, Identifiable {
         case .png: .png
         case .heic: .heic
         case .webp: .webp
+        case .avif: .avif
         }
     }
 }

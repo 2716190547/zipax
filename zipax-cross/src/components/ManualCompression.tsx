@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Card, Button, Chip, Spinner, ProgressBar, Tooltip } from "@heroui/react";
+import { Card, Button, Spinner, Tooltip } from "@heroui/react";
 import { open, save } from "@tauri-apps/plugin-dialog";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { useAppStore, isCompressedFile } from "@/store/app";
+import { useI18n } from "@/i18n";
 import { compressFile, copyFile } from "@/lib/tauri";
-import { ClipboardCopy, Plus, Upload, X } from "@/components/icons";
+import { AlertTriangle, CheckCircle, ClipboardCopy, Download, Plus, Trash2, Upload, X } from "@/components/icons";
 import { ManualCompressionConfigButton, ManualCompressionConfigTray } from "@/components/ManualCompressionConfig";
 
 function formatBytes(bytes: number): string {
@@ -14,7 +15,14 @@ function formatBytes(bytes: number): string {
   return `${bytes} B`;
 }
 
+const MIN_LOADING_MS = 650;
+
+function wait(ms: number) {
+  return new Promise((resolve) => window.setTimeout(resolve, ms));
+}
+
 export default function ManualCompression() {
+  const { t } = useI18n();
   const contentRef = useRef<HTMLDivElement>(null);
   const [isConfigOpen, setIsConfigOpen] = useState(false);
   const {
@@ -54,13 +62,19 @@ export default function ManualCompression() {
           const file = item.getAsFile();
           if (file) {
             const name = file.name || "pasted-image.png";
+            const itemId = addItem({ name, path: "", originalBytes: file.size, status: "preparing" });
             const reader = new FileReader();
             reader.onload = () => {
               import("@/lib/tauri").then(({ saveTempImage }) => {
                 const base64 = (reader.result as string).split(",")[1];
                 saveTempImage(base64, name).then((path) => {
-                  addItem({ name, path, originalBytes: file.size });
+                  autoCompressRef.current = true;
+                  updateItem(itemId, { path, status: "pending" });
+                }).catch((err) => {
+                  updateItem(itemId, { status: "error", error: String(err) });
                 });
+              }).catch((err) => {
+                updateItem(itemId, { status: "error", error: String(err) });
               });
             };
             reader.readAsDataURL(file);
@@ -74,7 +88,7 @@ export default function ManualCompression() {
       unlisten?.();
       document.removeEventListener("paste", handlePaste);
     };
-  }, [addItem, skipCompressedFiles]);
+  }, [addItem, skipCompressedFiles, updateItem]);
 
   const selectFiles = useCallback(async () => {
     try {
@@ -104,14 +118,19 @@ export default function ManualCompression() {
         if (!imageType) continue;
         const blob = await clipboardItem.getType(imageType);
         const name = `pasted-image.${imageType.split("/")[1] || "png"}`;
+        const itemId = addItem({ name, path: "", originalBytes: blob.size, status: "preparing" });
         const reader = new FileReader();
         reader.onload = () => {
           import("@/lib/tauri").then(({ saveTempImage }) => {
             const base64 = (reader.result as string).split(",")[1];
             saveTempImage(base64, name).then((path) => {
               autoCompressRef.current = true;
-              addItem({ name, path, originalBytes: blob.size });
+              updateItem(itemId, { path, status: "pending" });
+            }).catch((err) => {
+              updateItem(itemId, { status: "error", error: String(err) });
             });
+          }).catch((err) => {
+            updateItem(itemId, { status: "error", error: String(err) });
           });
         };
         reader.readAsDataURL(blob);
@@ -119,11 +138,12 @@ export default function ManualCompression() {
     } catch {
       // Clipboard read is unavailable in some WebView contexts; paste shortcut still works.
     }
-  }, [addItem]);
+  }, [addItem, updateItem]);
 
   const compressItem = useCallback(async (id: string) => {
     const item = items.find((i) => i.id === id);
-    if (!item) return;
+    if (!item || !item.path) return;
+    const startedAt = Date.now();
     updateItem(id, { status: "compressing" });
     try {
       const result = await compressFile({
@@ -135,6 +155,10 @@ export default function ManualCompression() {
         max_height: maxHeight || undefined,
         allow_upscale: allowUpscale,
       });
+      const remainingLoadingMs = Math.max(0, MIN_LOADING_MS - (Date.now() - startedAt));
+      if (remainingLoadingMs > 0) {
+        await wait(remainingLoadingMs);
+      }
       if (result.error) {
         updateItem(id, { status: "error", error: result.error });
       } else if (result.compressed_bytes >= result.original_bytes) {
@@ -148,6 +172,10 @@ export default function ManualCompression() {
         }
       }
     } catch (err) {
+      const remainingLoadingMs = Math.max(0, MIN_LOADING_MS - (Date.now() - startedAt));
+      if (remainingLoadingMs > 0) {
+        await wait(remainingLoadingMs);
+      }
       updateItem(id, { status: "error", error: String(err) });
     }
   }, [items, mode, format, level, targetSizePercent, preserveMetadata, overwrite, maxWidth, maxHeight, allowUpscale, updateItem, recordCompression, autoCopyAfterCompression]);
@@ -158,7 +186,7 @@ export default function ManualCompression() {
   const autoCompressRef = useRef(false);
   useEffect(() => {
     if (autoCompressRef.current) {
-      const pending = items.filter((i) => i.status === "pending");
+      const pending = items.filter((i) => i.status === "pending" && i.path);
       if (pending.length > 0) {
         autoCompressRef.current = false;
         for (const item of pending) {
@@ -206,9 +234,6 @@ export default function ManualCompression() {
 
   // 统计
   const doneCount = items.filter((i) => i.status === "done").length;
-  const totalSaved = items
-    .filter((i) => i.status === "done" && i.result)
-    .reduce((sum, i) => sum + (i.result?.saved_bytes || 0), 0);
 
   useEffect(() => {
     window.dispatchEvent(new Event("zipax:resize"));
@@ -237,13 +262,13 @@ export default function ManualCompression() {
                     size="sm"
                     variant="tertiary"
                     className="tool-icon-button"
-                    aria-label="粘贴图片"
+                    aria-label={t("home.paste")}
                     onPress={pasteFromClipboard}
                   >
                     <ClipboardCopy size={18} strokeWidth={1.75} />
                   </Button>
                 </Tooltip.Trigger>
-                <Tooltip.Content>粘贴图片</Tooltip.Content>
+                <Tooltip.Content>{t("home.paste")}</Tooltip.Content>
               </Tooltip>
               <Tooltip delay={350}>
                 <Tooltip.Trigger>
@@ -252,13 +277,13 @@ export default function ManualCompression() {
                     size="sm"
                     variant="tertiary"
                     className="tool-icon-button"
-                    aria-label="选择图片"
+                    aria-label={t("home.select")}
                     onPress={selectFiles}
                   >
                     <Plus size={18} strokeWidth={1.75} />
                   </Button>
                 </Tooltip.Trigger>
-                <Tooltip.Content>选择图片</Tooltip.Content>
+                <Tooltip.Content>{t("home.select")}</Tooltip.Content>
               </Tooltip>
             </div>
 
@@ -268,8 +293,8 @@ export default function ManualCompression() {
             >
               <Upload size={50} strokeWidth={1.35} className="text-default-400" />
               <div>
-                <p className="drop-title">拖入图片</p>
-                <p className="drop-subtitle">也可以粘贴或选择图片</p>
+                <p className="drop-title">{t("home.dropTitle")}</p>
+                <p className="drop-subtitle">{t("home.dropSubtitle")}</p>
               </div>
             </div>
           </div>
@@ -278,79 +303,82 @@ export default function ManualCompression() {
 
       {isConfigOpen && <ManualCompressionConfigTray />}
 
-      {/* 压缩进度 */}
-      {items.length > 0 && (
-        <Card className="zipax-card">
-          <Card.Content className="settings-card-body">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-semibold">压缩进度</span>
-                <Chip size="sm" variant="soft" color="accent">
-                  {doneCount}/{items.length}
-                </Chip>
-              </div>
-              {totalSaved > 0 && (
-                <span className="text-xs text-success font-medium">
-                  节省 {formatBytes(totalSaved)}
-                </span>
-              )}
-            </div>
-            <ProgressBar
-              value={items.length > 0 ? (doneCount / items.length) * 100 : 0}
-              color="accent"
-              size="sm"
-            />
-          </Card.Content>
-        </Card>
-      )}
-
       {/* Item List */}
       {items.length > 0 && (
-        <Card className="zipax-card">
-          <Card.Content className="settings-card-body">
-            <div className="surface-stack">
+        <Card className="zipax-card compression-list-card">
+          <Card.Content className="compression-list-content">
+            <div className="compression-result-list">
               {items.map((item) => (
                 <div
                   key={item.id}
-                  className="surface-row is-interactive"
+                  className={`compression-result-row is-${item.status}`}
                 >
-                  <div className="surface-copy flex-1 mr-3">
+                  <div className="compression-status-icon" aria-hidden="true">
+                    {item.status === "done" && <CheckCircle size={18} strokeWidth={2.25} />}
+                    {(item.status === "preparing" || item.status === "compressing" || item.status === "pending") && <Spinner size="sm" color="accent" />}
+                    {item.status === "error" && <AlertTriangle size={18} strokeWidth={2} />}
+                  </div>
+
+                  <div className="compression-result-copy">
                     <p className="surface-title truncate">{item.name}</p>
                     {item.status === "done" && item.result && (
-                      <p className="surface-detail text-success">
+                      <p className="surface-detail">
                         {formatBytes(item.result.original_bytes)} → {formatBytes(item.result.compressed_bytes)}
-                        <span className="ml-1 text-default-500">({item.result.ratio.toFixed(1)}% 减少)</span>
-                      </p>
-                    )}
+                      <span>，{t("home.saved")} {formatBytes(item.result.saved_bytes)}</span>
+                    </p>
+                  )}
+                  {item.status === "compressing" && (
+                    <p className="surface-detail">{t("home.compressing")}</p>
+                  )}
+                  {item.status === "preparing" && (
+                    <p className="surface-detail">{t("home.reading")}</p>
+                  )}
+                  {item.status === "pending" && (
+                    <p className="surface-detail">{t("home.preparing")}</p>
+                  )}
                     {item.status === "error" && (
                       <p className="surface-detail text-danger">{item.error}</p>
                     )}
                   </div>
-                  <div className="flex items-center gap-1.5 shrink-0">
-                    {item.status === "compressing" && <Spinner size="sm" color="accent" />}
-                    {item.status === "pending" && (
-                      <Button size="sm" variant="secondary" onPress={() => compressItem(item.id)}>
-                        压缩
-                      </Button>
-                    )}
+
+                  <div className="compression-result-actions">
                     {item.status === "done" && (
-                      <Button size="sm" variant="secondary" onPress={() => saveItem(item)}>
-                        保存
-                      </Button>
-                    )}
-                    {item.status === "error" && (
-                      <Chip size="sm" color="danger" variant="soft">失败</Chip>
-                    )}
-                    <Button
-                      size="sm"
-                      variant="tertiary"
-                      isIconOnly
-                      className="tool-icon-button is-danger"
-                      onPress={() => removeItem(item.id)}
-                      aria-label="移除文件"
-                    >
-                      <X size={15} strokeWidth={1.9} />
+                      <Tooltip delay={350}>
+                        <Tooltip.Trigger>
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            isIconOnly
+                            className="compression-save-button"
+                            onPress={() => saveItem(item)}
+                          aria-label={t("home.download")}
+                        >
+                            <Download size={15} strokeWidth={1.9} />
+                          </Button>
+                        </Tooltip.Trigger>
+                      <Tooltip.Content>{t("home.download")}</Tooltip.Content>
+                    </Tooltip>
+                  )}
+                  {item.status === "error" && (
+                    <Button size="sm" variant="secondary" onPress={() => compressItem(item.id)}>
+                      {t("home.retry")}
                     </Button>
+                  )}
+                    <Tooltip delay={350}>
+                      <Tooltip.Trigger>
+                        <Button
+                          size="sm"
+                          variant="tertiary"
+                          isIconOnly
+                          className="tool-icon-button compression-delete-button"
+                          onPress={() => removeItem(item.id)}
+                          aria-label={t("home.delete")}
+                        >
+                          <X size={15} strokeWidth={1.9} />
+                        </Button>
+                      </Tooltip.Trigger>
+                    <Tooltip.Content>{t("home.delete")}</Tooltip.Content>
+                  </Tooltip>
                   </div>
                 </div>
               ))}
@@ -361,17 +389,30 @@ export default function ManualCompression() {
 
       {/* Action Bar */}
       {items.length > 0 && (
-        <div className="flex justify-between">
-          <Button size="sm" variant="danger-soft" onPress={clearItems}>
-            清空
-          </Button>
+        <div className="manual-action-bar">
+          <Tooltip delay={350}>
+            <Tooltip.Trigger>
+              <Button
+                size="sm"
+                variant="tertiary"
+                isIconOnly
+                className="manual-clear-button"
+                onPress={clearItems}
+                aria-label={t("home.clearAll")}
+              >
+                <Trash2 size={15} strokeWidth={1.85} />
+              </Button>
+            </Tooltip.Trigger>
+            <Tooltip.Content>{t("home.clearAll")}</Tooltip.Content>
+          </Tooltip>
           <Button
             size="sm"
             variant="primary"
             onPress={saveAll}
             isDisabled={items.every((i) => i.status !== "done")}
           >
-            全部导出
+            <Download size={15} strokeWidth={1.9} />
+            {t("home.saveAll")}{doneCount > 0 ? ` ${doneCount}` : ""}
           </Button>
         </div>
       )}

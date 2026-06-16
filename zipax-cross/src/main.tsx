@@ -26,6 +26,12 @@ function escapeHtml(value: string) {
     .replaceAll("'", "&#039;");
 }
 
+function isBenignResizeObserverError(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error);
+  return message === "ResizeObserver loop completed with undelivered notifications." ||
+    message === "ResizeObserver loop limit exceeded";
+}
+
 class BootErrorBoundary extends React.Component<
   { children: React.ReactNode },
   { error: unknown | null }
@@ -60,10 +66,18 @@ class BootErrorBoundary extends React.Component<
 }
 
 window.addEventListener("error", (event) => {
+  if (isBenignResizeObserverError(event.error ?? event.message)) {
+    event.preventDefault();
+    return;
+  }
   renderBootError(event.error ?? event.message);
 });
 
 window.addEventListener("unhandledrejection", (event) => {
+  if (isBenignResizeObserverError(event.reason)) {
+    event.preventDefault();
+    return;
+  }
   renderBootError(event.reason);
 });
 

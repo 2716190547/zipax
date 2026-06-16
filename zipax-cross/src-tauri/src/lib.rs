@@ -5,13 +5,15 @@
 mod commands;
 mod watcher;
 
-use commands::WatcherState;
+use commands::{AppBehaviorState, TrayMenuState, WatcherState};
 use std::{thread, time::Duration};
 use tauri::{
-    menu::{MenuBuilder, MenuItemBuilder},
+    ActivationPolicy,
+    image::Image,
+    menu::{CheckMenuItemBuilder, MenuBuilder, MenuItemBuilder},
     tray::TrayIconBuilder,
     webview::PageLoadEvent,
-    Manager,
+    Manager, WindowEvent,
 };
 use tauri_plugin_autostart::MacosLauncher;
 
@@ -24,6 +26,7 @@ pub fn run() {
             MacosLauncher::LaunchAgent,
             None,
         ))
+        .manage(AppBehaviorState::new())
         .manage(WatcherState::new())
         .on_page_load(|webview, payload| {
             if webview.label() == "main" && payload.event() == PageLoadEvent::Finished {
@@ -37,27 +40,74 @@ pub fn run() {
                 });
             }
         })
+        .on_window_event(|window, event| {
+            if window.label() != "main" {
+                return;
+            }
+            if let WindowEvent::CloseRequested { api, .. } = event {
+                let should_hide = window
+                    .state::<AppBehaviorState>()
+                    .close_to_tray();
+                if should_hide {
+                    api.prevent_close();
+                    let _ = window.hide();
+                    let _ = window
+                        .app_handle()
+                        .set_activation_policy(ActivationPolicy::Accessory);
+                }
+            }
+        })
         .setup(|app| {
             // 创建系统托盘菜单
             let open_item = MenuItemBuilder::with_id("open", "打开 zipax").build(app)?;
+            let stats_item = MenuItemBuilder::with_id("stats", "已压缩 0 张 · 已节省 0 B")
+                .enabled(false)
+                .build(app)?;
+            let updates_item = CheckMenuItemBuilder::with_id("toggle_updates", "自动检查更新")
+                .checked(false)
+                .build(app)?;
+            let automation_item =
+                CheckMenuItemBuilder::with_id("toggle_automation", "文件夹自动压缩")
+                    .checked(true)
+                    .build(app)?;
             let quit_item = MenuItemBuilder::with_id("quit", "退出").build(app)?;
 
             let menu = MenuBuilder::new(app)
+                .item(&stats_item)
+                .separator()
+                .item(&updates_item)
+                .item(&automation_item)
+                .separator()
                 .item(&open_item)
                 .separator()
                 .item(&quit_item)
                 .build()?;
 
+            app.manage(TrayMenuState::new(
+                stats_item.clone(),
+                updates_item.clone(),
+                automation_item.clone(),
+            ));
+
             // 创建托盘图标
             let _tray = TrayIconBuilder::new()
+                .icon(Image::new(include_bytes!("../icons/tray-icon-22.rgba"), 22, 22))
+                .icon_as_template(true)
                 .menu(&menu)
                 .tooltip("zipax - 图片压缩")
                 .on_menu_event(move |app, event| match event.id().as_ref() {
                     "open" => {
+                        let _ = app.set_activation_policy(ActivationPolicy::Regular);
                         if let Some(window) = app.get_webview_window("main") {
                             let _ = window.show();
                             let _ = window.set_focus();
                         }
+                    }
+                    "toggle_updates" => {
+                        commands::toggle_tray_updates(app);
+                    }
+                    "toggle_automation" => {
+                        commands::toggle_tray_automation(app);
                     }
                     "quit" => {
                         app.exit(0);
@@ -86,6 +136,9 @@ pub fn run() {
             commands::get_app_info,
             commands::set_autostart_enabled,
             commands::get_autostart_enabled,
+            commands::set_close_to_tray_enabled,
+            commands::get_close_to_tray_enabled,
+            commands::set_tray_status,
             commands::watch_folder,
             commands::stop_all_watchers,
             commands::save_temp_image,

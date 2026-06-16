@@ -1,23 +1,19 @@
 import { Slider } from "@heroui/react";
+import { useI18n } from "@/i18n";
 
 /**
- * QualitySlider — 质量等级滑块
- *
- * 还原 SwiftUI QualitySlider：
- * - 标签行: "质量" + 当前等级数字
- * - 滑块: 1-6 步进
- * - 底部标签: "质量最佳" ↔ "体积最小"
+ * QualitySlider — compact quality level control.
  */
 export function QualitySlider({
   value,
   onChange,
   disabled,
-  title = "质量",
+  title,
   minValue = 1,
   maxValue = 6,
   step = 1,
-  minLabel = "质量最佳",
-  maxLabel = "体积最小",
+  minLabel,
+  maxLabel,
   valueLabel,
   showTooltip = false,
   showValue = true,
@@ -39,13 +35,17 @@ export function QualitySlider({
   showTitle?: boolean;
   compact?: boolean;
 }) {
+  const { t } = useI18n();
   const displayValue = valueLabel ?? value;
+  const resolvedTitle = title ?? t("compression.quality");
+  const resolvedMinLabel = minLabel ?? t("compression.bestQuality");
+  const resolvedMaxLabel = maxLabel ?? t("compression.smallestSize");
 
   return (
     <div className={`quality-slider ${compact ? "is-compact" : ""} ${disabled ? "opacity-55" : ""}`}>
       {(showTitle || showValue) && (
         <div className="flex items-center justify-between">
-          {showTitle && <span className="text-[14px] font-semibold text-default-500">{title}</span>}
+          {showTitle && <span className="text-[14px] font-semibold text-default-500">{resolvedTitle}</span>}
           {showValue && (
             <span className="text-[15px] font-bold tabular-nums text-default-500">{displayValue}</span>
           )}
@@ -72,8 +72,8 @@ export function QualitySlider({
         </Slider.Track>
       </Slider>
       <div className="flex justify-between text-[11px] font-medium text-default-400">
-        <span>{minLabel}</span>
-        <span>{maxLabel}</span>
+        <span>{resolvedMinLabel}</span>
+        <span>{resolvedMaxLabel}</span>
       </div>
     </div>
   );

@@ -1,27 +1,10 @@
 import { Input, Separator } from "@heroui/react";
 import { useEffect, useState, type ReactNode } from "react";
+import { useI18n } from "@/i18n";
 import type { CompressionMode, OutputFormat } from "@/store/app";
 import { Crop, Download, SlidersVertical } from "@/components/icons";
 import { ConfigCard, ConfigFieldRow, ConfigSection, QualitySlider, SegmentTabs } from "@/components/ui";
 import { HeroSelect, HeroSwitch } from "@/components/ui";
-
-const modeOptions: { key: CompressionMode; label: string; shortLabel: string }[] = [
-  { key: "quality", label: "高清优先", shortLabel: "高清" },
-  { key: "balanced", label: "平衡", shortLabel: "平衡" },
-  { key: "size", label: "体积优先", shortLabel: "体积" },
-  { key: "advanced", label: "高级", shortLabel: "高级" },
-  { key: "target", label: "目标大小", shortLabel: "目标" },
-];
-
-const formatOptions: { key: OutputFormat; label: string }[] = [
-  { key: "original", label: "原格式" },
-  { key: "jpeg", label: "JPEG" },
-  { key: "png", label: "PNG" },
-  { key: "webp", label: "WebP" },
-  { key: "avif", label: "AVIF" },
-  { key: "heic", label: "HEIC" },
-  { key: "pdf", label: "PDF" },
-];
 
 function DimensionFieldRow({
   maxWidth,
@@ -34,6 +17,7 @@ function DimensionFieldRow({
   disabled?: boolean;
   onChange: (patch: Pick<Partial<CompressionSettingsEditorValue>, "maxWidth" | "maxHeight">) => void;
 }) {
+  const { t } = useI18n();
   return (
     <div className="dimension-field-row">
       <div className="dimension-field-stack">
@@ -42,8 +26,8 @@ function DimensionFieldRow({
             <Input
               type="text"
               inputMode="numeric"
-              aria-label="最大宽度"
-              placeholder="宽度"
+              aria-label={t("compression.maxWidth")}
+              placeholder={t("compression.width")}
               value={maxWidth != null ? String(maxWidth) : ""}
               onChange={(event) => onChange({
                 maxWidth: event.target.value ? Number(event.target.value) : undefined,
@@ -59,7 +43,7 @@ function DimensionFieldRow({
             <Input
               type="text"
               inputMode="numeric"
-              aria-label="最大高度"
+              aria-label={t("compression.maxHeight")}
               placeholder=""
               value={maxHeight != null ? String(maxHeight) : ""}
               onChange={(event) => onChange({
@@ -105,6 +89,7 @@ export function CompressionSettingsEditor({
   embedded = false,
   layout = "cards",
 }: CompressionSettingsEditorProps) {
+  const { t } = useI18n();
   const hasResizeLimit = !!(value.maxWidth || value.maxHeight);
   const isPdfExport = value.format === "pdf";
   const [resizeExpanded, setResizeExpanded] = useState(hasResizeLimit);
@@ -125,6 +110,22 @@ export function CompressionSettingsEditor({
     embedded ? "is-embedded" : "",
   ].filter(Boolean).join(" ");
   const cardVariant = embedded ? "embedded" : "default";
+  const modeOptions: { key: CompressionMode; label: string; shortLabel: string }[] = [
+    { key: "quality", label: t("compression.mode.quality"), shortLabel: t("compression.mode.qualityShort") },
+    { key: "balanced", label: t("compression.mode.balanced"), shortLabel: t("compression.mode.balancedShort") },
+    { key: "size", label: t("compression.mode.size"), shortLabel: t("compression.mode.sizeShort") },
+    { key: "advanced", label: t("compression.mode.advanced"), shortLabel: t("compression.mode.advancedShort") },
+    { key: "target", label: t("compression.mode.target"), shortLabel: t("compression.mode.targetShort") },
+  ];
+  const formatOptions: { key: OutputFormat; label: string }[] = [
+    { key: "original", label: t("compression.format.original") },
+    { key: "jpeg", label: "JPEG" },
+    { key: "png", label: "PNG" },
+    { key: "webp", label: "WebP" },
+    { key: "avif", label: "AVIF" },
+    { key: "heic", label: "HEIC" },
+    { key: "pdf", label: "PDF" },
+  ];
 
   const renderSection = ({
     icon,
@@ -214,14 +215,14 @@ export function CompressionSettingsEditor({
     <div className={editorClassName}>
       {renderSection({
         icon: <SlidersVertical size={16} strokeWidth={1.9} />,
-        title: "压缩目标",
-        info: "选择预设模式，或在高级模式下手动调整质量等级。",
+        title: t("compression.target"),
+        info: t("compression.targetInfo"),
         value: <span className="compression-target-value">{compressionValue}</span>,
         className: "compression-target-section",
         children: (
           <>
             <SegmentTabs
-              ariaLabel="压缩模式"
+              ariaLabel={t("compression.mode")}
               selectedKey={value.mode}
               options={modeOptions}
               onChange={setMode}
@@ -246,8 +247,8 @@ export function CompressionSettingsEditor({
                   minValue={10}
                   maxValue={95}
                   step={5}
-                  minLabel="体积更小"
-                  maxLabel="质量更稳"
+                  minLabel={t("compression.smallerSize")}
+                  maxLabel={t("compression.steadierQuality")}
                   value={targetSizePercent}
                   valueLabel={`${targetSizePercent}%`}
                   onChange={(targetSizePercent) => onChange({ targetSizePercent })}
@@ -264,11 +265,11 @@ export function CompressionSettingsEditor({
 
       {renderSection({
         icon: <Download size={16} strokeWidth={1.9} />,
-        title: "输出规则",
-        note: isPdfExport ? "图片将导出为 PDF" : value.overwrite ? "当前设置将替换原图" : "输出新文件",
+        title: t("compression.outputRules"),
+        note: isPdfExport ? t("compression.exportPdf") : value.overwrite ? t("compression.replaceOriginalNote") : t("compression.outputNewFile"),
         children: (
           <>
-            <ConfigFieldRow label="替换原图" control="auto">
+            <ConfigFieldRow label={t("compression.overwriteOriginal")} control="auto">
               <HeroSwitch
                 size="sm"
                 isSelected={!isPdfExport && value.overwrite}
@@ -276,9 +277,9 @@ export function CompressionSettingsEditor({
                 onChange={(overwrite) => onChange({ overwrite })}
               />
             </ConfigFieldRow>
-            <ConfigFieldRow label="格式" control="select">
+            <ConfigFieldRow label={t("compression.format")} control="select">
               <HeroSelect
-                ariaLabel="输出格式"
+                ariaLabel={t("compression.outputFormat")}
                 value={value.format}
                 onChange={setFormat}
                 options={formatOptions}
@@ -286,7 +287,7 @@ export function CompressionSettingsEditor({
                 compact
               />
             </ConfigFieldRow>
-            <ConfigFieldRow label="保留元数据" control="auto">
+            <ConfigFieldRow label={t("compression.preserveMetadata")} control="auto">
               <HeroSwitch
                 size="sm"
                 isSelected={value.preserveMetadata}
@@ -300,8 +301,8 @@ export function CompressionSettingsEditor({
 
       {renderSection({
         icon: <Crop size={16} strokeWidth={1.9} />,
-        title: "尺寸约束",
-        info: "最大尺寸按像素限制输出宽高；高度留空则按比例缩放。",
+        title: t("compression.resize"),
+        info: t("compression.resizeInfo"),
         action: (
           <HeroSwitch
             size="sm"
