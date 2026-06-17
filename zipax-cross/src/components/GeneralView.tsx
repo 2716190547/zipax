@@ -13,6 +13,7 @@ export default function GeneralView() {
   const [autostartEnabled, setAutostartEnabled] = useState(false);
   const [currentVersion, setCurrentVersion] = useState("");
   const [checkingUpdate, setCheckingUpdate] = useState(false);
+  const [updateHint, setUpdateHint] = useState("");
   const {
     totalSaved, totalCount, clearStats,
     appearanceMode, setAppearanceMode,
@@ -55,17 +56,21 @@ export default function GeneralView() {
 
   const handleCheckUpdate = async () => {
     setCheckingUpdate(true);
+    setUpdateHint("");
     try {
       const result = await checkForUpdate();
-      if (result.status === "available") {
+      if (result.status === "latest") {
+        setUpdateHint(t("general.updateLatestShort"));
+      } else {
         setAvailableUpdate({
           currentVersion: result.currentVersion,
           latestVersion: result.latestVersion,
           downloadUrl: result.downloadUrl,
         });
+        setUpdateHint(t("general.updateAvailable", { version: result.latestVersion }));
       }
     } catch {
-      // silent
+      setUpdateHint(t("general.updateFailed"));
     }
     setCheckingUpdate(false);
   };
@@ -141,15 +146,18 @@ export default function GeneralView() {
 
       <SettingsCard>
         <SettingRow icon={<Tag size={16} strokeWidth={1.75} />} title={`${t("general.currentVersion")} v${currentVersion}`}>
-          <Button
-            size="sm"
-            variant="tertiary"
-            className="settings-check-update-btn"
-            isDisabled={checkingUpdate}
-            onPress={handleCheckUpdate}
-          >
-            {checkingUpdate ? t("general.updateChecking") : t("general.checkUpdate")}
-          </Button>
+          <div className="settings-update-action">
+            <Button
+              size="sm"
+              variant="tertiary"
+              className="settings-check-update-btn"
+              isDisabled={checkingUpdate}
+              onPress={handleCheckUpdate}
+            >
+              {checkingUpdate ? t("general.updateChecking") : t("general.checkUpdate")}
+            </Button>
+            {updateHint && <span className="settings-update-hint">{updateHint}</span>}
+          </div>
         </SettingRow>
       </SettingsCard>
 

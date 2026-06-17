@@ -1675,6 +1675,24 @@ html:not([lang^="zh"]):not([lang^="ja"]):not([lang^="ko"]) .zipax-tab-title > sp
   border-radius: var(--radius-control) !important;
 }
 
+.settings-update-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.settings-update-hint {
+  max-width: 128px;
+  color: var(--success);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .about-subtitle {
   margin: 10px 0 0;
   color: var(--muted);

@@ -1,24 +1,18 @@
-# zipax v0.22
+# zipax v0.23.1
 
-zipax v0.22 focuses on the public open source release, a cleaner macOS desktop shell, and a sharper tray/menu bar experience.
+zipax v0.23.1 is a follow-up patch for the new Tauri updater release flow.
 
 ## Highlights
 
-- Added an explicit MIT open source license.
-- Added bilingual English/Chinese support documentation.
-- Added GitHub funding metadata that points to the support page.
-- Refined the Tauri macOS window with custom chrome, larger rounded corners, and cleaner window controls.
-- Reworked window sizing to measure the app shell directly and avoid extra bottom spacing.
-- Rebuilt the menu bar tray icon from an SVG source into sharper template assets.
-- Archived the earlier native SwiftPM macOS implementation with a local git tag; active development now targets the Tauri version.
-
-## Packages
-
-- macOS packages can be built locally from `zipax-cross`.
-- GitHub Actions builds macOS, Windows, and Linux packages when the `v0.22` tag is pushed.
+- Added an inline "up to date" hint next to the manual update check button.
+- Kept update checks inside the app UI instead of using blocking system dialogs.
+- Fixed the GitHub Actions release workflow so Tauri updater signing secrets are passed into `tauri-action`.
+- Documented the v0.23 release blockage: the repository secrets existed, but the workflow did not expose `TAURI_SIGNING_PRIVATE_KEY` and `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` to the build step.
 
 ## Notes
 
-- The internal app/package version is `0.22.0`.
-- The GitHub release tag is `v0.22`.
-- The macOS transparent rounded window uses Tauri's `macos-private-api` feature, intended for direct GitHub distribution rather than Mac App Store submission.
+- Internal app/package version: `0.23.1`.
+- GitHub release tag: `v0.23.1`.
+- Updater builds rely on GitHub Secrets:
+  - `TAURI_SIGNING_PRIVATE_KEY`
+  - `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`
