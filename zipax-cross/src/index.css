@@ -756,6 +756,63 @@ html:not([lang^="zh"]):not([lang^="ja"]):not([lang^="ko"]) .zipax-tab-title > sp
   color: var(--success);
 }
 
+.update-prompt {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 54px;
+  padding: 10px 12px;
+  border: 1px solid color-mix(in oklab, var(--accent) 24%, var(--border));
+  border-radius: var(--radius-section);
+  background: color-mix(in oklab, var(--accent) 8%, var(--surface));
+  box-shadow: 0 10px 24px color-mix(in oklab, var(--accent) 10%, transparent);
+  animation: card-in var(--motion-medium) var(--motion-ease) both;
+}
+
+.update-prompt-icon {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  color: var(--accent);
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--accent) 12%, transparent);
+}
+
+.update-prompt-copy {
+  min-width: 0;
+}
+
+.update-prompt-title,
+.update-prompt-detail {
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.update-prompt-title {
+  color: var(--foreground);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.update-prompt-detail {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 520;
+  line-height: 1.2;
+}
+
+.update-prompt-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .is-spinning {
   animation: icon-spin 900ms linear infinite;
 }
@@ -1368,7 +1425,7 @@ html:not([lang^="zh"]):not([lang^="ja"]):not([lang^="ko"]) .zipax-tab-title > sp
 }
 
 .config-tabs-list [data-slot="tabs-tab"][data-selected="true"] {
-  color: var(--accent);
+  color: var(--foreground);
   font-weight: 660;
 }
 
@@ -1387,15 +1444,7 @@ html:not([lang^="zh"]):not([lang^="ja"]):not([lang^="ko"]) .zipax-tab-title > sp
   width: calc(100% - 2px);
   height: calc(100% - 2px);
   border-radius: 999px;
-  background:
-    linear-gradient(
-      180deg,
-      color-mix(in oklab, var(--accent) 14%, var(--surface)) 0%,
-      color-mix(in oklab, var(--accent) 7%, var(--surface)) 100%
-    );
-  box-shadow:
-    0 1px 2px color-mix(in oklab, var(--accent) 12%, transparent),
-    0 4px 10px color-mix(in oklab, var(--accent) 10%, transparent);
+  background: var(--surface);
 }
 
 .compression-target-section {
@@ -1620,6 +1669,10 @@ html:not([lang^="zh"]):not([lang^="ja"]):not([lang^="ko"]) .zipax-tab-title > sp
   font-size: 24px;
   font-weight: 700;
   line-height: 1.15;
+}
+
+.settings-check-update-btn {
+  border-radius: var(--radius-control) !important;
 }
 
 .about-subtitle {

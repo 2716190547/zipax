@@ -27,6 +27,7 @@ pub fn run() {
             MacosLauncher::LaunchAgent,
             None,
         ))
+        .plugin(tauri_plugin_process::init())
         .manage(AppBehaviorState::new())
         .manage(WatcherState::new())
         .on_page_load(|webview, payload| {
@@ -60,6 +61,9 @@ pub fn run() {
             }
         })
         .setup(|app| {
+            #[cfg(desktop)]
+            app.handle().plugin(tauri_plugin_updater::Builder::new().build())?;
+
             // 创建系统托盘菜单
             let open_item = MenuItemBuilder::with_id("open", "打开 zipax").build(app)?;
             let stats_item = MenuItemBuilder::with_id("stats", "已压缩 0 张 · 已节省 0 B")

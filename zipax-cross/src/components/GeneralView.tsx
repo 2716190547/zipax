@@ -1,20 +1,18 @@
-import { Button, Tooltip } from "@heroui/react";
+import { Button } from "@heroui/react";
 import { useEffect, useState } from "react";
 import { languageOptions, useI18n } from "@/i18n";
 import { useAppStore, type LanguageMode, type ThemeColor } from "@/store/app";
 import { HeroSelect, HeroSwitch, SettingsCard, SettingRow, SettingTitle, StatCard } from "@/components/ui";
-import { Power, Palette, SunMoon, Languages, Dock, RefreshCw, BarChart3, Ellipsis } from "@/components/icons";
-import { enableAutostart, disableAutostart, isAutostartEnabled } from "@/lib/tauri";
-import { checkForUpdate, openUpdateDownload } from "@/lib/update";
-
-type UpdateStatus = "idle" | "checking" | "latest" | "available" | "error";
+import { Power, Palette, SunMoon, Tag, Languages, Dock, RefreshCw, BarChart3, Ellipsis } from "@/components/icons";
+import { enableAutostart, disableAutostart, isAutostartEnabled, getAppInfo } from "@/lib/tauri";
+import { checkForUpdate } from "@/lib/update";
 
 export default function GeneralView() {
   const { t } = useI18n();
   const [showClearStats, setShowClearStats] = useState(false);
   const [autostartEnabled, setAutostartEnabled] = useState(false);
-  const [updateStatus, setUpdateStatus] = useState<UpdateStatus>("idle");
-  const [updateMessage, setUpdateMessage] = useState(t("general.updateIdle"));
+  const [currentVersion, setCurrentVersion] = useState("");
+  const [checkingUpdate, setCheckingUpdate] = useState(false);
   const {
     totalSaved, totalCount, clearStats,
     appearanceMode, setAppearanceMode,
@@ -22,6 +20,7 @@ export default function GeneralView() {
     languageMode, setLanguageMode,
     autoCheckUpdates, setAutoCheckUpdates,
     closeToTray, setCloseToTray,
+    setAvailableUpdate,
   } = useAppStore();
   const selectedThemeColor = themeColor === "claude" ? "amber" : themeColor;
 
@@ -31,11 +30,10 @@ export default function GeneralView() {
       .catch((error) => {
         console.warn("Failed to read autostart status", error);
       });
+    getAppInfo()
+      .then((info) => setCurrentVersion(info.version))
+      .catch(() => {});
   }, []);
-
-  useEffect(() => {
-    if (updateStatus === "idle") setUpdateMessage(t("general.updateIdle"));
-  }, [t, updateStatus]);
 
   const handleToggleAutostart = async (enabled: boolean) => {
     setAutostartEnabled(enabled);
@@ -56,29 +54,20 @@ export default function GeneralView() {
   };
 
   const handleCheckUpdate = async () => {
-    setUpdateStatus("checking");
-    setUpdateMessage(t("general.updateChecking"));
+    setCheckingUpdate(true);
     try {
       const result = await checkForUpdate();
-      if (result.status === "latest") {
-        setUpdateStatus("latest");
-        setUpdateMessage(t("general.updateLatest", { version: result.currentVersion }));
-        return;
+      if (result.status === "available") {
+        setAvailableUpdate({
+          currentVersion: result.currentVersion,
+          latestVersion: result.latestVersion,
+          downloadUrl: result.downloadUrl,
+        });
       }
-
-      setUpdateStatus("available");
-      setUpdateMessage(t("general.updateAvailable", { version: result.latestVersion }));
-      const shouldOpen = window.confirm(t("general.updateConfirm", {
-        latest: result.latestVersion,
-        current: result.currentVersion,
-      }));
-      if (shouldOpen) {
-        await openUpdateDownload(result.downloadUrl);
-      }
-    } catch (error) {
-      setUpdateStatus("error");
-      setUpdateMessage(error instanceof Error ? error.message : t("general.updateFailed"));
+    } catch {
+      // silent
     }
+    setCheckingUpdate(false);
   };
 
   return (
@@ -151,26 +140,24 @@ export default function GeneralView() {
       </SettingsCard>
 
       <SettingsCard>
-        <SettingRow icon={<RefreshCw size={16} strokeWidth={1.75} />} title={t("general.softwareUpdate")} info={t("general.softwareUpdateInfo")}>
-          <div className="flex items-center gap-2">
+        <SettingRow icon={<Tag size={16} strokeWidth={1.75} />} title={`${t("general.currentVersion")} v${currentVersion}`}>
+          <Button
+            size="sm"
+            variant="tertiary"
+            className="settings-check-update-btn"
+            isDisabled={checkingUpdate}
+            onPress={handleCheckUpdate}
+          >
+            {checkingUpdate ? t("general.updateChecking") : t("general.checkUpdate")}
+          </Button>
+        </SettingRow>
+      </SettingsCard>
+
+      <SettingsCard>
+        <SettingRow icon={<RefreshCw size={16} strokeWidth={1.75} />} title={t("general.softwareUpdate")}>
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-foreground/60">{t("general.autoCheckUpdates")}</span>
             <HeroSwitch isSelected={autoCheckUpdates} onChange={setAutoCheckUpdates} />
-            <span className={`update-status-text is-${updateStatus}`}>{updateMessage}</span>
-            <Tooltip>
-              <Tooltip.Trigger>
-                <Button
-                  size="sm"
-                  variant="tertiary"
-                  isIconOnly
-                  className="tool-icon-button"
-                  aria-label={t("general.checkUpdate")}
-                  isDisabled={updateStatus === "checking"}
-                  onPress={handleCheckUpdate}
-                >
-                  <RefreshCw size={16} strokeWidth={1.75} className={updateStatus === "checking" ? "is-spinning" : ""} />
-                </Button>
-              </Tooltip.Trigger>
-              <Tooltip.Content>{t("general.checkUpdate")}</Tooltip.Content>
-            </Tooltip>
           </div>
         </SettingRow>
       </SettingsCard>

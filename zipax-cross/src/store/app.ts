@@ -20,6 +20,12 @@ export type LanguageMode =
   | "ko-KR";
 export type TabKey = "image" | "general" | "workflow" | "automation" | "dependencies" | "about";
 
+export interface AvailableUpdate {
+  currentVersion: string;
+  latestVersion: string;
+  downloadUrl: string;
+}
+
 /** 检查文件名是否是已压缩文件（#C 后缀） */
 export function isCompressedFile(name: string): boolean {
   const baseName = name.replace(/\.[^.]+$/, ""); // 去掉扩展名
@@ -68,6 +74,8 @@ interface AppState {
   // UI state (transient — not persisted)
   activeTab: TabKey;
   setActiveTab: (tab: TabKey) => void;
+  availableUpdate: AvailableUpdate | null;
+  setAvailableUpdate: (update: AvailableUpdate | null) => void;
 
   // Compression settings (persisted)
   mode: CompressionMode;
@@ -144,6 +152,8 @@ export const useAppStore = create<AppState>()(
     (set) => ({
       activeTab: "image",
       setActiveTab: (tab) => set({ activeTab: tab }),
+      availableUpdate: null,
+      setAvailableUpdate: (update) => set({ availableUpdate: update }),
 
       // Manual compression settings
       mode: "balanced",

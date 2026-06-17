@@ -58,6 +58,7 @@ export {
   SunMoon,         // ◐ 外观
   RefreshCw,       // 🔄 自动更新
   BarChart3,       // 📊 统计
+  Tag,             // 🏷️ 版本
   Languages,       // 语言
   Dock,            // 后台 / Dock
 

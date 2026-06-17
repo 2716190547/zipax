@@ -59,8 +59,8 @@ echo "     前端构建完成 ✓"
 
 # ── 步骤 3: Tauri 构建 ──
 echo ""
-echo "📦 [3/4] Tauri 构建 (npx tauri build) ..."
-npx tauri build 2>&1 | tail -10
+echo "📦 [3/4] Tauri 构建 (npx tauri build --bundles app) ..."
+npx tauri build --bundles app 2>&1 | tail -10
 echo "     Tauri 构建完成 ✓"
 
 # 定位生成的 .app

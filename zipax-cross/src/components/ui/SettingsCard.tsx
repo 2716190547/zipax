@@ -25,13 +25,13 @@ export function SettingTitle({
   title,
   info,
 }: {
-  icon: ReactNode;
+  icon?: ReactNode;
   title: string;
   info?: string;
 }) {
   return (
     <div className="setting-title">
-      <span className="setting-icon">{icon}</span>
+      {icon && <span className="setting-icon">{icon}</span>}
       <span className="setting-title-text">{title}</span>
       {info && (
         <Tooltip>
@@ -58,7 +58,7 @@ export function SettingRow({
 }: {
   title: string;
   info?: string;
-  icon: ReactNode;
+  icon?: ReactNode;
   children: ReactNode;
 }) {
   return (

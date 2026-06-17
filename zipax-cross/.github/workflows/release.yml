@@ -1,0 +1,65 @@
+name: Release
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  release:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            bundle: macos
+          # - os: windows-latest
+          #   bundle: msi
+          # - os: ubuntu-latest
+          #   bundle: appimage
+
+    runs-on: ${{ matrix.os }}
+
+    env:
+      TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+      TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Build frontend
+        run: npm run build
+
+      - name: Build Tauri app and publish release
+        id: tauri_build
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: "zipax ${{ github.ref_name }}"
+          releaseBody: "请查看 assets 下载对应平台的安装包。"
+          releaseDraft: true
+          prerelease: false
+          includeUpdaterJson: true
+
+      - name: Upload updater artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: updater-${{ matrix.bundle }}
+          path: |
+            src-tauri/target/release/bundle/${{ matrix.bundle }}/*.sig
+            src-tauri/target/release/bundle/${{ matrix.bundle }}/*.tar.gz
+            src-tauri/target/release/bundle/${{ matrix.bundle }}/*.AppImage

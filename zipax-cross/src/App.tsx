@@ -1,7 +1,7 @@
 import { listen } from "@tauri-apps/api/event";
 import { useEffect, useRef } from "react";
 import { useAppStore } from "@/store/app";
-import { isRtl, resolveLocale, useI18n } from "@/i18n";
+import { isRtl, resolveLocale } from "@/i18n";
 import ManualCompression from "@/components/ManualCompression";
 import GeneralView from "@/components/GeneralView";
 import WorkflowView from "@/components/WorkflowView";
@@ -9,12 +9,12 @@ import AutomationView from "@/components/AutomationView";
 import DependenciesView from "@/components/DependenciesView";
 import AboutView from "@/components/AboutView";
 import { WindowFrame } from "@/components/WindowFrame";
+import { UpdatePrompt } from "@/components/UpdatePrompt";
 import { disableAutostart, enableAutostart, isAutostartEnabled, setCloseToTrayEnabled, setTrayStatus } from "@/lib/tauri";
-import { checkForUpdate, openUpdateDownload } from "@/lib/update";
+import { checkForUpdate } from "@/lib/update";
 import { useAutoWindowSize } from "@/hooks/useAutoWindowSize";
 
 export default function App() {
-  const { t } = useI18n();
   const activeTab = useAppStore((s) => s.activeTab);
   const setActiveTab = useAppStore((s) => s.setActiveTab);
   const appearanceMode = useAppStore((s) => s.appearanceMode);
@@ -23,6 +23,7 @@ export default function App() {
   const languageMode = useAppStore((s) => s.languageMode);
   const autoCheckUpdates = useAppStore((s) => s.autoCheckUpdates);
   const setAutoCheckUpdates = useAppStore((s) => s.setAutoCheckUpdates);
+  const setAvailableUpdate = useAppStore((s) => s.setAvailableUpdate);
   const closeToTray = useAppStore((s) => s.closeToTray);
   const globalAutomationEnabled = useAppStore((s) => s.globalAutomationEnabled);
   const setGlobalAutomationEnabled = useAppStore((s) => s.setGlobalAutomationEnabled);
@@ -78,19 +79,17 @@ export default function App() {
       try {
         const result = await checkForUpdate();
         if (result.status !== "available") return;
-        const shouldOpen = window.confirm(
-          t("general.updateConfirm", {
-            latest: result.latestVersion,
-            current: result.currentVersion,
-          }),
-        );
-        if (shouldOpen) await openUpdateDownload(result.downloadUrl);
+        setAvailableUpdate({
+          currentVersion: result.currentVersion,
+          latestVersion: result.latestVersion,
+          downloadUrl: result.downloadUrl,
+        });
       } catch {
         // Automatic checks stay quiet unless an update is available.
       }
     }, 3500);
     return () => window.clearTimeout(timer);
-  }, [autoCheckUpdates, t]);
+  }, [autoCheckUpdates, setAvailableUpdate]);
 
   useEffect(() => {
     setTrayStatus({
@@ -137,6 +136,7 @@ export default function App() {
   return (
     <div className="zipax-app text-foreground" ref={shellRef}>
       <WindowFrame activeTab={activeTab} onActiveTabChange={setActiveTab}>
+        <UpdatePrompt />
         {activeTab === "image" && <ManualCompression />}
         {activeTab === "general" && <GeneralView />}
         {activeTab === "workflow" && <WorkflowView />}
