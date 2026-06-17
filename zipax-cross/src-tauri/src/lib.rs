@@ -93,7 +93,7 @@ pub fn run() {
 
             // 创建托盘图标
             let _tray = TrayIconBuilder::new()
-                .icon(Image::new(include_bytes!("../icons/tray-icon-22.rgba"), 22, 22))
+                .icon(Image::new(include_bytes!("../icons/tray-icon-44.rgba"), 44, 44))
                 .icon_as_template(true)
                 .menu(&menu)
                 .tooltip("zipax - 图片压缩")

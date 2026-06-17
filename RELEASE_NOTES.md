@@ -1,23 +1,24 @@
-# zipax v0.2
+# zipax v0.22
 
-zipax 0.2 introduces the cross-platform desktop version powered by Tauri and a shared Rust compression core.
+zipax v0.22 focuses on the public open source release, a cleaner macOS desktop shell, and a sharper tray/menu bar experience.
 
 ## Highlights
 
-- Added the new cross-platform app foundation for macOS, Windows, and Linux.
-- Added Rust-based compression planning and command handling.
-- Added manual image/PDF compression, folder automation, workflow options, and format conversion settings.
-- Added JPEG, PNG, WebP, AVIF, HEIC, TIFF, and PDF workflows where supported.
-- Refined the UI with compact cards, HeroUI-based controls, cleaner tabs, and subtle global motion.
-- Improved window sizing, short-page layout, and dependency page spacing.
-- Removed the visible supported-tools list from the dependency page.
+- Added an explicit MIT open source license.
+- Added bilingual English/Chinese support documentation.
+- Added GitHub funding metadata that points to the support page.
+- Refined the Tauri macOS window with custom chrome, larger rounded corners, and cleaner window controls.
+- Reworked window sizing to measure the app shell directly and avoid extra bottom spacing.
+- Rebuilt the menu bar tray icon from an SVG source into sharper template assets.
+- Archived the earlier native SwiftPM macOS implementation with a local git tag; active development now targets the Tauri version.
 
-## Assets
+## Packages
 
-- GitHub Actions builds native packages for macOS, Windows, and Linux from the `zipax-cross` Tauri app.
-- Local macOS verification can still produce an Apple Silicon app bundle from `zipax-cross/target/release/bundle/macos`.
+- macOS packages can be built locally from `zipax-cross`.
+- GitHub Actions builds macOS, Windows, and Linux packages when the `v0.22` tag is pushed.
 
 ## Notes
 
-- Windows and Linux installers are built on their target GitHub runners.
-- macOS local builds on Apple Silicon produce arm64 app bundles.
+- The internal app/package version is `0.22.0`.
+- The GitHub release tag is `v0.22`.
+- The macOS transparent rounded window uses Tauri's `macos-private-api` feature, intended for direct GitHub distribution rather than Mac App Store submission.

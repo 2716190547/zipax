@@ -3,6 +3,15 @@
     <channel>
         <title>zipax</title>
         <item>
+            <title>0.22.0</title>
+            <pubDate>Wed, 17 Jun 2026 11:57:36 +0800</pubDate>
+            <link>https://github.com/2716190547/zipax/releases/tag/v0.22</link>
+            <sparkle:version>0.22.0</sparkle:version>
+            <sparkle:shortVersionString>0.22.0</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>10.15</sparkle:minimumSystemVersion>
+            <enclosure url="https://github.com/2716190547/zipax/releases/download/v0.22/zipax_0.22.0_aarch64.dmg" length="8150771" type="application/octet-stream"/>
+        </item>
+        <item>
             <title>0.2.1</title>
             <pubDate>Tue, 16 Jun 2026 17:00:00 +0800</pubDate>
             <link>https://github.com/2716190547/zipax/releases/tag/v0.2.1</link>

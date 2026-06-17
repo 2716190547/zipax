@@ -82,6 +82,7 @@ export {
   Plus,            // 添加
   Trash2,          // 删除
   X,               // 关闭
+  Minus,           // 最小化
   Info,            // 信息
   ChevronRight,    // 箭头
   type LucideIcon, // 类型

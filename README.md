@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  <img alt="release" src="https://img.shields.io/badge/release-v0.2.1-2DA44E">
+  <img alt="release" src="https://img.shields.io/badge/release-v0.22-2DA44E">
   <img alt="platform" src="https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-0A84FF">
   <img alt="core" src="https://img.shields.io/badge/core-Rust-DEA584">
   <img alt="desktop" src="https://img.shields.io/badge/desktop-Tauri-24C8DB">
@@ -44,9 +44,9 @@
 | --- | --- |
 | <img src="docs/assets/zipax-light.png" alt="zipax light mode"> | <img src="docs/assets/zipax-dark.png" alt="zipax dark mode"> |
 
-## v0.2.1
+## v0.22
 
-zipax v0.2.1 brings internationalization, theme colors, tray menu enhancements, close-to-tray background running, software update checks, AVIF output, and a polished UI. Powered by Tauri and a shared Rust compression core.
+zipax v0.22 is the public open source release polish pass. It adds an explicit MIT license, bilingual support documentation, GitHub funding metadata, sharper tray assets, and a cleaner custom Tauri window shell with rounded corners and simplified window controls.
 
 Native installers for macOS, Windows, and Linux are built on GitHub Actions from the same source tree.
 
@@ -99,15 +99,15 @@ cargo run -q -p zipax-cli -- compress a.png b.png --output-format webp
 Pushing a version tag builds native app packages on GitHub Actions:
 
 ```bash
-git tag v0.2.1
-git push origin v0.2.1
+git tag v0.22
+git push origin v0.22
 ```
 
 The release workflow creates a draft GitHub Release with macOS, Windows, and Linux artifacts attached.
 
 ## Support
 
-If zipax saves you a little time, there is a small support page here: [Buy me a drink](SUPPORT.md).
+If zipax saves you a little time, there is a bilingual support page here: [Support zipax](SUPPORT.md).
 
 ---
 
@@ -118,7 +118,7 @@ If zipax saves you a little time, there is a small support page here: [Buy me a 
 </p>
 
 <p align="center">
-  <img alt="release" src="https://img.shields.io/badge/release-v0.2.1-2DA44E">
+  <img alt="release" src="https://img.shields.io/badge/release-v0.22-2DA44E">
   <img alt="platform" src="https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-0A84FF">
   <img alt="core" src="https://img.shields.io/badge/core-Rust-DEA584">
   <img alt="desktop" src="https://img.shields.io/badge/desktop-Tauri-24C8DB">
@@ -143,9 +143,9 @@ If zipax saves you a little time, there is a small support page here: [Buy me a 
 | --- | --- |
 | <img src="docs/assets/zipax-light.png" alt="zipax 浅色模式"> | <img src="docs/assets/zipax-dark.png" alt="zipax 深色模式"> |
 
-## v0.2.1
+## v0.22
 
-zipax v0.2.1 新增国际化多语言、主题色选择、托盘菜单增强、关闭到托盘后台运行、软件更新检查、AVIF 输出格式，并对 UI 进行了全面打磨。基于 Tauri + 共享 Rust 压缩核心构建。
+zipax v0.22 是面向公开开源发布的一次打磨版本。它新增 MIT 开源许可证、中英双语支持文档、GitHub funding 配置，重建了更清晰的菜单栏图标资源，并改进了 Tauri 自定义窗口外壳、圆角和窗口控制按钮。
 
 macOS、Windows、Linux 原生安装包通过 GitHub Actions 从同一源码自动构建。
 
@@ -198,12 +198,12 @@ cargo run -q -p zipax-cli -- compress a.png b.png --output-format webp
 推送版本标签即可触发 GitHub Actions 构建原生安装包：
 
 ```bash
-git tag v0.2.1
-git push origin v0.2.1
+git tag v0.22
+git push origin v0.22
 ```
 
 GitHub Actions 的发布工作流会自动创建包含 macOS、Windows 和 Linux 构建产物的草稿 Release。
 
 ## 支持
 
-如果 zipax 为你节省了一点时间，欢迎通过[请我喝一杯](SUPPORT.md)页面支持我。
+如果 zipax 为你节省了一点时间，欢迎通过[支持 zipax](SUPPORT.md)页面支持项目继续维护。

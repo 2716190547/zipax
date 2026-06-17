@@ -4,8 +4,6 @@ import { getCurrentWindow, LogicalSize } from "@tauri-apps/api/window";
 const SIZE_TOLERANCE = 1;
 const MIN_CONTENT_WIDTH = 430;
 const MAX_CONTENT_WIDTH = 540;
-const VISUAL_BLEED_ALLOWANCE = 2;
-const TITLEBAR_SAFE_AREA = 30;
 const HEIGHT_CONSTRAINT_FLOOR = 120;
 const HEIGHT_CONSTRAINT_CEILING = 900;
 
@@ -30,22 +28,12 @@ function readContentSize(element: HTMLElement) {
 
   document.documentElement.style.setProperty("--zipax-content-width", `${width}px`);
 
-  const sentinel = element.querySelector(".zipax-measure-sentinel");
-  if (sentinel instanceof HTMLElement) {
-    const shellRect = element.getBoundingClientRect();
-    const sentinelRect = sentinel.getBoundingClientRect();
-    const contentGap = readCssNumber("--zipax-gap");
-
-    return {
-      width,
-      height: Math.ceil(sentinelRect.bottom - shellRect.top + contentGap + VISUAL_BLEED_ALLOWANCE),
-    };
-  }
-
-  const rect = element.getBoundingClientRect();
+  const shell = element.querySelector(".zipax-shell");
+  const target = shell instanceof HTMLElement ? shell : element;
+  const rect = target.getBoundingClientRect();
   return {
     width,
-    height: Math.ceil(Math.max(rect.height, element.scrollHeight) + VISUAL_BLEED_ALLOWANCE),
+    height: Math.ceil(Math.max(rect.height, target.scrollHeight)),
   };
 }
 
@@ -85,7 +73,7 @@ export function useAutoWindowSize(
           Math.abs(contentSize.height - lastSize.current.height) > SIZE_TOLERANCE;
         const targetSize = {
           width: contentSize.width,
-          height: contentSize.height + TITLEBAR_SAFE_AREA,
+          height: contentSize.height,
         };
 
         if (shouldResize) {
