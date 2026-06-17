@@ -9,7 +9,7 @@
             <sparkle:version>0.23.1</sparkle:version>
             <sparkle:shortVersionString>0.23.1</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>10.15</sparkle:minimumSystemVersion>
-            <enclosure url="https://github.com/2716190547/zipax/releases/download/v0.23.1/zipax_0.23.1_aarch64.dmg" length="9667498" type="application/octet-stream"/>
+            <enclosure url="https://github.com/2716190547/zipax/releases/download/v0.23.1/zipax_0.23.1_aarch64.dmg" length="9663007" type="application/octet-stream"/>
         </item>
         <item>
             <title>0.22.0</title>
