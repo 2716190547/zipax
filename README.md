@@ -42,7 +42,7 @@
 
 | Light Mode | Dark Mode |
 | --- | --- |
-| <img src="docs/assets/zipax-light.png" alt="zipax light mode"> | <img src="docs/assets/zipax-dark.png" alt="zipax dark mode"> |
+| <img src="docs/assets/zipax-light-en.png" alt="zipax light mode"> | <img src="docs/assets/zipax-dark-en.png" alt="zipax dark mode"> |
 
 ## What's New in v0.24.0
 
@@ -159,7 +159,7 @@ If zipax saves you a little time, there is a bilingual support page here: [Suppo
 
 | 浅色模式 | 深色模式 |
 | --- | --- |
-| <img src="docs/assets/zipax-light.png" alt="zipax 浅色模式"> | <img src="docs/assets/zipax-dark.png" alt="zipax 深色模式"> |
+| <img src="docs/assets/zipax-light-zh.png" alt="zipax 浅色模式"> | <img src="docs/assets/zipax-dark-zh.png" alt="zipax 深色模式"> |
 
 ## v0.24.0 更新内容
 
