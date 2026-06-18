@@ -1,18 +1,28 @@
-# zipax v0.23.1
+# zipax v0.24.0
 
-zipax v0.23.1 is a follow-up patch for the new Tauri updater release flow.
+zipax v0.24.0 is a major code quality release that restructures both the Rust backend and the React frontend for better maintainability.
 
 ## Highlights
 
-- Added an inline "up to date" hint next to the manual update check button.
-- Kept update checks inside the app UI instead of using blocking system dialogs.
-- Fixed the GitHub Actions release workflow so Tauri updater signing secrets are passed into `tauri-action`.
-- Documented the v0.23 release blockage: the repository secrets existed, but the workflow did not expose `TAURI_SIGNING_PRIVATE_KEY` and `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` to the build step.
+### Rust Core Restructuring
+- Reorganized workspace into clear `zipax-core`, `zipax-cli`, `src-tauri` boundary.
+- Extracted shared DTO parsing (`CompressionMode::from_key`, `OutputFormat::from_key`, `QualityLevel::from_u8`) into core for app/CLI reuse.
+- Split monolithic `commands.rs` into focused modules: `state.rs`, `autostart.rs`, `file_commands.rs`, `watch_commands.rs`, `tray_commands.rs`, `compression_options.rs`.
+- Added build size measurement script (`scripts/measure-build-size.sh`).
+
+### Frontend Code Simplification
+- Extracted global side effects into dedicated hooks (`useAppearanceMode`, `useDocumentLocale`, `useTraySync`, `useAutoUpdateCheck`, `useAutostartRefresh`).
+- Unified update check flow with `useUpdateCheck`.
+- Split `GeneralView` settings page into focused setting components.
+- Layered `ManualCompression` into input zone, compression queue, result list, and action bar.
+- Organized global CSS into structured `styles/` directory.
+- Clarified Zustand store with typed slices and proper partialize.
+- Extracted utility functions (`formatBytes`, `sleep`, `dispatchZipaxResize`, `safeWarn`).
+
+### Cross-Platform Release
+- Full CI/CD release workflow via GitHub Actions (macOS, Windows, Linux).
+- Auto-update support via `tauri-plugin-updater`.
 
 ## Notes
-
-- Internal app/package version: `0.23.1`.
-- GitHub release tag: `v0.23.1`.
-- Updater builds rely on GitHub Secrets:
-  - `TAURI_SIGNING_PRIVATE_KEY`
-  - `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`
+- Internal app/package version: `0.24.0`.
+- GitHub release tag: `v0.24.0`.
