@@ -18,6 +18,13 @@ pub enum ImageKind {
 }
 
 impl ImageKind {
+    /// File extensions accepted by zipax as compression inputs.
+    pub fn supported_input_extensions() -> &'static [&'static str] {
+        &[
+            "jpg", "jpeg", "png", "webp", "avif", "heic", "heif", "tif", "tiff", "pdf",
+        ]
+    }
+
     /// Preferred file extension for this format.
     pub fn extension(&self) -> &'static str {
         match self {
@@ -65,5 +72,20 @@ impl ImageKind {
 impl std::fmt::Display for ImageKind {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.extension())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::ImageKind;
+
+    #[test]
+    fn supported_input_extensions_match_detection() {
+        for extension in ImageKind::supported_input_extensions() {
+            assert!(
+                ImageKind::from_extension(extension).is_some(),
+                "{extension} should be detected"
+            );
+        }
     }
 }

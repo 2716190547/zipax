@@ -87,6 +87,7 @@ enum FormatArg {
     Png,
     Webp,
     Avif,
+    Heic,
     Pdf,
 }
 
@@ -108,9 +109,16 @@ fn main() -> Result<()> {
             max_height,
             json,
         } => {
-            let options = build_options(
-                mode, format, level, target, metadata, overwrite, max_width, max_height,
-            );
+            let options = build_options(CompressArgs {
+                mode,
+                format,
+                level,
+                target,
+                metadata,
+                overwrite,
+                max_width,
+                max_height,
+            });
             let results = compress_batch(&files, &options)?;
 
             if json {
@@ -134,13 +142,7 @@ fn main() -> Result<()> {
         }
 
         Commands::Plan { files, mode } => {
-            let options = CompressOptions::from_mode(match mode {
-                ModeArg::Quality => CompressionMode::QualityFirst,
-                ModeArg::Balanced => CompressionMode::Balanced,
-                ModeArg::Size => CompressionMode::SizeFirst,
-                ModeArg::Advanced => CompressionMode::Advanced,
-                ModeArg::Target => CompressionMode::TargetSize,
-            });
+            let options = CompressOptions::from_mode(mode.into_mode());
 
             for file in &files {
                 match plan_compression(file, &options) {
@@ -163,7 +165,7 @@ fn main() -> Result<()> {
     Ok(())
 }
 
-fn build_options(
+struct CompressArgs {
     mode: ModeArg,
     format: FormatArg,
     level: u8,
@@ -172,46 +174,53 @@ fn build_options(
     overwrite: bool,
     max_width: Option<u32>,
     max_height: Option<u32>,
-) -> CompressOptions {
-    let compression_mode = match mode {
-        ModeArg::Quality => CompressionMode::QualityFirst,
-        ModeArg::Balanced => CompressionMode::Balanced,
-        ModeArg::Size => CompressionMode::SizeFirst,
-        ModeArg::Advanced => CompressionMode::Advanced,
-        ModeArg::Target => CompressionMode::TargetSize,
-    };
+}
 
-    let output_format = match format {
-        FormatArg::Original => OutputFormat::Original,
-        FormatArg::Jpeg => OutputFormat::Jpeg,
-        FormatArg::Png => OutputFormat::Png,
-        FormatArg::Webp => OutputFormat::Webp,
-        FormatArg::Avif => OutputFormat::Avif,
-        FormatArg::Pdf => OutputFormat::Pdf,
-    };
+impl ModeArg {
+    fn into_mode(self) -> CompressionMode {
+        let key = match self {
+            Self::Quality => "quality",
+            Self::Balanced => "balanced",
+            Self::Size => "size",
+            Self::Advanced => "advanced",
+            Self::Target => "target",
+        };
+        CompressionMode::from_key(key).unwrap_or(CompressionMode::Balanced)
+    }
+}
 
-    let quality_level = match level {
-        1 => QualityLevel::L1,
-        2 => QualityLevel::L2,
-        3 => QualityLevel::L3,
-        4 => QualityLevel::L4,
-        5 => QualityLevel::L5,
-        _ => QualityLevel::L6,
-    };
+impl FormatArg {
+    fn into_format(self) -> OutputFormat {
+        let key = match self {
+            Self::Original => "original",
+            Self::Jpeg => "jpeg",
+            Self::Png => "png",
+            Self::Webp => "webp",
+            Self::Avif => "avif",
+            Self::Heic => "heic",
+            Self::Pdf => "pdf",
+        };
+        OutputFormat::from_key(key).unwrap_or(OutputFormat::Original)
+    }
+}
+
+fn build_options(args: CompressArgs) -> CompressOptions {
+    let max_width = args.max_width;
+    let max_height = args.max_height;
 
     CompressOptions {
-        mode: compression_mode,
-        output_format,
-        level: quality_level,
-        target_size_kb: target,
-        preserve_metadata: metadata,
+        mode: args.mode.into_mode(),
+        output_format: args.format.into_format(),
+        level: QualityLevel::from_u8(args.level),
+        target_size_kb: args.target,
+        preserve_metadata: args.metadata,
         resize: zipax_core::ResizeOptions {
             enabled: max_width.is_some() || max_height.is_some(),
             max_width,
             max_height,
             allow_upscale: false,
         },
-        overwrite_original: overwrite,
+        overwrite_original: args.overwrite,
     }
 }
 

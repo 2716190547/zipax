@@ -7,6 +7,7 @@
 
 use std::path::Path;
 use std::process::Command;
+use std::sync::OnceLock;
 
 use crate::config::CompressOptions;
 use crate::error::{Error, Result};
@@ -49,6 +50,18 @@ pub fn compress(
 
 /// Find the ImageMagick executable.
 fn find_imagemagick() -> Result<String> {
+    static IMAGEMAGICK: OnceLock<Option<String>> = OnceLock::new();
+
+    if let Some(name) = IMAGEMAGICK.get_or_init(find_imagemagick_command).clone() {
+        return Ok(name);
+    }
+
+    Err(Error::Other(
+        "未找到 ImageMagick，请安装: brew install imagemagick".into(),
+    ))
+}
+
+fn find_imagemagick_command() -> Option<String> {
     // Try common names.
     for name in &["magick", "convert"] {
         if Command::new(name)
@@ -57,11 +70,9 @@ fn find_imagemagick() -> Result<String> {
             .map(|o| o.status.success())
             .unwrap_or(false)
         {
-            return Ok(name.to_string());
+            return Some(name.to_string());
         }
     }
 
-    Err(Error::Other(
-        "未找到 ImageMagick，请安装: brew install imagemagick".into(),
-    ))
+    None
 }

@@ -44,7 +44,7 @@ pub fn convert(
     let (page_width, page_height) = pdf_page_size(width, height);
     let content = format!("q\n{page_width:.2} 0 0 {page_height:.2} 0 0 cm\n/Im0 Do\nQ\n");
 
-    let objects = vec![
+    let objects = [
         "<< /Type /Catalog /Pages 2 0 R >>".as_bytes().to_vec(),
         "<< /Type /Pages /Kids [3 0 R] /Count 1 >>".as_bytes().to_vec(),
         format!(

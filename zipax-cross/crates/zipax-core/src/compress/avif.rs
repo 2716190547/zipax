@@ -23,7 +23,7 @@ pub fn compress(
         .map(|p| rgb::RGBA8::new(p[0], p[1], p[2], p[3]))
         .collect();
 
-    let img_ref = ravif::Img::new(pixels.as_slice().into(), width as usize, height as usize);
+    let img_ref = ravif::Img::new(pixels.as_slice(), width as usize, height as usize);
 
     let quality_pct = (quality * 100.0).clamp(1.0, 100.0);
 

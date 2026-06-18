@@ -2,6 +2,7 @@
 
 use std::path::Path;
 use std::process::Command;
+use std::sync::OnceLock;
 
 use crate::config::CompressOptions;
 use crate::error::{Error, Result};
@@ -45,6 +46,16 @@ pub fn compress(
 
 /// Find the Ghostscript executable.
 fn find_ghostscript() -> Result<String> {
+    static GHOSTSCRIPT: OnceLock<Option<String>> = OnceLock::new();
+
+    if let Some(name) = GHOSTSCRIPT.get_or_init(find_ghostscript_command).clone() {
+        return Ok(name);
+    }
+
+    Err(Error::GhostscriptMissing)
+}
+
+fn find_ghostscript_command() -> Option<String> {
     // Try common names.
     for name in &["gs", "gswin64c", "gswin32c"] {
         if Command::new(name)
@@ -53,11 +64,11 @@ fn find_ghostscript() -> Result<String> {
             .map(|o| o.status.success())
             .unwrap_or(false)
         {
-            return Ok(name.to_string());
+            return Some(name.to_string());
         }
     }
 
-    Err(Error::GhostscriptMissing)
+    None
 }
 
 /// Map quality float to Ghostscript PDFSETTINGS.

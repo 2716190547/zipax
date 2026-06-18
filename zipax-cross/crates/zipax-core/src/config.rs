@@ -19,6 +19,18 @@ pub enum CompressionMode {
 }
 
 impl CompressionMode {
+    /// Parse a compact UI/CLI key into a compression mode.
+    pub fn from_key(key: &str) -> Option<Self> {
+        match key {
+            "quality" => Some(Self::QualityFirst),
+            "balanced" => Some(Self::Balanced),
+            "size" => Some(Self::SizeFirst),
+            "advanced" => Some(Self::Advanced),
+            "target" | "target_size" | "target-size" => Some(Self::TargetSize),
+            _ => None,
+        }
+    }
+
     /// Default quality level for this mode.
     pub fn default_level(&self) -> QualityLevel {
         match self {
@@ -49,6 +61,18 @@ pub enum QualityLevel {
 }
 
 impl QualityLevel {
+    /// Convert a user-provided numeric level into a bounded quality level.
+    pub fn from_u8(level: u8) -> Self {
+        match level {
+            1 => Self::L1,
+            2 => Self::L2,
+            3 => Self::L3,
+            4 => Self::L4,
+            5 => Self::L5,
+            _ => Self::L6,
+        }
+    }
+
     /// Convert to a 0.0–1.0 quality float.
     pub fn to_quality_f32(&self) -> f32 {
         match self {
@@ -95,6 +119,20 @@ pub enum OutputFormat {
 }
 
 impl OutputFormat {
+    /// Parse a compact UI/CLI key into an output format.
+    pub fn from_key(key: &str) -> Option<Self> {
+        match key {
+            "original" => Some(Self::Original),
+            "jpeg" | "jpg" => Some(Self::Jpeg),
+            "png" => Some(Self::Png),
+            "webp" => Some(Self::Webp),
+            "avif" => Some(Self::Avif),
+            "heic" | "heif" => Some(Self::Heic),
+            "pdf" => Some(Self::Pdf),
+            _ => None,
+        }
+    }
+
     /// Resolve to a concrete image kind.
     pub fn resolve(&self, source: ImageKind) -> Option<ImageKind> {
         match self {
@@ -110,23 +148,12 @@ impl OutputFormat {
 }
 
 /// Resize options.
-#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct ResizeOptions {
     pub enabled: bool,
     pub max_width: Option<u32>,
     pub max_height: Option<u32>,
     pub allow_upscale: bool,
-}
-
-impl Default for ResizeOptions {
-    fn default() -> Self {
-        Self {
-            enabled: false,
-            max_width: None,
-            max_height: None,
-            allow_upscale: false,
-        }
-    }
 }
 
 /// Complete compression options for a single file.
@@ -170,5 +197,65 @@ impl CompressOptions {
             level: mode.default_level(),
             ..Default::default()
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{CompressionMode, OutputFormat, QualityLevel};
+
+    #[test]
+    fn parses_compact_mode_keys() {
+        assert_eq!(
+            CompressionMode::from_key("quality"),
+            Some(CompressionMode::QualityFirst)
+        );
+        assert_eq!(
+            CompressionMode::from_key("balanced"),
+            Some(CompressionMode::Balanced)
+        );
+        assert_eq!(
+            CompressionMode::from_key("size"),
+            Some(CompressionMode::SizeFirst)
+        );
+        assert_eq!(
+            CompressionMode::from_key("advanced"),
+            Some(CompressionMode::Advanced)
+        );
+        assert_eq!(
+            CompressionMode::from_key("target"),
+            Some(CompressionMode::TargetSize)
+        );
+        assert_eq!(
+            CompressionMode::from_key("target-size"),
+            Some(CompressionMode::TargetSize)
+        );
+        assert_eq!(CompressionMode::from_key("unknown"), None);
+    }
+
+    #[test]
+    fn parses_compact_output_format_keys() {
+        assert_eq!(
+            OutputFormat::from_key("original"),
+            Some(OutputFormat::Original)
+        );
+        assert_eq!(OutputFormat::from_key("jpg"), Some(OutputFormat::Jpeg));
+        assert_eq!(OutputFormat::from_key("jpeg"), Some(OutputFormat::Jpeg));
+        assert_eq!(OutputFormat::from_key("png"), Some(OutputFormat::Png));
+        assert_eq!(OutputFormat::from_key("webp"), Some(OutputFormat::Webp));
+        assert_eq!(OutputFormat::from_key("avif"), Some(OutputFormat::Avif));
+        assert_eq!(OutputFormat::from_key("heic"), Some(OutputFormat::Heic));
+        assert_eq!(OutputFormat::from_key("heif"), Some(OutputFormat::Heic));
+        assert_eq!(OutputFormat::from_key("pdf"), Some(OutputFormat::Pdf));
+        assert_eq!(OutputFormat::from_key("gif"), None);
+    }
+
+    #[test]
+    fn converts_numeric_quality_levels() {
+        assert_eq!(QualityLevel::from_u8(1), QualityLevel::L1);
+        assert_eq!(QualityLevel::from_u8(3), QualityLevel::L3);
+        assert_eq!(QualityLevel::from_u8(6), QualityLevel::L6);
+        assert_eq!(QualityLevel::from_u8(0), QualityLevel::L6);
+        assert_eq!(QualityLevel::from_u8(99), QualityLevel::L6);
     }
 }

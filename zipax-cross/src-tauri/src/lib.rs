@@ -2,10 +2,16 @@
 
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+mod autostart;
 mod commands;
+mod compression_options;
+mod file_commands;
+mod state;
+mod tray_commands;
+mod watch_commands;
 mod watcher;
 
-use commands::{AppBehaviorState, TrayMenuState, WatcherState};
+use state::{AppBehaviorState, TrayMenuState, WatcherState};
 use std::{thread, time::Duration};
 #[cfg(target_os = "macos")]
 use tauri::ActivationPolicy;
@@ -47,9 +53,7 @@ pub fn run() {
                 return;
             }
             if let WindowEvent::CloseRequested { api, .. } = event {
-                let should_hide = window
-                    .state::<AppBehaviorState>()
-                    .close_to_tray();
+                let should_hide = window.state::<AppBehaviorState>().close_to_tray();
                 if should_hide {
                     api.prevent_close();
                     let _ = window.hide();
@@ -62,7 +66,8 @@ pub fn run() {
         })
         .setup(|app| {
             #[cfg(desktop)]
-            app.handle().plugin(tauri_plugin_updater::Builder::new().build())?;
+            app.handle()
+                .plugin(tauri_plugin_updater::Builder::new().build())?;
 
             // 创建系统托盘菜单
             let open_item = MenuItemBuilder::with_id("open", "打开 zipax").build(app)?;
@@ -97,7 +102,11 @@ pub fn run() {
 
             // 创建托盘图标
             let _tray = TrayIconBuilder::new()
-                .icon(Image::new(include_bytes!("../icons/tray-icon-44.rgba"), 44, 44))
+                .icon(Image::new(
+                    include_bytes!("../icons/tray-icon-44.rgba"),
+                    44,
+                    44,
+                ))
                 .icon_as_template(true)
                 .menu(&menu)
                 .tooltip("zipax - 图片压缩")
@@ -111,10 +120,10 @@ pub fn run() {
                         }
                     }
                     "toggle_updates" => {
-                        commands::toggle_tray_updates(app);
+                        tray_commands::toggle_tray_updates(app);
                     }
                     "toggle_automation" => {
-                        commands::toggle_tray_automation(app);
+                        tray_commands::toggle_tray_automation(app);
                     }
                     "quit" => {
                         app.exit(0);
@@ -127,7 +136,7 @@ pub fn run() {
                 let _ = window.set_maximizable(false);
             }
 
-            commands::refresh_autostart_registration();
+            autostart::refresh_autostart_registration();
 
             #[cfg(debug_assertions)]
             {
@@ -141,15 +150,15 @@ pub fn run() {
             commands::compress_batch,
             commands::plan_compression,
             commands::get_app_info,
-            commands::set_autostart_enabled,
-            commands::get_autostart_enabled,
-            commands::set_close_to_tray_enabled,
-            commands::get_close_to_tray_enabled,
-            commands::set_tray_status,
-            commands::watch_folder,
-            commands::stop_all_watchers,
-            commands::save_temp_image,
-            commands::copy_file,
+            autostart::set_autostart_enabled,
+            autostart::get_autostart_enabled,
+            tray_commands::set_close_to_tray_enabled,
+            tray_commands::get_close_to_tray_enabled,
+            tray_commands::set_tray_status,
+            watch_commands::watch_folder,
+            watch_commands::stop_all_watchers,
+            file_commands::save_temp_image,
+            file_commands::copy_file,
         ])
         .run(tauri::generate_context!())
         .expect("启动 zipax 失败");
