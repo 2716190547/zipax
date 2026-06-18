@@ -1,0 +1,221 @@
+.zipax-app {
+  width: var(--zipax-content-width);
+  display: block;
+  overflow: hidden;
+  border-radius: var(--zipax-window-radius);
+  background: transparent;
+}
+
+.zipax-shell {
+  width: 100%;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto auto auto;
+  overflow: hidden;
+  isolation: isolate;
+  border: 1px solid color-mix(in oklab, var(--border) 78%, transparent);
+  border-radius: var(--zipax-window-radius);
+  background: var(--background);
+}
+
+.zipax-header {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  padding: 8px 14px 12px;
+  background: var(--background);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.zipax-titlebar {
+  position: relative;
+  width: 100%;
+  min-height: 30px;
+  display: grid;
+  grid-template-columns: minmax(74px, 1fr) auto minmax(74px, 1fr);
+  align-items: center;
+}
+
+.window-controls {
+  grid-column: 3;
+  justify-self: end;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  -webkit-app-region: no-drag;
+}
+
+.window-control-button {
+  width: 34px;
+  min-width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  color: var(--muted);
+  background: transparent;
+  border: 1px solid transparent;
+}
+
+.window-control-button:hover {
+  color: var(--foreground);
+  background: color-mix(in oklab, var(--surface-tertiary) 58%, transparent);
+}
+
+.zipax-title {
+  grid-column: 2;
+  margin: 0;
+  color: var(--foreground);
+  font-size: 22px;
+  font-weight: 780;
+  line-height: 1;
+  letter-spacing: 0;
+}
+
+.zipax-tabs {
+  width: max-content;
+}
+
+.zipax-tab-list {
+  width: max-content;
+  gap: 12px;
+  justify-content: center;
+  overflow: visible;
+  background: transparent;
+  padding: 0;
+}
+
+.zipax-tab {
+  width: 60px;
+  height: 56px;
+  padding-inline: 4px;
+  border-radius: 16px;
+  color: var(--muted);
+  transition:
+    color var(--motion-fast) var(--motion-ease),
+    border-color var(--motion-fast) var(--motion-ease),
+    background-color var(--motion-fast) var(--motion-ease),
+    box-shadow var(--motion-fast) var(--motion-ease),
+    transform var(--motion-fast) var(--motion-ease);
+}
+
+.zipax-tab[data-selected="true"] {
+  color: var(--accent);
+  border: 1px solid color-mix(in oklab, var(--accent) 34%, transparent);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in oklab, var(--accent) 14%, var(--surface)) 0%,
+      color-mix(in oklab, var(--accent) 8%, var(--surface)) 100%
+    );
+  box-shadow:
+    0 10px 24px color-mix(in oklab, var(--accent) 18%, transparent),
+    inset 0 1px 0 color-mix(in oklab, var(--accent-foreground) 46%, transparent);
+}
+
+.zipax-tab:active {
+  transform: translateY(1px);
+}
+
+.zipax-tab-content {
+  width: 100%;
+  height: 100%;
+}
+
+.zipax-tab-title {
+  height: 100%;
+  min-width: 0;
+  padding-inline: 3px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 520;
+  line-height: 1.05;
+  text-align: center;
+}
+
+.zipax-tab[data-selected="true"] .zipax-tab-title {
+  font-weight: 720;
+}
+
+.zipax-tab-icon {
+  display: grid;
+  place-items: center;
+}
+
+.zipax-tab-title > span:last-child {
+  max-width: 100%;
+  min-width: 0;
+  display: -webkit-box;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+html:not([lang^="zh"]):not([lang^="ja"]):not([lang^="ko"]) .zipax-tab-title > span:last-child {
+  font-size: 11px;
+  line-height: 1.05;
+}
+
+.zipax-content {
+  width: 100%;
+  background: color-mix(in oklab, var(--background) 96%, var(--surface-secondary));
+  box-sizing: border-box;
+}
+
+.zipax-page-frame {
+  width: 100%;
+  padding: var(--zipax-gap);
+  box-sizing: border-box;
+  animation: page-frame-in var(--motion-medium) var(--motion-ease) both;
+}
+
+.zipax-card {
+  padding: 0;
+  gap: 0;
+  overflow: visible;
+  border: 1px solid color-mix(in oklab, var(--border) 72%, transparent);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  border-color: color-mix(in oklab, var(--border) 72%, transparent);
+  box-shadow: var(--shadow-card);
+  animation: card-in var(--motion-medium) var(--motion-ease) both;
+}
+
+.view-stack {
+  display: grid;
+  gap: 10px;
+}
+
+.view-stack > *:nth-child(1) {
+  animation-delay: 0ms;
+}
+
+.view-stack > *:nth-child(2) {
+  animation-delay: 18ms;
+}
+
+.view-stack > *:nth-child(3) {
+  animation-delay: 36ms;
+}
+
+.view-stack > *:nth-child(4) {
+  animation-delay: 54ms;
+}
+
+.settings-section {
+  display: grid;
+  gap: 10px;
+}
+.dark .zipax-tab[data-selected="true"] {
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in oklab, var(--accent) 24%, var(--background)) 0%,
+      color-mix(in oklab, var(--accent) 15%, var(--background)) 100%
+    );
+}

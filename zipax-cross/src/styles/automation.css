@@ -1,0 +1,50 @@
+.folder-rule-item {
+  display: grid;
+  gap: 0;
+  border: 1px solid transparent;
+  border-radius: var(--radius-section);
+  overflow: hidden;
+  transition:
+    border-color var(--motion-fast) var(--motion-ease),
+    background-color var(--motion-fast) var(--motion-ease);
+}
+
+.folder-rule-item.is-open {
+  border-color: color-mix(in oklab, var(--border) 60%, transparent);
+  background: color-mix(in oklab, var(--surface-secondary) 36%, transparent);
+}
+
+.folder-rule-row {
+  min-height: 46px;
+  gap: 7px;
+  padding-block: 7px;
+  border-radius: var(--radius-section);
+}
+
+.folder-rule-row .tool-icon-button {
+  width: 30px;
+  height: 30px;
+  min-width: 30px;
+}
+
+.folder-rule-row.is-open {
+  border-color: transparent;
+  border-bottom-color: color-mix(in oklab, var(--border) 42%, transparent);
+  border-radius: var(--radius-section) var(--radius-section) 0 0;
+  background: transparent;
+}
+
+.folder-rule-config {
+  margin: 0;
+  padding: 8px 10px 10px;
+  border-top: 1px solid color-mix(in oklab, var(--border) 38%, transparent);
+  background: color-mix(in oklab, var(--surface-secondary) 36%, transparent);
+  animation: config-tray-in var(--motion-medium) var(--motion-ease);
+}
+
+.folder-rule-config .config-panel {
+  border: 0;
+  border-radius: 0 0 calc(var(--radius-section) - 2px) calc(var(--radius-section) - 2px);
+  background: transparent;
+  box-shadow: none;
+}

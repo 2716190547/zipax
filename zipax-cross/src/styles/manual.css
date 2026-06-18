@@ -1,0 +1,49 @@
+.drop-toolbar {
+  position: absolute;
+  z-index: 40;
+  top: 7px;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.manual-compression-surface {
+  position: relative;
+  overflow: visible;
+}
+.drop-zone {
+  min-height: 168px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 10px;
+  border-radius: var(--radius-card);
+  cursor: pointer;
+  transition:
+    background-color var(--motion-fast) var(--motion-ease),
+    color var(--motion-fast) var(--motion-ease),
+    transform var(--motion-fast) var(--motion-ease);
+}
+
+.drop-zone:active {
+  transform: translateY(1px);
+}
+
+.drop-title {
+  margin: 0;
+  color: var(--foreground);
+  font-size: 21px;
+  font-weight: 680;
+  line-height: 1.1;
+  text-align: center;
+}
+
+.drop-subtitle {
+  margin: 5px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.1;
+  text-align: center;
+}

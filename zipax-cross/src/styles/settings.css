@@ -1,0 +1,28 @@
+.settings-check-update-btn {
+  border-radius: var(--radius-control) !important;
+}
+
+.settings-update-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.settings-update-hint {
+  max-width: 128px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.settings-update-hint.is-success {
+  color: var(--success);
+}
+
+.settings-update-hint.is-danger {
+  color: var(--danger);
+}

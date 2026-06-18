@@ -1,6 +1,7 @@
 import { check } from "@tauri-apps/plugin-updater";
 import { relaunch } from "@tauri-apps/plugin-process";
 import type { Update } from "@tauri-apps/plugin-updater";
+import { getAppInfo } from "@/lib/tauri";
 
 export type UpdateCheckResult =
   | { status: "latest"; currentVersion: string }
@@ -12,7 +13,6 @@ export async function checkForUpdate(): Promise<UpdateCheckResult> {
   const update = await check();
 
   if (!update) {
-    const { getAppInfo } = await import("@/lib/tauri");
     const appInfo = await getAppInfo();
     return { status: "latest", currentVersion: appInfo.version };
   }

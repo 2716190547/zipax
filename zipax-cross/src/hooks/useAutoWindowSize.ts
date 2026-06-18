@@ -1,5 +1,6 @@
 import { useEffect, useRef, type RefObject } from "react";
 import { getCurrentWindow, LogicalSize } from "@tauri-apps/api/window";
+import { safeWarn } from "@/lib/utils";
 
 const SIZE_TOLERANCE = 1;
 const MIN_CONTENT_WIDTH = 430;
@@ -119,10 +120,10 @@ export function useAutoWindowSize(
         animationFrame.current = requestAnimationFrame(() => {
           resizeToContent()
             .catch((error) => {
-              console.warn("Failed to sync zipax window size", error);
+              safeWarn("Failed to sync zipax window size", error);
               if (!didShowWindow.current) {
                 appWindow.show().catch((showError) => {
-                  console.warn("Failed to show zipax window", showError);
+                  safeWarn("Failed to show zipax window", showError);
                 });
                 didShowWindow.current = true;
               }

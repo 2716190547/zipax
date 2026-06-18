@@ -1,127 +1,34 @@
-import { useEffect, useState, useCallback } from "react";
 import { Button, Tooltip } from "@heroui/react";
-import { open } from "@tauri-apps/plugin-dialog";
 import { useI18n } from "@/i18n";
-import { useAppStore, type FolderRule } from "@/store/app";
-import { watchFolder, stopAllWatchers, type WatchFolderRequest } from "@/lib/tauri";
+import { useAppStore } from "@/store/app";
+import { formatBytes } from "@/lib/format";
+import { getRuleEditorValue, useAutomationRules } from "@/hooks/useAutomationRules";
 import { HeroSwitch, SettingsCard, SettingTitle, SettingRow, FolderRuleRow } from "@/components/ui";
-import { CompressionSettingsEditor, type CompressionSettingsEditorValue } from "@/components/CompressionSettingsEditor";
+import { CompressionSettingsEditor } from "@/components/CompressionSettingsEditor";
 import { Zap, Folder, AlertTriangle, Plus, Trash2 } from "@/components/icons";
 
 export default function AutomationView() {
   const { t } = useI18n();
+  const errorRecords = useAppStore((s) => s.errorRecords);
+  const clearErrorRecords = useAppStore((s) => s.clearErrorRecords);
+  const totalSaved = useAppStore((s) => s.totalSaved);
   const {
-    folderRules, addFolderRule, updateFolderRule, removeFolderRule,
-    ensureUniqueFolderRuleIds,
-    errorRecords, clearErrorRecords,
-    globalAutomationEnabled, setGlobalAutomationEnabled,
-    totalSaved,
-  } = useAppStore();
-
-  const [expandedRuleId, setExpandedRuleId] = useState<string | null>(null);
-
-  useEffect(() => {
-    ensureUniqueFolderRuleIds();
-  }, [ensureUniqueFolderRuleIds]);
-
-  const buildWatchRequest = useCallback((rule: FolderRule): WatchFolderRequest => ({
-    path: rule.path,
-    auto_compress: true,
-    mode: rule.compressionMode,
-    format: rule.outputFormat,
-    level: rule.level,
-    target_size_kb: rule.targetSizeKB,
-    target_size_percent: rule.targetSizePercent,
-    preserve_metadata: rule.preserveMetadata,
-    overwrite: rule.outputFormat === "pdf" ? false : rule.overwriteOriginal,
-    max_width: rule.maxWidth,
-    max_height: rule.maxHeight,
-    allow_upscale: false,
-  }), []);
-
-  useEffect(() => {
-    let cancelled = false;
-    const syncWatchers = async () => {
-      await stopAllWatchers();
-      if (!globalAutomationEnabled || cancelled) return;
-
-      for (const rule of folderRules.filter((r) => r.isEnabled)) {
-        if (cancelled) return;
-        try {
-          await watchFolder(buildWatchRequest(rule));
-        } catch { /* Keep syncing the rest of the rules. */ }
-      }
-    };
-
-    syncWatchers();
-    return () => {
-      cancelled = true;
-    };
-  }, [buildWatchRequest, folderRules, globalAutomationEnabled]);
-
-  const addFolder = useCallback(async () => {
-    try {
-      const selected = await open({ directory: true, multiple: false });
-      if (selected && typeof selected === "string") {
-        addFolderRule({
-          path: selected, isEnabled: true, overwriteOriginal: true,
-          compressionMode: "balanced", outputFormat: "original",
-          level: 3, targetSizePercent: 60, preserveMetadata: false,
-        });
-      }
-    } catch { /* cancelled */ }
-  }, [addFolderRule]);
-
-  const handleToggleGlobal = useCallback(async (enabled: boolean) => {
-    setGlobalAutomationEnabled(enabled);
-  }, [setGlobalAutomationEnabled]);
-
-  const handleToggle = useCallback((id: string, enabled: boolean) => {
-    updateFolderRule(id, { isEnabled: enabled });
-  }, [updateFolderRule]);
-
-  const handleDelete = useCallback(async (id: string) => {
-    removeFolderRule(id);
-    setExpandedRuleId((current) => {
-      if (current === id) return null;
-      return folderRules.some((rule) => rule.id !== id && rule.id === current) ? current : null;
-    });
-  }, [folderRules, removeFolderRule]);
-
-  const handleEditRule = useCallback((id: string) => {
-    setExpandedRuleId((current) => (current === id ? null : id));
-  }, []);
-
-  const updateRuleSettings = useCallback((id: string, patch: Partial<CompressionSettingsEditorValue>) => {
-    const next: Partial<FolderRule> = {};
-    if (patch.mode !== undefined) next.compressionMode = patch.mode;
-    if (patch.format !== undefined) {
-      next.outputFormat = patch.format;
-      if (patch.format === "pdf") next.overwriteOriginal = false;
-    }
-    if (patch.level !== undefined) next.level = patch.level;
-    if ("targetSizeKB" in patch) next.targetSizeKB = patch.targetSizeKB;
-    if ("targetSizePercent" in patch) next.targetSizePercent = patch.targetSizePercent;
-    if (patch.overwrite !== undefined) next.overwriteOriginal = patch.overwrite;
-    if (next.outputFormat === "pdf") next.overwriteOriginal = false;
-    if (patch.preserveMetadata !== undefined) next.preserveMetadata = patch.preserveMetadata;
-    if ("maxWidth" in patch) next.maxWidth = patch.maxWidth;
-    if ("maxHeight" in patch) next.maxHeight = patch.maxHeight;
-    updateFolderRule(id, next);
-  }, [updateFolderRule]);
-
-  const formatSaved = (bytes: number) => {
-    if (bytes >= 1073741824) return `${(bytes / 1073741824).toFixed(1)} GB`;
-    if (bytes >= 1048576) return `${(bytes / 1048576).toFixed(1)} MB`;
-    if (bytes >= 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    return `${bytes} B`;
-  };
+    folderRules,
+    expandedRuleId,
+    globalAutomationEnabled,
+    setGlobalAutomationEnabled,
+    addFolder,
+    toggleRule,
+    deleteRule,
+    toggleRuleEditor,
+    updateRuleSettings,
+  } = useAutomationRules();
 
   return (
     <div className="view-stack">
       <SettingsCard>
-        <SettingRow icon={<Zap size={16} strokeWidth={1.75} />} title={t("automation.autoCompressionSaved", { saved: formatSaved(totalSaved) })}>
-          <HeroSwitch isSelected={globalAutomationEnabled} onChange={handleToggleGlobal} />
+        <SettingRow icon={<Zap size={16} strokeWidth={1.75} />} title={t("automation.autoCompressionSaved", { saved: formatBytes(totalSaved) })}>
+          <HeroSwitch isSelected={globalAutomationEnabled} onChange={setGlobalAutomationEnabled} />
         </SettingRow>
       </SettingsCard>
 
@@ -162,9 +69,9 @@ export default function AutomationView() {
                     isEnabled={rule.isEnabled}
                     lastProcessedAt={rule.lastProcessedAt}
                     isConfigOpen={isConfigOpen}
-                    onToggle={(enabled) => handleToggle(rule.id, enabled)}
-                    onEdit={() => handleEditRule(rule.id)}
-                    onDelete={() => handleDelete(rule.id)}
+                    onToggle={(enabled) => toggleRule(rule.id, enabled)}
+                    onEdit={() => toggleRuleEditor(rule.id)}
+                    onDelete={() => deleteRule(rule.id)}
                   />
                   {isConfigOpen && (
                     <div className="folder-rule-config">
@@ -172,18 +79,7 @@ export default function AutomationView() {
                         compact
                         embedded
                         layout="panel"
-                        value={{
-                          mode: rule.compressionMode,
-                          format: rule.outputFormat,
-                          level: rule.level,
-                          targetSizeKB: rule.targetSizeKB,
-                          targetSizePercent: rule.targetSizePercent,
-                          overwrite: rule.overwriteOriginal,
-                          preserveMetadata: rule.preserveMetadata,
-                          maxWidth: rule.maxWidth,
-                          maxHeight: rule.maxHeight,
-                          allowUpscale: false,
-                        }}
+                        value={getRuleEditorValue(rule)}
                         onChange={(patch) => updateRuleSettings(rule.id, patch)}
                       />
                     </div>

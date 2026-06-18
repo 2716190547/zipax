@@ -1,0 +1,434 @@
+.surface-stack {
+  display: grid;
+  gap: 6px;
+}
+
+.surface-stack.is-loose {
+  gap: 8px;
+}
+
+.surface-row,
+.surface-panel {
+  border: 1px solid color-mix(in oklab, var(--border) 68%, transparent);
+  border-radius: var(--radius-section);
+  background: color-mix(in oklab, var(--surface-secondary) 66%, transparent);
+}
+
+.surface-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 36px;
+  padding: 7px 10px;
+}
+
+.surface-row.is-interactive {
+  transition:
+    background-color var(--motion-fast) var(--motion-ease),
+    border-color var(--motion-fast) var(--motion-ease),
+    transform var(--motion-fast) var(--motion-ease);
+}
+
+.surface-row.is-interactive:hover {
+  background: color-mix(in oklab, var(--surface-tertiary) 72%, transparent);
+}
+
+.surface-copy {
+  min-width: 0;
+}
+
+.surface-title {
+  margin: 0;
+  color: var(--foreground);
+  font-size: 13px;
+  font-weight: 640;
+  line-height: 1.15;
+}
+
+.surface-detail {
+  margin: 2px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 520;
+  line-height: 1.2;
+}
+
+.surface-detail.text-success {
+  color: var(--success);
+}
+
+.surface-detail.text-danger {
+  color: var(--danger);
+}
+
+.compression-list-card {
+  overflow: hidden;
+}
+
+.compression-list-content {
+  padding: 0;
+}
+
+.compression-result-list {
+  display: grid;
+}
+
+.compression-result-row {
+  position: relative;
+  min-height: 46px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: transparent;
+  border-bottom: 1px solid color-mix(in oklab, var(--separator) 74%, transparent);
+  transition:
+    background-color var(--motion-fast) var(--motion-ease),
+    color var(--motion-fast) var(--motion-ease);
+}
+
+.compression-result-row:last-child {
+  border-bottom: 0;
+}
+
+.compression-result-row:hover {
+  background: color-mix(in oklab, var(--surface-secondary) 48%, transparent);
+}
+
+.compression-status-icon {
+  width: 20px;
+  height: 20px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 20px;
+  color: var(--icon-muted);
+}
+
+.compression-result-row.is-done .compression-status-icon {
+  color: var(--success);
+}
+
+.compression-result-row.is-compressing .compression-status-icon {
+  color: var(--accent);
+}
+
+.compression-result-row.is-preparing .compression-status-icon,
+.compression-result-row.is-pending .compression-status-icon {
+  color: var(--accent);
+}
+
+.compression-result-row.is-error .compression-status-icon {
+  color: var(--danger);
+}
+
+.compression-result-copy {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.compression-result-copy .surface-title {
+  font-size: 12px;
+  font-weight: 620;
+  line-height: 1.12;
+}
+
+.compression-result-copy .surface-detail {
+  margin-top: 3px;
+  font-size: 10.5px;
+  font-weight: 500;
+  line-height: 1.12;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.compression-result-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 0 0 auto;
+}
+
+.compression-save-button {
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  color: var(--icon-subtle);
+  background: transparent !important;
+}
+
+.compression-save-button:hover {
+  color: var(--muted);
+  background: color-mix(in oklab, var(--surface-tertiary) 58%, transparent) !important;
+}
+
+.compression-delete-button {
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  color: var(--icon-subtle);
+}
+
+.compression-delete-button:hover {
+  color: var(--muted);
+  background: color-mix(in oklab, var(--surface-tertiary) 58%, transparent) !important;
+}
+
+.manual-action-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.manual-clear-button {
+  width: 34px;
+  height: 34px;
+  min-width: 34px;
+  color: var(--icon-muted);
+  background: color-mix(in oklab, var(--surface-tertiary) 68%, transparent) !important;
+}
+
+.manual-clear-button:hover {
+  color: var(--danger);
+  background: color-mix(in oklab, var(--surface-tertiary) 78%, transparent) !important;
+}
+
+.update-status-text {
+  max-width: 118px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 560;
+  line-height: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.update-status-text.is-available {
+  color: var(--accent);
+}
+
+.update-status-text.is-error {
+  color: var(--danger);
+}
+
+.update-status-text.is-latest {
+  color: var(--success);
+}
+
+.update-prompt {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 54px;
+  padding: 10px 12px;
+  border: 1px solid color-mix(in oklab, var(--accent) 24%, var(--border));
+  border-radius: var(--radius-section);
+  background: color-mix(in oklab, var(--accent) 8%, var(--surface));
+  box-shadow: 0 10px 24px color-mix(in oklab, var(--accent) 10%, transparent);
+  animation: card-in var(--motion-medium) var(--motion-ease) both;
+}
+
+.update-prompt-icon {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  color: var(--accent);
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--accent) 12%, transparent);
+}
+
+.update-prompt-copy {
+  min-width: 0;
+}
+
+.update-prompt-title,
+.update-prompt-detail {
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.update-prompt-title {
+  color: var(--foreground);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.update-prompt-detail {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 520;
+  line-height: 1.2;
+}
+
+.update-prompt-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.is-spinning {
+  animation: icon-spin 900ms linear infinite;
+}
+
+.info-button {
+  width: 20px;
+  height: 20px;
+  display: inline-grid;
+  place-items: center;
+  color: var(--icon-subtle);
+  cursor: help;
+}
+
+.info-button:hover {
+  color: var(--muted);
+}
+
+.setting-info-button {
+  width: 20px;
+  height: 20px;
+  display: inline-grid;
+  place-items: center;
+  align-self: center;
+  transform: translateY(1px);
+  color: color-mix(in oklab, var(--icon-muted) 64%, transparent);
+  cursor: help;
+}
+
+.setting-info-button:hover {
+  color: var(--icon-muted);
+}
+
+.config-info-button {
+  width: 18px;
+  height: 18px;
+  display: inline-grid;
+  place-items: center;
+  color: var(--icon-subtle);
+  cursor: help;
+}
+
+.config-info-button.is-sm {
+  width: 18px;
+  height: 18px;
+  color: color-mix(in oklab, var(--icon-subtle) 82%, transparent);
+}
+
+.config-info-button:hover {
+  color: var(--muted);
+}
+
+.tool-icon-button {
+  color: var(--icon-muted);
+  background: transparent !important;
+  border-radius: var(--radius-control);
+  transition:
+    background-color var(--motion-fast) var(--motion-ease),
+    color var(--motion-fast) var(--motion-ease),
+    transform var(--motion-fast) var(--motion-ease);
+}
+
+.tool-icon-button:hover {
+  color: var(--foreground);
+  background: color-mix(in oklab, var(--surface-tertiary) 58%, transparent) !important;
+}
+
+.tool-icon-button:active {
+  transform: translateY(1px);
+  background: color-mix(in oklab, var(--surface-tertiary) 82%, transparent) !important;
+}
+
+.tool-icon-button.is-danger {
+  color: var(--icon-muted);
+}
+
+.tool-icon-button.is-danger:hover {
+  color: var(--muted);
+  background: color-mix(in oklab, var(--surface-tertiary) 58%, transparent) !important;
+}
+
+.tool-icon-button.config-toggle-button[data-open="true"] {
+  color: var(--accent);
+  background: color-mix(in oklab, var(--accent) 10%, transparent) !important;
+}
+
+.settings-card-body {
+  padding: 11px 14px;
+}
+
+.setting-row {
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.setting-title {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.setting-icon {
+  width: 22px;
+  height: 22px;
+  flex: 0 0 22px;
+  display: grid;
+  place-items: center;
+  color: var(--icon-muted);
+}
+
+.setting-icon svg {
+  width: 19px;
+  height: 19px;
+  stroke-width: 2;
+}
+
+.setting-title-text {
+  color: var(--foreground);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+
+.stat-card {
+  flex: 1;
+  min-width: 0;
+  padding: 9px 12px;
+  border-radius: var(--radius-section);
+  background: color-mix(in oklab, var(--surface-secondary) 72%, transparent);
+}
+
+.stat-title {
+  margin: 0;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 620;
+  line-height: 1;
+}
+
+.stat-value-row {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.stat-value {
+  color: var(--foreground);
+  font-size: 22px;
+  font-weight: 740;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}

@@ -1,151 +1,64 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { CompressResponse } from "@/lib/tauri";
+import type { AppState } from "./types";
+import { compressionDefaultLevels, genId, isCompressedFile } from "./utils";
 
-export type CompressionMode = "quality" | "balanced" | "size" | "advanced" | "target";
-export type OutputFormat = "original" | "jpeg" | "png" | "webp" | "avif" | "heic" | "pdf";
-export type AppearanceMode = "system" | "light" | "dark";
-export type ThemeColor = "blue" | "emerald" | "violet" | "amber" | "rose" | "slate" | "claude";
-export type LanguageMode =
-  | "system"
-  | "en-US"
-  | "zh-CN"
-  | "zh-TW"
-  | "es-ES"
-  | "ar"
-  | "id-ID"
-  | "pt-BR"
-  | "fr-FR"
-  | "ja-JP"
-  | "ko-KR";
-export type TabKey = "image" | "general" | "workflow" | "automation" | "dependencies" | "about";
+export type {
+  AppState,
+  AppearanceMode,
+  AvailableUpdate,
+  CompressionItem,
+  CompressionMode,
+  ErrorRecord,
+  FolderRule,
+  LanguageMode,
+  NewCompressionItem,
+  OutputFormat,
+  TabKey,
+  ThemeColor,
+} from "./types";
+export { isCompressedFile };
 
-export interface AvailableUpdate {
-  currentVersion: string;
-  latestVersion: string;
-  downloadUrl: string;
-}
+const persistCompressionSettings = (state: AppState) => ({
+  mode: state.mode,
+  format: state.format,
+  level: state.level,
+  targetSizeKB: state.targetSizeKB,
+  targetSizePercent: state.targetSizePercent,
+  preserveMetadata: state.preserveMetadata,
+  overwrite: state.overwrite,
+  maxWidth: state.maxWidth,
+  maxHeight: state.maxHeight,
+  allowUpscale: state.allowUpscale,
+});
 
-/** 检查文件名是否是已压缩文件（#C 后缀） */
-export function isCompressedFile(name: string): boolean {
-  const baseName = name.replace(/\.[^.]+$/, ""); // 去掉扩展名
-  if (baseName.endsWith("#C")) return true;
-  return /#C-\d+$/.test(baseName);
-}
+const persistWorkflowSettings = (state: AppState) => ({
+  autoCopyAfterCompression: state.autoCopyAfterCompression,
+  skipCompressedFiles: state.skipCompressedFiles,
+  appearanceMode: state.appearanceMode,
+  themeColor: state.themeColor,
+  languageMode: state.languageMode,
+  autoCheckUpdates: state.autoCheckUpdates,
+  closeToTray: state.closeToTray,
+  globalAutomationEnabled: state.globalAutomationEnabled,
+});
 
-export interface CompressionItem {
-  id: string;
-  name: string;
-  path: string;
-  originalBytes: number;
-  result?: CompressResponse;
-  status: "preparing" | "pending" | "compressing" | "done" | "error";
-  error?: string;
-}
+const persistAutomationState = (state: AppState) => ({
+  folderRules: state.folderRules,
+  errorRecords: state.errorRecords,
+});
 
-type NewCompressionItem = Omit<CompressionItem, "id" | "status"> & {
-  status?: CompressionItem["status"];
-};
+const persistStats = (state: AppState) => ({
+  totalSaved: state.totalSaved,
+  totalCount: state.totalCount,
+});
 
-export interface ErrorRecord {
-  id: string;
-  fileName: string;
-  reason: string;
-  occurredAt: Date;
-}
-
-export interface FolderRule {
-  id: string;
-  path: string;
-  isEnabled: boolean;
-  overwriteOriginal: boolean;
-  compressionMode: CompressionMode;
-  outputFormat: OutputFormat;
-  level: number;
-  targetSizeKB?: number;
-  targetSizePercent?: number;
-  preserveMetadata: boolean;
-  maxWidth?: number;
-  maxHeight?: number;
-  lastProcessedAt?: string;
-}
-
-interface AppState {
-  // UI state (transient — not persisted)
-  activeTab: TabKey;
-  setActiveTab: (tab: TabKey) => void;
-  availableUpdate: AvailableUpdate | null;
-  setAvailableUpdate: (update: AvailableUpdate | null) => void;
-
-  // Compression settings (persisted)
-  mode: CompressionMode;
-  format: OutputFormat;
-  level: number;
-  targetSizeKB: number;
-  targetSizePercent: number;
-  preserveMetadata: boolean;
-  overwrite: boolean;
-  maxWidth?: number;
-  maxHeight?: number;
-  allowUpscale: boolean;
-
-  setMode: (mode: CompressionMode) => void;
-  setFormat: (format: OutputFormat) => void;
-  setLevel: (level: number) => void;
-  setTargetSizeKB: (kb: number) => void;
-  setTargetSizePercent: (percent: number) => void;
-  setPreserveMetadata: (v: boolean) => void;
-  setOverwrite: (v: boolean) => void;
-  setMaxWidth: (w?: number) => void;
-  setMaxHeight: (h?: number) => void;
-  setAllowUpscale: (v: boolean) => void;
-
-  // Workflow settings (persisted)
-  autoCopyAfterCompression: boolean;
-  skipCompressedFiles: boolean;
-  appearanceMode: AppearanceMode;
-  themeColor: ThemeColor;
-  languageMode: LanguageMode;
-  autoCheckUpdates: boolean;
-  closeToTray: boolean;
-  globalAutomationEnabled: boolean;
-  setAutoCopyAfterCompression: (v: boolean) => void;
-  setSkipCompressedFiles: (v: boolean) => void;
-  setAppearanceMode: (v: AppearanceMode) => void;
-  setThemeColor: (v: ThemeColor) => void;
-  setLanguageMode: (v: LanguageMode) => void;
-  setAutoCheckUpdates: (v: boolean) => void;
-  setCloseToTray: (v: boolean) => void;
-  setGlobalAutomationEnabled: (v: boolean) => void;
-
-  // Folder rules (persisted)
-  folderRules: FolderRule[];
-  addFolderRule: (rule: Omit<FolderRule, "id">) => void;
-  updateFolderRule: (id: string, patch: Partial<FolderRule>) => void;
-  removeFolderRule: (id: string) => void;
-  ensureUniqueFolderRuleIds: () => void;
-
-  // Items (transient — not persisted)
-  items: CompressionItem[];
-  addItem: (item: NewCompressionItem) => string;
-  removeItem: (id: string) => void;
-  clearItems: () => void;
-  updateItem: (id: string, patch: Partial<CompressionItem>) => void;
-
-  // Error records (persisted)
-  errorRecords: ErrorRecord[];
-  addErrorRecord: (record: Omit<ErrorRecord, "id">) => void;
-  clearErrorRecords: () => void;
-
-  // Stats (persisted)
-  totalSaved: number;
-  totalCount: number;
-  recordCompression: (savedBytes: number) => void;
-  clearStats: () => void;
-}
-
-let nextId = 0;
-const genId = () => `item-${Date.now().toString(36)}-${nextId++}`;
+const persistAppState = (state: AppState) => ({
+  ...persistCompressionSettings(state),
+  ...persistWorkflowSettings(state),
+  ...persistAutomationState(state),
+  ...persistStats(state),
+});
 
 export const useAppStore = create<AppState>()(
   persist(
@@ -168,10 +81,7 @@ export const useAppStore = create<AppState>()(
       allowUpscale: false,
 
       setMode: (mode) => {
-        const defaultLevels: Record<CompressionMode, number> = {
-          quality: 1, balanced: 3, size: 6, advanced: 3, target: 3,
-        };
-        set({ mode, level: defaultLevels[mode] });
+        set({ mode, level: compressionDefaultLevels[mode] });
       },
       setFormat: (format) => set({ format }),
       setLevel: (level) => set({ level }),
@@ -269,31 +179,7 @@ export const useAppStore = create<AppState>()(
     }),
     {
       name: "zipax-store",
-      partialize: (state) => ({
-        // 只持久化这些字段，排除 activeTab 和 items
-        mode: state.mode,
-        format: state.format,
-        level: state.level,
-        targetSizeKB: state.targetSizeKB,
-        targetSizePercent: state.targetSizePercent,
-        preserveMetadata: state.preserveMetadata,
-        overwrite: state.overwrite,
-        maxWidth: state.maxWidth,
-        maxHeight: state.maxHeight,
-        allowUpscale: state.allowUpscale,
-        autoCopyAfterCompression: state.autoCopyAfterCompression,
-        skipCompressedFiles: state.skipCompressedFiles,
-        appearanceMode: state.appearanceMode,
-        themeColor: state.themeColor,
-        languageMode: state.languageMode,
-        autoCheckUpdates: state.autoCheckUpdates,
-        closeToTray: state.closeToTray,
-        globalAutomationEnabled: state.globalAutomationEnabled,
-        folderRules: state.folderRules,
-        errorRecords: state.errorRecords,
-        totalSaved: state.totalSaved,
-        totalCount: state.totalCount,
-      }),
+      partialize: persistAppState,
     }
   )
 );

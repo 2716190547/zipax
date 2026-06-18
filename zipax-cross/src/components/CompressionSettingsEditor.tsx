@@ -1,65 +1,16 @@
-import { Input, Separator } from "@heroui/react";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState } from "react";
 import { useI18n } from "@/i18n";
 import type { CompressionMode, OutputFormat } from "@/store/app";
+import { compressionDefaultLevels } from "@/store/utils";
 import { Crop, Download, SlidersVertical } from "@/components/icons";
-import { ConfigCard, ConfigFieldRow, ConfigSection, QualitySlider, SegmentTabs } from "@/components/ui";
+import { ConfigFieldRow, QualitySlider, SegmentTabs } from "@/components/ui";
 import { HeroSelect, HeroSwitch } from "@/components/ui";
-
-function DimensionFieldRow({
-  maxWidth,
-  maxHeight,
-  disabled,
-  onChange,
-}: {
-  maxWidth?: number;
-  maxHeight?: number;
-  disabled?: boolean;
-  onChange: (patch: Pick<Partial<CompressionSettingsEditorValue>, "maxWidth" | "maxHeight">) => void;
-}) {
-  const { t } = useI18n();
-  return (
-    <div className="dimension-field-row">
-      <div className="dimension-field-stack">
-        <div className="dimension-fields-control">
-          <div className="dimension-input-wrap">
-            <Input
-              type="text"
-              inputMode="numeric"
-              aria-label={t("compression.maxWidth")}
-              placeholder={t("compression.width")}
-              value={maxWidth != null ? String(maxWidth) : ""}
-              onChange={(event) => onChange({
-                maxWidth: event.target.value ? Number(event.target.value) : undefined,
-              })}
-              disabled={disabled}
-              variant="secondary"
-              className="dimension-input"
-            />
-            <span className="dimension-input-unit">px</span>
-          </div>
-          <span className="dimension-separator">×</span>
-          <div className="dimension-input-wrap">
-            <Input
-              type="text"
-              inputMode="numeric"
-              aria-label={t("compression.maxHeight")}
-              placeholder=""
-              value={maxHeight != null ? String(maxHeight) : ""}
-              onChange={(event) => onChange({
-                maxHeight: event.target.value ? Number(event.target.value) : undefined,
-              })}
-              disabled={disabled}
-              variant="secondary"
-              className="dimension-input"
-            />
-            <span className="dimension-input-unit">px</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
+import {
+  CompressionEditorDivider,
+  CompressionEditorSection,
+  DimensionFieldRow,
+  type CompressionEditorLayout,
+} from "./CompressionSettingsEditorParts";
 
 export interface CompressionSettingsEditorValue {
   mode: CompressionMode;
@@ -79,7 +30,7 @@ interface CompressionSettingsEditorProps {
   onChange: (patch: Partial<CompressionSettingsEditorValue>) => void;
   compact?: boolean;
   embedded?: boolean;
-  layout?: "cards" | "panel";
+  layout?: CompressionEditorLayout;
 }
 
 export function CompressionSettingsEditor({
@@ -127,77 +78,8 @@ export function CompressionSettingsEditor({
     { key: "pdf", label: "PDF" },
   ];
 
-  const renderSection = ({
-    icon,
-    title,
-    info,
-    unit,
-    titleAccessory,
-    infoSize,
-    value: sectionValue,
-    note,
-    action,
-    className,
-    children,
-  }: {
-    icon: ReactNode;
-    title: string;
-    info?: string;
-    unit?: string;
-    titleAccessory?: ReactNode;
-    infoSize?: "sm" | "md";
-    value?: ReactNode;
-    note?: ReactNode;
-    action?: ReactNode;
-    className?: string;
-    children: ReactNode;
-  }) => (
-    layout === "panel" ? (
-      <ConfigSection
-        icon={icon}
-        title={title}
-        info={info}
-        unit={unit}
-        titleAccessory={titleAccessory}
-        infoSize={infoSize}
-        value={sectionValue}
-        note={note}
-        action={action}
-        className={className}
-      >
-        {children}
-      </ConfigSection>
-    ) : (
-      <ConfigCard
-        variant={cardVariant}
-        icon={icon}
-        title={title}
-        info={info}
-        unit={unit}
-        titleAccessory={titleAccessory}
-        infoSize={infoSize}
-        value={sectionValue}
-        note={note}
-        action={action}
-        className={className}
-      >
-        {children}
-      </ConfigCard>
-    )
-  );
-  const renderDivider = (key: string) => (
-    layout === "panel" ? <Separator key={key} className="config-divider" /> : null
-  );
-
   const setMode = (mode: CompressionMode) => {
-    const defaultLevels: Record<CompressionMode, number> = {
-      quality: 1,
-      balanced: 3,
-      size: 6,
-      advanced: 3,
-      target: 3,
-    };
-    onChange({ mode, level: defaultLevels[mode] });
+    onChange({ mode, level: compressionDefaultLevels[mode] });
   };
 
   const setResizeEnabled = (enabled: boolean) => {
@@ -213,13 +95,15 @@ export function CompressionSettingsEditor({
 
   return (
     <div className={editorClassName}>
-      {renderSection({
-        icon: <SlidersVertical size={16} strokeWidth={1.9} />,
-        title: t("compression.target"),
-        info: t("compression.targetInfo"),
-        value: <span className="compression-target-value">{compressionValue}</span>,
-        className: "compression-target-section",
-        children: (
+      <CompressionEditorSection
+        layout={layout}
+        cardVariant={cardVariant}
+        icon={<SlidersVertical size={16} strokeWidth={1.9} />}
+        title={t("compression.target")}
+        info={t("compression.targetInfo")}
+        value={<span className="compression-target-value">{compressionValue}</span>}
+        className="compression-target-section"
+      >
           <>
             <SegmentTabs
               ariaLabel={t("compression.mode")}
@@ -259,15 +143,16 @@ export function CompressionSettingsEditor({
               </div>
             )}
           </>
-        ),
-      })}
-      {renderDivider("compression-output-divider")}
+      </CompressionEditorSection>
+      <CompressionEditorDivider layout={layout} name="compression-output" />
 
-      {renderSection({
-        icon: <Download size={16} strokeWidth={1.9} />,
-        title: t("compression.outputRules"),
-        note: isPdfExport ? t("compression.exportPdf") : value.overwrite ? t("compression.replaceOriginalNote") : t("compression.outputNewFile"),
-        children: (
+      <CompressionEditorSection
+        layout={layout}
+        cardVariant={cardVariant}
+        icon={<Download size={16} strokeWidth={1.9} />}
+        title={t("compression.outputRules")}
+        note={isPdfExport ? t("compression.exportPdf") : value.overwrite ? t("compression.replaceOriginalNote") : t("compression.outputNewFile")}
+      >
           <>
             <ConfigFieldRow label={t("compression.overwriteOriginal")} control="auto">
               <HeroSwitch
@@ -295,22 +180,23 @@ export function CompressionSettingsEditor({
               />
             </ConfigFieldRow>
           </>
-        ),
-      })}
-      {renderDivider("output-resize-divider")}
+      </CompressionEditorSection>
+      <CompressionEditorDivider layout={layout} name="output-resize" />
 
-      {renderSection({
-        icon: <Crop size={16} strokeWidth={1.9} />,
-        title: t("compression.resize"),
-        info: t("compression.resizeInfo"),
-        action: (
+      <CompressionEditorSection
+        layout={layout}
+        cardVariant={cardVariant}
+        icon={<Crop size={16} strokeWidth={1.9} />}
+        title={t("compression.resize")}
+        info={t("compression.resizeInfo")}
+        action={
           <HeroSwitch
             size="sm"
             isSelected={resizeExpanded}
             onChange={setResizeEnabled}
           />
-        ),
-        children: (
+        }
+      >
           <>
             {resizeExpanded && (
               <DimensionFieldRow
@@ -321,8 +207,7 @@ export function CompressionSettingsEditor({
               />
             )}
           </>
-        ),
-      })}
+      </CompressionEditorSection>
     </div>
   );
 }
