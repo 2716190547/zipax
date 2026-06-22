@@ -8,6 +8,7 @@ pub mod config;
 pub mod error;
 pub mod format;
 pub mod plan;
+mod process;
 pub mod utils;
 
 pub use compress::compress_file;

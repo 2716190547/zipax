@@ -54,6 +54,16 @@ jobs:
         working-directory: zipax-cross
         run: npm ci
 
+      - name: Validate Windows icon resources
+        if: matrix.platform == 'windows-latest'
+        shell: pwsh
+        run: |
+          $icon = [System.IO.File]::ReadAllBytes("zipax-cross/src-tauri/icons/icon.ico")
+          $imageCount = [BitConverter]::ToUInt16($icon, 4)
+          if ($imageCount -lt 5) {
+            throw "Windows icon must contain multiple DPI layers; found $imageCount."
+          }
+
       - name: Build release from tag
         if: github.event_name == 'push'
         uses: tauri-apps/tauri-action@v0
@@ -85,3 +95,16 @@ jobs:
           releaseDraft: true
           prerelease: false
           args: ${{ matrix.args }}
+
+      - name: Validate Windows GUI subsystem
+        if: matrix.platform == 'windows-latest'
+        shell: pwsh
+        run: |
+          $exe = Get-Item "zipax-cross/target/release/zipax-app.exe"
+          $bytes = [System.IO.File]::ReadAllBytes($exe.FullName)
+          $peOffset = [BitConverter]::ToInt32($bytes, 0x3c)
+          $optionalHeader = $peOffset + 24
+          $subsystem = [BitConverter]::ToUInt16($bytes, $optionalHeader + 68)
+          if ($subsystem -ne 2) {
+            throw "Expected Windows GUI subsystem (2), found $subsystem."
+          }

@@ -1,7 +1,5 @@
 //! zipax Tauri application.
 
-#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
-
 mod autostart;
 mod commands;
 mod compression_options;
@@ -101,13 +99,15 @@ pub fn run() {
             ));
 
             // 创建托盘图标
-            let _tray = TrayIconBuilder::new()
-                .icon(Image::new(
-                    include_bytes!("../icons/tray-icon-44.rgba"),
-                    44,
-                    44,
-                ))
-                .icon_as_template(true)
+            let tray = TrayIconBuilder::new().icon(Image::new(
+                include_bytes!("../icons/tray-icon-44.rgba"),
+                44,
+                44,
+            ));
+            #[cfg(target_os = "macos")]
+            let tray = tray.icon_as_template(true);
+
+            let _tray = tray
                 .menu(&menu)
                 .tooltip("zipax - 图片压缩")
                 .on_menu_event(move |app, event| match event.id().as_ref() {
@@ -134,6 +134,8 @@ pub fn run() {
 
             if let Some(window) = app.get_webview_window("main") {
                 let _ = window.set_maximizable(false);
+                #[cfg(target_os = "windows")]
+                let _ = window.set_shadow(false);
             }
 
             autostart::refresh_autostart_registration();

@@ -1,0 +1,100 @@
+:root {
+  color-scheme: light;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+
+  --font-body: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-brand: "Avenir Next", Inter, "SF Pro Rounded", ui-sans-serif, system-ui, sans-serif;
+  --brand-blue: #1687f2;
+  --brand-blue-hover: #0874db;
+  --brand-blue-soft: #e8f4ff;
+  --page-width: 1180px;
+  --line: rgba(20, 27, 39, 0.11);
+  --shadow-soft: 0 24px 70px rgba(26, 38, 64, 0.09);
+
+  /* HeroUI theme overrides: components keep their native structure and states. */
+  --background: #f8fafc;
+  --foreground: #17191f;
+  --surface: rgba(255, 255, 255, 0.88);
+  --surface-foreground: var(--foreground);
+  --surface-secondary: #f0f4f8;
+  --surface-secondary-foreground: var(--foreground);
+  --surface-tertiary: #e9f3fd;
+  --surface-tertiary-foreground: var(--foreground);
+  --overlay: #ffffff;
+  --overlay-foreground: var(--foreground);
+  --muted: #697081;
+  --border: var(--line);
+  --separator: var(--line);
+  --accent: var(--brand-blue);
+  --accent-hover: var(--brand-blue-hover);
+  --accent-foreground: #ffffff;
+  --accent-soft: var(--brand-blue-soft);
+  --accent-soft-foreground: #086fcf;
+  --link: var(--brand-blue);
+  --focus: var(--brand-blue);
+  --radius: 0.75rem;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --background: #10141c;
+  --foreground: #f4f7fb;
+  --surface: rgba(25, 31, 42, 0.9);
+  --surface-foreground: var(--foreground);
+  --surface-secondary: #202734;
+  --surface-secondary-foreground: var(--foreground);
+  --surface-tertiary: #243247;
+  --surface-tertiary-foreground: var(--foreground);
+  --overlay: #1a202c;
+  --overlay-foreground: var(--foreground);
+  --muted: #a8b0bf;
+  --line: rgba(230, 236, 245, 0.13);
+  --border: var(--line);
+  --separator: var(--line);
+  --accent: #3ca8ff;
+  --accent-hover: #63b9ff;
+  --accent-soft: rgba(22, 135, 242, 0.18);
+  --accent-soft-foreground: #80c8ff;
+  --link: #65baff;
+  --shadow-soft: 0 24px 70px rgba(0, 0, 0, 0.28);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--background);
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  overflow-x: clip;
+  background: var(--background);
+  color: var(--foreground);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+select {
+  font: inherit;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+::selection {
+  color: #fff;
+  background: var(--accent);
+}

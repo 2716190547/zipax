@@ -6,11 +6,11 @@
 //! On Windows: download from https://imagemagick.org
 
 use std::path::Path;
-use std::process::Command;
 use std::sync::OnceLock;
 
 use crate::config::CompressOptions;
 use crate::error::{Error, Result};
+use crate::process::background_command;
 
 /// Compress an image to HEIC format using ImageMagick.
 pub fn compress(
@@ -24,7 +24,7 @@ pub fn compress(
     // ImageMagick quality for HEIC: 0-100 (higher = better quality)
     let quality_pct = (quality * 100.0).clamp(1.0, 100.0) as u32;
 
-    let status = Command::new(&magick)
+    let status = background_command(&magick)
         .arg(source)
         .args([
             "-quality",
@@ -64,7 +64,7 @@ fn find_imagemagick() -> Result<String> {
 fn find_imagemagick_command() -> Option<String> {
     // Try common names.
     for name in &["magick", "convert"] {
-        if Command::new(name)
+        if background_command(name)
             .arg("--version")
             .output()
             .map(|o| o.status.success())

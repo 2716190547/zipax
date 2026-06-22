@@ -1,0 +1,267 @@
+.site-shell {
+  position: relative;
+  z-index: 1;
+  width: min(var(--page-width), calc(100% - 40px));
+  margin: 0 auto;
+}
+
+.site-header {
+  position: sticky;
+  top: 14px;
+  z-index: 20;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 20px;
+  margin: 16px 0 0;
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: min(32px, calc(var(--radius) * 2));
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  backdrop-filter: blur(18px);
+  box-shadow: 0 10px 30px rgba(31, 43, 65, 0.06);
+}
+
+.brand,
+.nav-links,
+.header-controls,
+.hero-actions,
+.hero-proof,
+.site-footer {
+  display: flex;
+  align-items: center;
+}
+
+.brand {
+  min-width: max-content;
+}
+
+.nav-links {
+  justify-content: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.nav-links a {
+  gap: 4px;
+  padding: 9px 14px;
+  border-radius: var(--radius-xl);
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.nav-links a:hover,
+.nav-links a.active {
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.header-controls {
+  justify-content: flex-end;
+  gap: 8px;
+  min-width: max-content;
+}
+
+main {
+  min-height: 68vh;
+}
+
+.hero-section {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(420px, 1.1fr);
+  align-items: center;
+  gap: 40px;
+  padding: clamp(72px, 10vw, 132px) 0 clamp(88px, 12vw, 148px);
+}
+
+.hero-actions {
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 32px;
+}
+
+.hero-proof {
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.section,
+.page-section {
+  padding: 72px 0;
+}
+
+.section-heading {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 40px;
+}
+
+.section-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  order: 3;
+}
+
+.split-heading {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  align-items: end;
+  gap: 48px;
+}
+
+.split-heading .section-description {
+  max-width: 460px;
+  margin-bottom: 7px;
+}
+
+.feature-grid,
+.download-grid,
+.docs-card-grid,
+.support-grid {
+  display: grid;
+  gap: 20px;
+}
+
+.feature-grid,
+.download-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.docs-card-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.support-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.workflow-section,
+.local-section {
+  display: grid;
+  grid-template-columns: minmax(0, 0.82fr) minmax(430px, 1.18fr);
+  align-items: center;
+  gap: clamp(48px, 8vw, 112px);
+  padding: clamp(88px, 12vw, 150px) 0;
+}
+
+.local-section {
+  grid-template-columns: minmax(360px, 0.95fr) minmax(0, 1.05fr);
+}
+
+.doc-page {
+  display: grid;
+  grid-template-columns: 250px minmax(0, 1fr);
+  gap: 32px;
+  align-items: start;
+}
+
+.site-footer {
+  display: block;
+  margin-top: 64px;
+  padding: 0 0 40px;
+}
+
+.footer-content {
+  display: grid;
+  grid-template-columns: 1fr 1.6fr;
+  gap: 48px;
+  padding: 54px 0;
+}
+
+.footer-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.footer-links {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 32px;
+}
+
+.footer-column {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+@media (min-width: 1440px) {
+  :root { --page-width: 1400px; }
+  .hero-section { gap: 84px; }
+}
+
+@media (max-width: 860px) {
+  .site-shell {
+    width: min(100% - 28px, var(--page-width));
+  }
+
+  .site-header {
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+  }
+
+  .nav-links {
+    grid-column: 1 / -1;
+    order: 3;
+    justify-content: flex-start;
+    overflow-x: auto;
+  }
+
+  .hero-section,
+  .feature-grid,
+  .download-grid,
+  .docs-card-grid,
+  .support-grid,
+  .workflow-section,
+  .local-section,
+  .doc-page,
+  .split-heading,
+  .footer-content {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-section,
+  .section,
+  .page-section {
+    padding: 52px 0;
+  }
+
+  .split-heading {
+    gap: 8px;
+  }
+
+  .footer-links {
+    gap: 24px;
+  }
+}
+
+@media (max-width: 620px) {
+  .site-header {
+    top: 8px;
+  }
+
+  .nav-links a {
+    padding-inline: 10px;
+  }
+
+  .header-controls {
+    gap: 4px;
+  }
+
+  .hero-actions > * {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .footer-links {
+    grid-template-columns: 1fr;
+  }
+}

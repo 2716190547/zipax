@@ -1,11 +1,11 @@
 //! PDF compression via Ghostscript.
 
 use std::path::Path;
-use std::process::Command;
 use std::sync::OnceLock;
 
 use crate::config::CompressOptions;
 use crate::error::{Error, Result};
+use crate::process::background_command;
 
 /// Compress a PDF file using Ghostscript.
 ///
@@ -20,7 +20,7 @@ pub fn compress(
 
     let pdf_setting = quality_to_pdf_setting(quality);
 
-    let status = Command::new(&gs)
+    let status = background_command(&gs)
         .args([
             "-sDEVICE=pdfwrite",
             "-dCompatibilityLevel=1.4",
@@ -58,7 +58,7 @@ fn find_ghostscript() -> Result<String> {
 fn find_ghostscript_command() -> Option<String> {
     // Try common names.
     for name in &["gs", "gswin64c", "gswin32c"] {
-        if Command::new(name)
+        if background_command(name)
             .arg("--version")
             .output()
             .map(|o| o.status.success())
