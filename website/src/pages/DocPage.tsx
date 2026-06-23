@@ -11,6 +11,9 @@ type DocPageProps = {
 export function DocPage({ t, locale, slug }: DocPageProps) {
   const items = docsForLocale(locale);
   const doc = docForSlug(locale, slug) ?? items[0];
+  const currentIndex = items.findIndex((item) => item.slug === doc.slug);
+  const previous = currentIndex > 0 ? items[currentIndex - 1] : undefined;
+  const next = currentIndex < items.length - 1 ? items[currentIndex + 1] : undefined;
 
   return (
     <section className="page-section doc-page">
@@ -50,6 +53,10 @@ export function DocPage({ t, locale, slug }: DocPageProps) {
               </div>
             </div>
           )}
+          <nav className="doc-pagination" aria-label={t.docsTitle}>
+            {previous ? <Link href={`#/docs/${previous.slug}`}><span>{t.previousDoc}</span><strong>{previous.title}</strong></Link> : <span />}
+            {next ? <Link href={`#/docs/${next.slug}`}><span>{t.nextDoc}</span><strong>{next.title}</strong></Link> : <span />}
+          </nav>
         </Card.Content>
       </Card>
     </section>

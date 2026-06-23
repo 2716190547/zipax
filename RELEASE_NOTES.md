@@ -1,9 +1,11 @@
-# zipax v0.24.1
+# zipax v0.24.2
 
-zipax v0.24.1 是补丁版本，更新了 README 中英文截图分离和代码质量改进。
+zipax v0.24.2 包含官网优化、Windows 图标压缩和发布工作流改进。
 
 ## 更新内容
 
-- README 中英文部分使用独立截图文件，英文版展示英文界面，中文版展示中文界面。
-- 新增 `docs/prd-release-push-workflow.md`，标准化版本发布流程文档。
-- 代码质量改进和小修复。
+- 官网重构：简化组件、优化动画和样式结构。
+- Windows 图标全面压缩，减小安装包体积。
+- 新增 Windows 图标生成脚本 `scripts/generate-windows-icons.sh`。
+- 发布工作流改进，支持多平台构建。
+- Tauri 桌面端小修复和依赖更新。

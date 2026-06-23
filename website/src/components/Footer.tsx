@@ -17,24 +17,24 @@ export function Footer({ t }: { t: ReturnType<typeof messages> }) {
         
         <div className="footer-links">
           <div className="footer-column">
-            <Typography.Heading level={3}>Product</Typography.Heading>
-            <Link href={release.url}>Release {release.version}</Link>
-            <Link href="#/download">Download</Link>
-            <Link href="#/docs">Documentation</Link>
+            <Typography.Heading level={3}>{t.product}</Typography.Heading>
+            <Link href={release.url}>{t.releaseLabel} {release.version}</Link>
+            <Link href="#/download">{t.downloadLabel}</Link>
+            <Link href="#/docs">{t.documentationLabel}</Link>
           </div>
           
           <div className="footer-column">
-            <Typography.Heading level={3}>Community</Typography.Heading>
+            <Typography.Heading level={3}>{t.community}</Typography.Heading>
             <Link href="https://github.com/2716190547/zipax" target="_blank" rel="noreferrer">GitHub<Link.Icon /></Link>
-            <Link href="https://github.com/2716190547/zipax/issues" target="_blank" rel="noreferrer">Issues<Link.Icon /></Link>
-            <Link href="https://github.com/2716190547/zipax" target="_blank" rel="noreferrer">Contribute<Link.Icon /></Link>
+            <Link href="https://github.com/2716190547/zipax/issues" target="_blank" rel="noreferrer">{t.issuesLabel}<Link.Icon /></Link>
+            <Link href="https://github.com/2716190547/zipax" target="_blank" rel="noreferrer">{t.contributeLabel}<Link.Icon /></Link>
           </div>
         </div>
       </div>
       
       <Separator className="footer-separator footer-separator-bottom" />
       <div className="footer-bottom">
-        <span>© 2026 zipax. Open source under MIT License.</span>
+        <span>© 2026 zipax. {t.licenseText}</span>
       </div>
     </footer>
   );

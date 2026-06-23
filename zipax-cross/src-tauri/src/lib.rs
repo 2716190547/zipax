@@ -1,5 +1,6 @@
 //! zipax Tauri application.
 
+mod app_window;
 mod autostart;
 mod commands;
 mod compression_options;
@@ -10,7 +11,8 @@ mod watch_commands;
 mod watcher;
 
 use state::{AppBehaviorState, TrayMenuState, WatcherState};
-use std::{thread, time::Duration};
+#[cfg(any(target_os = "windows", target_os = "macos"))]
+use tauri::tray::{MouseButton, MouseButtonState, TrayIconEvent};
 #[cfg(target_os = "macos")]
 use tauri::ActivationPolicy;
 use tauri::{
@@ -25,6 +27,9 @@ use tauri_plugin_autostart::MacosLauncher;
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+            app_window::show_main_window(app);
+        }))
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_autostart::init(
@@ -35,32 +40,28 @@ pub fn run() {
         .manage(AppBehaviorState::new())
         .manage(WatcherState::new())
         .on_page_load(|webview, payload| {
-            if webview.label() == "main" && payload.event() == PageLoadEvent::Finished {
-                let window = webview.window();
-                thread::spawn(move || {
-                    thread::sleep(Duration::from_millis(800));
-                    if !matches!(window.is_visible(), Ok(true)) {
-                        let _ = window.show();
-                        let _ = window.set_focus();
-                    }
-                });
+            if webview.label() == app_window::MAIN_WINDOW_LABEL
+                && payload.event() == PageLoadEvent::Finished
+            {
+                app_window::show_main_window_after_load(webview.app_handle().clone());
             }
         })
         .on_window_event(|window, event| {
-            if window.label() != "main" {
+            let WindowEvent::CloseRequested { api, .. } = event else {
+                return;
+            };
+            if window.label() != app_window::MAIN_WINDOW_LABEL
+                || !window.state::<AppBehaviorState>().close_to_tray()
+            {
                 return;
             }
-            if let WindowEvent::CloseRequested { api, .. } = event {
-                let should_hide = window.state::<AppBehaviorState>().close_to_tray();
-                if should_hide {
-                    api.prevent_close();
-                    let _ = window.hide();
-                    #[cfg(target_os = "macos")]
-                    let _ = window
-                        .app_handle()
-                        .set_activation_policy(ActivationPolicy::Accessory);
-                }
-            }
+
+            api.prevent_close();
+            let _ = window.hide();
+            #[cfg(target_os = "macos")]
+            let _ = window
+                .app_handle()
+                .set_activation_policy(ActivationPolicy::Accessory);
         })
         .setup(|app| {
             #[cfg(desktop)]
@@ -106,43 +107,43 @@ pub fn run() {
             ));
             #[cfg(target_os = "macos")]
             let tray = tray.icon_as_template(true);
+            #[cfg(any(target_os = "windows", target_os = "macos"))]
+            let tray = tray
+                .show_menu_on_left_click(false)
+                .on_tray_icon_event(|tray, event| {
+                    if matches!(
+                        event,
+                        TrayIconEvent::Click {
+                            button: MouseButton::Left,
+                            button_state: MouseButtonState::Up,
+                            ..
+                        }
+                    ) {
+                        app_window::show_main_window(tray.app_handle());
+                    }
+                });
 
             let _tray = tray
                 .menu(&menu)
                 .tooltip("zipax - 图片压缩")
                 .on_menu_event(move |app, event| match event.id().as_ref() {
-                    "open" => {
-                        #[cfg(target_os = "macos")]
-                        let _ = app.set_activation_policy(ActivationPolicy::Regular);
-                        if let Some(window) = app.get_webview_window("main") {
-                            let _ = window.show();
-                            let _ = window.set_focus();
-                        }
-                    }
-                    "toggle_updates" => {
-                        tray_commands::toggle_tray_updates(app);
-                    }
-                    "toggle_automation" => {
-                        tray_commands::toggle_tray_automation(app);
-                    }
-                    "quit" => {
-                        app.exit(0);
-                    }
+                    "open" => app_window::show_main_window(app),
+                    "toggle_updates" => tray_commands::toggle_tray_updates(app),
+                    "toggle_automation" => tray_commands::toggle_tray_automation(app),
+                    "quit" => app.exit(0),
                     _ => {}
                 })
                 .build(app)?;
 
-            if let Some(window) = app.get_webview_window("main") {
-                let _ = window.set_maximizable(false);
-                #[cfg(target_os = "windows")]
-                let _ = window.set_shadow(false);
-            }
+            app_window::configure_main_window(app.handle());
 
             autostart::refresh_autostart_registration();
 
             #[cfg(debug_assertions)]
             {
-                let window = app.get_webview_window("main").unwrap();
+                let window = app
+                    .get_webview_window(app_window::MAIN_WINDOW_LABEL)
+                    .unwrap();
                 window.open_devtools();
             }
             Ok(())

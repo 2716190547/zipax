@@ -1,13 +1,14 @@
 {
   "name": "zipax",
   "private": true,
-  "version": "0.24.1",
+  "version": "0.24.2",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "tauri": "tauri",
+    "icon:windows": "bash scripts/generate-windows-icons.sh",
     "build:install": "bash build-install.sh",
     "build:install:open": "bash build-install.sh --open"
   },

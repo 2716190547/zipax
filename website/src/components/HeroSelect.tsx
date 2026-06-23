@@ -15,9 +15,10 @@ type HeroSelectProps<T extends string> = {
   onChange: (value: T) => void;
   className?: string;
   triggerIcon?: ReactNode;
+  triggerLabel?: string;
 };
 
-export function HeroSelect<T extends string>({ ariaLabel, value, options, onChange, className, triggerIcon }: HeroSelectProps<T>) {
+export function HeroSelect<T extends string>({ ariaLabel, value, options, onChange, className, triggerIcon, triggerLabel }: HeroSelectProps<T>) {
   return (
     <Select
       aria-label={ariaLabel}
@@ -30,7 +31,7 @@ export function HeroSelect<T extends string>({ ariaLabel, value, options, onChan
     >
       <Select.Trigger className="site-select-trigger">
         {triggerIcon && <span className="select-trigger-icon">{triggerIcon}</span>}
-        <Select.Value className="site-select-value" />
+        {triggerLabel ? <span className="site-select-value">{triggerLabel}</span> : <Select.Value className="site-select-value" />}
         <Select.Indicator className="site-select-indicator" />
       </Select.Trigger>
       <Select.Popover className="hero-select-popover">

@@ -12,11 +12,13 @@ type SectionHeaderProps = {
 export function SectionHeader({ title, description, level = 2, meta, className = "" }: SectionHeaderProps) {
   return (
     <div className={`section-heading ${className}`.trim()}>
-      <Typography.Heading className={level === 1 ? "page-title" : "section-title"} level={level}>
-        {title}
-      </Typography.Heading>
+      <div className="section-heading-main">
+        <Typography.Heading className={level === 1 ? "page-title" : "section-title"} level={level}>
+          {title}
+        </Typography.Heading>
+        {meta && <div className="section-meta">{meta}</div>}
+      </div>
       {description && <Typography.Paragraph className="section-description">{description}</Typography.Paragraph>}
-      {meta && <div className="section-meta">{meta}</div>}
     </div>
   );
 }

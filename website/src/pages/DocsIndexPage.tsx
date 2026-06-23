@@ -1,5 +1,7 @@
-import { Card, Chip, Link } from "@heroui/react";
+import { Link, Typography } from "@heroui/react";
+import { ArrowRight } from "@gravity-ui/icons";
 import { SectionHeader } from "../components/SectionHeader";
+import { SectionReveal } from "../components/motion/SectionReveal";
 import { docsForLocale } from "../data/docs";
 import { type Locale, type messages } from "../i18n/messages";
 
@@ -14,20 +16,18 @@ export function DocsIndexPage({ t, locale }: DocsIndexPageProps) {
   return (
     <section className="page-section docs-index">
       <SectionHeader title={t.docsTitle} description={t.docsLead} level={1} />
-      <div className="docs-card-grid">
+      <SectionReveal as="div" className="docs-list" delay={0.04}>
         {items.map((item, index) => (
-          <Link className="card-link" href={`#/docs/${item.slug}`} key={item.slug}>
-            <Card className="doc-card" variant="default">
-              <Card.Header><Chip size="sm" variant="secondary">{String(index + 1).padStart(2, "0")}</Chip></Card.Header>
-              <Card.Content>
-                <Card.Title>{item.title}</Card.Title>
-                <Card.Description>{item.body}</Card.Description>
-              </Card.Content>
-              <Card.Footer><Link.Icon /></Card.Footer>
-            </Card>
+          <Link className="docs-list-item" href={`#/docs/${item.slug}`} key={item.slug}>
+            <span className="docs-list-index">{String(index + 1).padStart(2, "0")}</span>
+            <span className="docs-list-copy">
+              <Typography.Heading level={3}>{item.title}</Typography.Heading>
+              <Typography.Paragraph>{item.body}</Typography.Paragraph>
+            </span>
+            <ArrowRight className="docs-list-arrow" width={18} height={18} aria-hidden="true" />
           </Link>
         ))}
-      </div>
+      </SectionReveal>
     </section>
   );
 }

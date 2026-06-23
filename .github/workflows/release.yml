@@ -58,10 +58,29 @@ jobs:
         if: matrix.platform == 'windows-latest'
         shell: pwsh
         run: |
+          Add-Type -AssemblyName System.Drawing
           $icon = [System.IO.File]::ReadAllBytes("zipax-cross/src-tauri/icons/icon.ico")
           $imageCount = [BitConverter]::ToUInt16($icon, 4)
-          if ($imageCount -lt 5) {
+          if ($imageCount -lt 6) {
             throw "Windows icon must contain multiple DPI layers; found $imageCount."
+          }
+          $sizes = for ($i = 0; $i -lt $imageCount; $i++) {
+            $width = $icon[6 + ($i * 16)]
+            if ($width -eq 0) { 256 } else { [int]$width }
+          }
+          foreach ($requiredSize in @(16, 32, 48, 256)) {
+            if ($requiredSize -notin $sizes) {
+              throw "Windows icon is missing the ${requiredSize}px layer. Found: $sizes"
+            }
+          }
+          $storeLogoPath = (Resolve-Path "zipax-cross/src-tauri/icons/StoreLogo.png").Path
+          $storeLogo = [System.Drawing.Bitmap]::new($storeLogoPath)
+          try {
+            if ($storeLogo.GetPixel(0, 0).A -ne 0) {
+              throw "Windows icon corners must be transparent."
+            }
+          } finally {
+            $storeLogo.Dispose()
           }
 
       - name: Build release from tag
@@ -96,10 +115,11 @@ jobs:
           prerelease: false
           args: ${{ matrix.args }}
 
-      - name: Validate Windows GUI subsystem
+      - name: Validate Windows executable
         if: matrix.platform == 'windows-latest'
         shell: pwsh
         run: |
+          Add-Type -AssemblyName System.Drawing
           $exe = Get-Item "zipax-cross/target/release/zipax-app.exe"
           $bytes = [System.IO.File]::ReadAllBytes($exe.FullName)
           $peOffset = [BitConverter]::ToInt32($bytes, 0x3c)
@@ -107,4 +127,20 @@ jobs:
           $subsystem = [BitConverter]::ToUInt16($bytes, $optionalHeader + 68)
           if ($subsystem -ne 2) {
             throw "Expected Windows GUI subsystem (2), found $subsystem."
+          }
+          $icon = [System.Drawing.Icon]::ExtractAssociatedIcon($exe.FullName)
+          if ($null -eq $icon) {
+            throw "The Windows executable has no associated icon."
+          }
+          $bitmap = $icon.ToBitmap()
+          try {
+            if ($bitmap.Width -lt 16 -or $bitmap.Height -lt 16) {
+              throw "The embedded Windows icon is too small."
+            }
+            if ($bitmap.GetPixel(0, 0).A -ne 0) {
+              throw "The embedded Windows icon corners must be transparent."
+            }
+          } finally {
+            $bitmap.Dispose()
+            $icon.Dispose()
           }
