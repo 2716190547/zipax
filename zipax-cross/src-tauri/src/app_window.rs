@@ -59,7 +59,7 @@ pub(crate) fn configure_main_window<R: Runtime>(app: &AppHandle<R>) {
 }
 
 #[cfg(target_os = "windows")]
-fn configure_windows_shadow(window: &tauri::WebviewWindow) {
+fn configure_windows_shadow<R: Runtime>(window: &tauri::WebviewWindow<R>) {
     use std::{ffi::c_void, mem::size_of};
     use windows::Win32::Graphics::Dwm::{
         DwmSetWindowAttribute, DWMWA_BORDER_COLOR, DWMWA_COLOR_NONE,
