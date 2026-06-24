@@ -6,7 +6,6 @@ import { compressionDefaultLevels, genId, isCompressedFile } from "./utils";
 export type {
   AppState,
   AppearanceMode,
-  AvailableUpdate,
   CompressionItem,
   CompressionMode,
   ErrorRecord,
@@ -14,6 +13,7 @@ export type {
   LanguageMode,
   NewCompressionItem,
   OutputFormat,
+  ReadyUpdate,
   TabKey,
   ThemeColor,
 } from "./types";
@@ -65,8 +65,8 @@ export const useAppStore = create<AppState>()(
     (set) => ({
       activeTab: "image",
       setActiveTab: (tab) => set({ activeTab: tab }),
-      availableUpdate: null,
-      setAvailableUpdate: (update) => set({ availableUpdate: update }),
+      readyUpdate: null,
+      setReadyUpdate: (update) => set({ readyUpdate: update }),
 
       // Manual compression settings
       mode: "balanced",

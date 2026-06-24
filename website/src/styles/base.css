@@ -24,7 +24,9 @@
   --motion-section: 320ms;
   --motion-route: 420ms;
   --motion-hero: 720ms;
-  --motion-ease: cubic-bezier(.2, .8, .2, 1);
+  --motion-ease: cubic-bezier(.16, 1, .3, 1);
+  --motion-ease-standard: cubic-bezier(.22, 1, .36, 1);
+  --motion-ease-exit: cubic-bezier(.4, 0, 1, 1);
   --transition-fast: var(--motion-fast) var(--motion-ease);
   --transition-normal: var(--motion-medium) var(--motion-ease);
 

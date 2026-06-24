@@ -1,24 +1,24 @@
 import { Button } from "@heroui/react";
 import { useState } from "react";
-import { Download, RefreshCw, X } from "@/components/icons";
+import { RefreshCw, X } from "@/components/icons";
 import { useI18n } from "@/i18n";
-import { downloadAndInstallUpdate } from "@/lib/update";
+import { restartToApplyUpdate } from "@/lib/update";
 import { useAppStore } from "@/store/app";
 
 export function UpdatePrompt() {
   const { t } = useI18n();
-  const [downloading, setDownloading] = useState(false);
-  const availableUpdate = useAppStore((s) => s.availableUpdate);
-  const setAvailableUpdate = useAppStore((s) => s.setAvailableUpdate);
+  const [restarting, setRestarting] = useState(false);
+  const readyUpdate = useAppStore((s) => s.readyUpdate);
+  const setReadyUpdate = useAppStore((s) => s.setReadyUpdate);
 
-  if (!availableUpdate) return null;
+  if (!readyUpdate) return null;
 
-  const handleDownload = async () => {
-    setDownloading(true);
+  const handleRestart = async () => {
+    setRestarting(true);
     try {
-      await downloadAndInstallUpdate();
+      await restartToApplyUpdate();
     } catch {
-      setDownloading(false);
+      setRestarting(false);
     }
   };
 
@@ -29,16 +29,14 @@ export function UpdatePrompt() {
       </div>
       <div className="update-prompt-copy">
         <p className="update-prompt-title">
-          {t("general.updatePromptTitle", { version: availableUpdate.latestVersion })}
+          {t("general.updatePromptTitle", { version: readyUpdate.latestVersion })}
         </p>
-        <p className="update-prompt-detail">
-          {t("general.updatePromptDetail", { current: availableUpdate.currentVersion })}
-        </p>
+        <p className="update-prompt-detail">{t("general.updatePromptDetail")}</p>
       </div>
       <div className="update-prompt-actions">
-        <Button size="sm" variant="primary" isDisabled={downloading} onPress={handleDownload}>
-          {downloading ? null : <Download size={14} strokeWidth={1.9} />}
-          {downloading ? t("general.updateDownloading") : t("general.updateDownload")}
+        <Button size="sm" variant="primary" isDisabled={restarting} onPress={handleRestart}>
+          <RefreshCw className={restarting ? "is-spinning" : ""} size={14} strokeWidth={1.9} />
+          {restarting ? t("general.updateRestarting") : t("general.updateRestart")}
         </Button>
         <Button
           size="sm"
@@ -46,7 +44,7 @@ export function UpdatePrompt() {
           isIconOnly
           className="tool-icon-button"
           aria-label={t("general.updateLater")}
-          onPress={() => setAvailableUpdate(null)}
+          onPress={() => setReadyUpdate(null)}
         >
           <X size={15} strokeWidth={1.9} />
         </Button>

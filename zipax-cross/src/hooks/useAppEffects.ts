@@ -11,6 +11,7 @@ import {
 } from "@/lib/tauri";
 import { safeWarn } from "@/lib/utils";
 import type { AppearanceMode, LanguageMode, ThemeColor } from "@/store/app";
+import type { ReadyUpdate } from "@/store/types";
 
 interface TrayStatusOptions {
   autoCheckUpdates: boolean;
@@ -26,11 +27,7 @@ interface TrayToggleOptions {
 
 interface AutoUpdateOptions {
   enabled: boolean;
-  setAvailableUpdate: (update: {
-    currentVersion: string;
-    latestVersion: string;
-    downloadUrl: string;
-  }) => void;
+  setReadyUpdate: (update: ReadyUpdate) => void;
 }
 
 export function useAppearanceSync(
@@ -77,24 +74,23 @@ export function useCloseToTraySync(closeToTray: boolean) {
   }, [closeToTray]);
 }
 
-export function useAutoUpdateCheck({ enabled, setAvailableUpdate }: AutoUpdateOptions) {
+export function useAutoUpdateCheck({ enabled, setReadyUpdate }: AutoUpdateOptions) {
   useEffect(() => {
     if (!enabled) return;
     const timer = window.setTimeout(async () => {
       try {
         const result = await checkForUpdate();
-        if (result.status !== "available") return;
-        setAvailableUpdate({
+        if (result.status !== "ready") return;
+        setReadyUpdate({
           currentVersion: result.currentVersion,
           latestVersion: result.latestVersion,
-          downloadUrl: result.downloadUrl,
         });
       } catch {
-        // Automatic checks stay quiet unless an update is available.
+        // Background update failures stay quiet; manual checks still report errors.
       }
     }, 3500);
     return () => window.clearTimeout(timer);
-  }, [enabled, setAvailableUpdate]);
+  }, [enabled, setReadyUpdate]);
 }
 
 export function useTrayStatusSync(options: TrayStatusOptions) {

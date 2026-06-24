@@ -28,7 +28,7 @@ export default function App() {
   const languageMode = useAppStore((s) => s.languageMode);
   const autoCheckUpdates = useAppStore((s) => s.autoCheckUpdates);
   const setAutoCheckUpdates = useAppStore((s) => s.setAutoCheckUpdates);
-  const setAvailableUpdate = useAppStore((s) => s.setAvailableUpdate);
+  const setReadyUpdate = useAppStore((s) => s.setReadyUpdate);
   const closeToTray = useAppStore((s) => s.closeToTray);
   const globalAutomationEnabled = useAppStore((s) => s.globalAutomationEnabled);
   const setGlobalAutomationEnabled = useAppStore((s) => s.setGlobalAutomationEnabled);
@@ -40,7 +40,7 @@ export default function App() {
   useAppearanceSync(appearanceMode, themeColor, setThemeColor);
   useDocumentLocale(languageMode);
   useCloseToTraySync(closeToTray);
-  useAutoUpdateCheck({ enabled: autoCheckUpdates, setAvailableUpdate });
+  useAutoUpdateCheck({ enabled: autoCheckUpdates, setReadyUpdate });
   useTrayStatusSync({ autoCheckUpdates, globalAutomationEnabled, totalSaved, totalCount });
   useTrayToggleSync({ setAutoCheckUpdates, setGlobalAutomationEnabled });
   useAutostartRefresh();

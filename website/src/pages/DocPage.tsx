@@ -1,4 +1,4 @@
-import { Breadcrumbs, Card, Link, Typography } from "@heroui/react";
+import { Breadcrumbs, Card, Chip, Link, Typography } from "@heroui/react";
 import { docForSlug, docsForLocale, type DocSlug } from "../data/docs";
 import { type Locale, type messages } from "../i18n/messages";
 
@@ -40,6 +40,57 @@ export function DocPage({ t, locale, slug }: DocPageProps) {
           <ol className="doc-steps">
             {doc.steps.map((step) => <li key={step}>{step}</li>)}
           </ol>
+          {doc.troubleshooting && doc.troubleshooting.length > 0 && (
+            <section className="doc-troubleshooting" aria-labelledby="troubleshooting-title">
+              <div className="doc-troubleshooting-heading">
+                <Typography.Heading id="troubleshooting-title" className="section-title" level={2}>{t.troubleshooting}</Typography.Heading>
+                <Typography.Paragraph>{t.troubleshootingLead}</Typography.Paragraph>
+              </div>
+              <div className="troubleshooting-list">
+                {doc.troubleshooting.map((item, index) => (
+                  <Card className="troubleshooting-item" key={item.title} variant="secondary">
+                    <Card.Header className="troubleshooting-item-header">
+                      <Chip size="sm" variant="secondary">{String(index + 1).padStart(2, "0")}</Chip>
+                      <div>
+                        <Card.Title>{item.title}</Card.Title>
+                        <Card.Description>{item.summary}</Card.Description>
+                      </div>
+                    </Card.Header>
+                    <Card.Content>
+                      <div className="troubleshooting-columns">
+                        <div>
+                          <Typography.Heading level={3}>{t.possibleCauses}</Typography.Heading>
+                          <ul>{item.causes.map((cause) => <li key={cause}>{cause}</li>)}</ul>
+                        </div>
+                        <div>
+                          <Typography.Heading level={3}>{t.recommendedSteps}</Typography.Heading>
+                          <ol>{item.solutions.map((solution) => <li key={solution}>{solution}</li>)}</ol>
+                        </div>
+                      </div>
+                      {item.commands && item.commands.length > 0 && (
+                        <div className="troubleshooting-commands">
+                          <Typography.Heading level={3}>{t.diagnosticCommands}</Typography.Heading>
+                          {item.commands.map((command) => (
+                            <figure className="doc-code-block" key={command.label}>
+                              <figcaption>{command.label}</figcaption>
+                              <pre><code>{command.code}</code></pre>
+                            </figure>
+                          ))}
+                        </div>
+                      )}
+                      {item.warning && <aside className="doc-warning" aria-label={t.safetyNote}><strong>{t.safetyNote}</strong><p>{item.warning}</p></aside>}
+                      {item.sources && item.sources.length > 0 && (
+                        <div className="doc-sources">
+                          <strong>{t.officialReferences}</strong>
+                          {item.sources.map((source) => <Link key={source.href} href={source.href} target="_blank" rel="noreferrer">{source.label}<Link.Icon /></Link>)}
+                        </div>
+                      )}
+                    </Card.Content>
+                  </Card>
+                ))}
+              </div>
+            </section>
+          )}
           {doc.faq && doc.faq.length > 0 && (
             <div className="doc-faq">
               <Typography.Heading className="section-title" level={2}>{t.faq}</Typography.Heading>

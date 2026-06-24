@@ -6,6 +6,17 @@ export type DocSection = {
   body: string;
   steps: string[];
   faq?: { question: string; answer: string }[];
+  troubleshooting?: DocTroubleshootingItem[];
+};
+
+export type DocTroubleshootingItem = {
+  title: string;
+  summary: string;
+  causes: string[];
+  solutions: string[];
+  commands?: { label: string; code: string }[];
+  warning?: string;
+  sources?: { label: string; href: string }[];
 };
 
 export type DocSlug = "install" | "compress" | "automation" | "menu-bar" | "updates";
@@ -23,6 +34,115 @@ const docs: Record<Locale, LocalizedDocSection[]> = {
         "macOS: open the DMG and drag zipax to Applications.",
         "Windows: run the setup package and launch zipax from Start.",
         "Linux: use the AppImage directly, or install the deb/rpm package.",
+      ],
+      troubleshooting: [
+        {
+          title: "macOS cannot verify the developer or refuses to open zipax",
+          summary: "This is usually Gatekeeper's first-launch protection, not proof that the download is damaged. Verify the source before approving an exception.",
+          causes: [
+            "The app was installed outside the Mac App Store and needs first-launch approval.",
+            "Security settings or an organization policy allow App Store apps only.",
+            "The downloaded package does not match the Mac architecture.",
+          ],
+          solutions: [
+            "Delete copies from unknown sources and download again from the zipax website or official GitHub Releases.",
+            "Try to open zipax once, then open System Settings → Privacy & Security and choose Open Anyway for zipax.",
+            "On a managed Mac, ask the administrator whether Developer ID apps are blocked by policy.",
+          ],
+          commands: [
+            { label: "Check Mac architecture and package type", code: "uname -m\nfile ~/Downloads/zipax*.dmg" },
+            { label: "Read-only Gatekeeper assessment", code: "spctl --assess --type execute --verbose=4 /Applications/zipax.app" },
+          ],
+          warning: "Do not bypass macOS security for a copy obtained from an unknown mirror. Apple warns that overriding unverified apps can expose the Mac to malware.",
+          sources: [
+            { label: "Apple: If you can't open an app on Mac", href: "https://support.apple.com/guide/mac-help/mchlp1519/mac" },
+            { label: "Apple: Open an app from an unknown developer", href: "https://support.apple.com/guide/mac-help/mh40616/mac" },
+          ],
+        },
+        {
+          title: "macOS says the app is damaged",
+          summary: "A damaged-app alert can mean an incomplete DMG, modified signed contents, revoked authorization, incompatibility, or detected malicious content. It is different from an unidentified-developer warning.",
+          causes: [
+            "The download was interrupted or altered by a proxy, cache, or third-party download tool.",
+            "Files inside the signed app bundle changed after release.",
+            "The build is incompatible with the installed macOS version or its authorization is no longer valid.",
+          ],
+          solutions: [
+            "Move the current DMG and app to the Bin, then download the latest release again from the official source.",
+            "Verify the DMG before copying the app to Applications. Do not keep running it from inside the DMG.",
+            "Run the read-only signature checks below. If verification fails, stop and attach the output to a GitHub issue.",
+          ],
+          commands: [
+            { label: "Verify the download and DMG", code: "cd ~/Downloads\nshasum -a 256 zipax*.dmg\nhdiutil verify zipax*.dmg" },
+            { label: "Verify code signature and Gatekeeper", code: "codesign --verify --deep --strict --verbose=2 /Applications/zipax.app\nspctl --assess --type execute --verbose=4 /Applications/zipax.app" },
+            { label: "Inspect quarantine attributes without changing them", code: "xattr -l /Applications/zipax.app" },
+          ],
+          warning: "Removing com.apple.quarantine is not a repair. It skips part of first-launch protection and cannot fix a genuinely corrupted or invalidly signed app.",
+          sources: [
+            { label: "Apple: Open apps safely on Mac", href: "https://support.apple.com/HT202491" },
+            { label: "Apple: App closes or won't open", href: "https://support.apple.com/102152" },
+          ],
+        },
+        {
+          title: "Windows SmartScreen blocks setup or launch",
+          summary: "SmartScreen considers reputation, signatures, and known threats. A new build may have limited reputation, but the source and signature still need verification.",
+          causes: [
+            "The release is new and has not accumulated download reputation.",
+            "The signature is missing or invalid, or the file changed after signing.",
+            "An organization policy blocks unrecognized applications.",
+          ],
+          solutions: [
+            "Download only from the official release and inspect Digital Signatures in file properties.",
+            "Use PowerShell to check the signature and SHA-256. Continue only when the signature status is Valid and the source is trusted.",
+            "On a managed device, provide the hash and signature details to the administrator instead of disabling protection.",
+          ],
+          commands: [
+            { label: "PowerShell signature and hash checks", code: "Get-AuthenticodeSignature .\\zipax*.exe | Format-List\nGet-FileHash .\\zipax*.exe -Algorithm SHA256" },
+            { label: "Unblock this single verified file", code: "Unblock-File .\\zipax*.exe" },
+          ],
+          warning: "Do not disable Microsoft Defender or SmartScreen globally. Re-download or report the release when the signature is not Valid.",
+          sources: [
+            { label: "Microsoft Defender SmartScreen overview", href: "https://learn.microsoft.com/windows/security/operating-system-security/virus-and-threat-protection/microsoft-defender-smartscreen/" },
+          ],
+        },
+        {
+          title: "Linux AppImage does nothing or reports a FUSE error",
+          summary: "An AppImage needs executable permission. Some distributions also need a FUSE 2 compatibility library; permission and dependency errors should be diagnosed separately.",
+          causes: [
+            "The downloaded AppImage is not executable.",
+            "The system lacks a compatible FUSE library.",
+            "The file is on a noexec mount, or the download is incomplete.",
+          ],
+          solutions: [
+            "Add executable permission and launch from a terminal to capture the complete error.",
+            "On Ubuntu or Debian, install the FUSE 2 compatibility package available for that release.",
+            "Use extract-and-run temporarily to confirm whether FUSE is the cause.",
+          ],
+          commands: [
+            { label: "Add permission and collect launch output", code: "chmod +x ./zipax*.AppImage\n./zipax*.AppImage" },
+            { label: "Install the Ubuntu/Debian compatibility library", code: "sudo apt update\nsudo apt install libfuse2\n# Ubuntu 24.04+ may use: sudo apt install libfuse2t64" },
+            { label: "Diagnostic run without mounting through FUSE", code: "./zipax*.AppImage --appimage-extract-and-run" },
+          ],
+          sources: [{ label: "Official AppImage troubleshooting", href: "https://docs.appimage.org/user-guide/troubleshooting/" }],
+        },
+        {
+          title: "The package is incomplete, fails verification, or cannot be extracted",
+          summary: "A browser reporting a completed download does not guarantee that every byte is valid. Network changes, proxies, limited disk space, and security software can leave a truncated file.",
+          causes: [
+            "The network or GitHub CDN connection was reset during download.",
+            "There was not enough disk space to finish writing the file.",
+            "An older cached file has the same name as the new release.",
+          ],
+          solutions: [
+            "Delete the old file, check free disk space, and download again.",
+            "Use curl with failure detection and retries instead of an unknown mirror.",
+            "Compare SHA-256 with the release value when one is published; never install when it differs.",
+          ],
+          commands: [
+            { label: "Check space, file type, and hash", code: "df -h .\nfile ./zipax*\nshasum -a 256 ./zipax*" },
+            { label: "Download with failure detection and retry", code: "curl -fL --retry 3 -o zipax-package '<GitHub Release download URL>'" },
+          ],
+        },
       ],
       faq: [
         {
@@ -139,11 +259,162 @@ const docs: Record<Locale, LocalizedDocSection[]> = {
   "zh-CN": [
     {
       title: "安装 zipax",
-      body: "从 GitHub Releases 下载与你系统匹配的安装包，然后像普通桌面应用一样打开 zipax。",
+      body: "从 GitHub Releases 下载与你系统和处理器匹配的安装包。首次打开前，建议确认下载完整、来源正确，再按照对应平台的安装步骤操作。",
       steps: [
-        "macOS：打开 DMG，把 zipax 拖到「应用程序」。",
-        "Windows：运行安装包，然后从开始菜单启动。",
-        "Linux：可直接运行 AppImage，也可以安装 deb/rpm 包。",
+        "确认平台与架构：Apple Silicon 选择 aarch64/arm64，Intel Mac 与多数 Windows/Linux 电脑选择 x64/x86_64。",
+        "macOS：打开 DMG，把 zipax 拖到「应用程序」后再从应用程序目录启动。",
+        "Windows：运行安装包，从开始菜单启动；Linux：为 AppImage 添加执行权限，或安装 deb/rpm 包。",
+        "若无法启动，不要反复关闭安全提示；先根据下方错误类型检查下载、签名、权限和系统依赖。",
+      ],
+      troubleshooting: [
+        {
+          title: "macOS：无法打开，或提示无法验证开发者",
+          summary: "这通常是 Gatekeeper 的首次启动保护，并不等同于“文件损坏”。先确认文件来自 zipax 官方 GitHub Releases，再使用系统提供的“仍要打开”。",
+          causes: [
+            "应用不是从 Mac App Store 安装，macOS 需要用户确认首次启动。",
+            "系统只允许 App Store 应用，或设备受到公司/学校管理策略限制。",
+            "下载的是与处理器不匹配的安装包。",
+          ],
+          solutions: [
+            "删除来源不明的副本，只从本网站下载页或项目 GitHub Releases 重新下载。",
+            "先尝试打开一次，然后进入“系统设置 → 隐私与安全性 → 安全性”，找到 zipax 并点击“仍要打开”。",
+            "如果“仍要打开”不存在，请确认刚刚尝试过启动；Apple 通常只在尝试启动后的一段时间内显示该按钮。",
+            "如果是受管理设备，联系管理员确认 Developer ID 应用是否被策略禁止。",
+          ],
+          commands: [
+            {
+              label: "确认 Mac 架构与安装包类型",
+              code: "uname -m\nfile ~/Downloads/zipax*.dmg",
+            },
+            {
+              label: "只读检查 Gatekeeper 评估结果",
+              code: "spctl --assess --type execute --verbose=4 /Applications/zipax.app",
+            },
+          ],
+          warning: "不要从陌生网站下载后直接绕过系统安全设置。Apple 明确提醒：绕过未验证应用的保护可能带来恶意软件风险。",
+          sources: [
+            { label: "Apple：无法在 Mac 上打开 App", href: "https://support.apple.com/guide/mac-help/mchlp1519/mac" },
+            { label: "Apple：打开来自未知开发者的 App", href: "https://support.apple.com/guide/mac-help/mh40616/mac" },
+          ],
+        },
+        {
+          title: "macOS：提示“应用已损坏，无法打开”",
+          summary: "“已损坏”可能来自下载不完整、DMG 校验失败、应用签名内容被修改、签名授权失效或系统检测到风险。它与普通的“未知开发者”提示不是同一个问题。",
+          causes: [
+            "网络中断、代理缓存或第三方下载工具导致 DMG 不完整。",
+            "应用复制、解压或二次打包后，签名覆盖的文件发生变化。",
+            "旧版本与当前 macOS 不兼容，或开发者证书/公证状态异常。",
+            "系统检测到已知恶意内容；此时不应继续绕过。",
+          ],
+          solutions: [
+            "把当前 DMG 和应用移到废纸篓，清空后从官方 Release 重新下载最新版。",
+            "先验证 DMG，再把 App 拖入“应用程序”；不要直接从 DMG 内长期运行。",
+            "使用 codesign 与 spctl 进行只读诊断。如果签名验证失败，停止使用并在 GitHub Issues 附上版本、macOS 版本和命令输出。",
+            "如果校验和与 Release 公布值不一致，说明文件已变化或下载不完整，必须重新下载。",
+          ],
+          commands: [
+            {
+              label: "检查下载完整性与 DMG 结构",
+              code: "cd ~/Downloads\nshasum -a 256 zipax*.dmg\nhdiutil verify zipax*.dmg",
+            },
+            {
+              label: "验证应用签名与 Gatekeeper",
+              code: "codesign --verify --deep --strict --verbose=2 /Applications/zipax.app\nspctl --assess --type execute --verbose=4 /Applications/zipax.app",
+            },
+            {
+              label: "查看隔离属性（只读）",
+              code: "xattr -l /Applications/zipax.app",
+            },
+          ],
+          warning: "本指南不建议直接删除 com.apple.quarantine。删除隔离属性会跳过一部分首次启动保护，并且无法修复真正损坏或签名失败的应用。",
+          sources: [
+            { label: "Apple：安全地打开 Mac App", href: "https://support.apple.com/HT202491" },
+            { label: "Apple：App 意外退出或无法打开", href: "https://support.apple.com/102152" },
+          ],
+        },
+        {
+          title: "Windows：SmartScreen 阻止安装或启动",
+          summary: "SmartScreen 会结合下载信誉、签名与已知风险进行提示。新版本或下载量较少的应用可能缺少信誉，但仍应先检查签名和来源。",
+          causes: [
+            "安装包版本较新，尚未积累足够的下载信誉。",
+            "文件没有有效签名、签名链异常，或文件在下载后被修改。",
+            "组织策略禁止运行未知应用。",
+          ],
+          solutions: [
+            "确认安装包来自官方 Release，并在文件属性中检查“数字签名”。",
+            "使用 PowerShell 检查签名状态和 SHA-256；只有状态为 Valid 且来源可信时，才考虑“更多信息 → 仍要运行”。",
+            "如果设备由组织管理，不要修改安全策略，联系管理员提供安装包哈希与签名信息。",
+          ],
+          commands: [
+            {
+              label: "PowerShell：检查签名与哈希",
+              code: "Get-AuthenticodeSignature .\\zipax*.exe | Format-List\nGet-FileHash .\\zipax*.exe -Algorithm SHA256",
+            },
+            {
+              label: "确认文件未被系统标记为损坏后再解除单个文件阻止",
+              code: "Unblock-File .\\zipax*.exe",
+            },
+          ],
+          warning: "不要关闭 Microsoft Defender 或全局禁用 SmartScreen。若签名状态不是 Valid，请重新下载或提交 Issue。",
+          sources: [
+            { label: "Microsoft：Defender SmartScreen 概览", href: "https://learn.microsoft.com/windows/security/operating-system-security/virus-and-threat-protection/microsoft-defender-smartscreen/" },
+          ],
+        },
+        {
+          title: "Linux：AppImage 双击无反应或提示 FUSE 错误",
+          summary: "AppImage 需要执行权限；部分发行版还需要兼容的 FUSE 运行库。权限问题和依赖问题应分别处理。",
+          causes: [
+            "下载后的 AppImage 没有执行权限。",
+            "系统缺少 FUSE 2 兼容库，常见于较新的 Ubuntu 安装。",
+            "文件位于不允许执行的挂载点，或下载不完整。",
+          ],
+          solutions: [
+            "先添加执行权限，并从终端启动以获得完整错误信息。",
+            "Ubuntu/Debian 根据系统版本安装 libfuse2 或 libfuse2t64。",
+            "无法安装 FUSE 时，可临时使用 AppImage 的 extract-and-run 模式确认是否为 FUSE 问题。",
+          ],
+          commands: [
+            {
+              label: "添加权限并获取启动日志",
+              code: "chmod +x ./zipax*.AppImage\n./zipax*.AppImage",
+            },
+            {
+              label: "Ubuntu/Debian 安装 FUSE 兼容库",
+              code: "sudo apt update\nsudo apt install libfuse2\n# Ubuntu 24.04+ 可能使用：sudo apt install libfuse2t64",
+            },
+            {
+              label: "不挂载 FUSE 的诊断运行方式",
+              code: "./zipax*.AppImage --appimage-extract-and-run",
+            },
+          ],
+          sources: [
+            { label: "AppImage 官方故障排查", href: "https://docs.appimage.org/user-guide/troubleshooting/" },
+          ],
+        },
+        {
+          title: "下载文件不完整、校验失败或安装包无法解压",
+          summary: "浏览器显示“下载完成”不代表内容一定完整。网络切换、代理缓存、磁盘空间不足和安全软件拦截都可能留下截断文件。",
+          causes: [
+            "下载过程中网络中断或 GitHub CDN 连接被代理重置。",
+            "磁盘空间不足，文件只写入了一部分。",
+            "旧文件与新版本同名，实际打开了缓存副本。",
+          ],
+          solutions: [
+            "删除旧文件，确认剩余磁盘空间，再重新下载。",
+            "使用带失败检测与重试的 curl 下载；不要使用来历不明的镜像。",
+            "对比 Release 页面提供的 SHA-256；不一致时不要继续安装。",
+          ],
+          commands: [
+            {
+              label: "检查空间、类型与哈希",
+              code: "df -h .\nfile ./zipax*\nshasum -a 256 ./zipax*",
+            },
+            {
+              label: "使用 curl 失败检测与自动重试",
+              code: "curl -fL --retry 3 -o zipax-package '<GitHub Release 下载链接>'",
+            },
+          ],
+        },
       ],
       faq: [
         {

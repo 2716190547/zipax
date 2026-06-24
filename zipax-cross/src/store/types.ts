@@ -18,10 +18,9 @@ export type LanguageMode =
   | "ko-KR";
 export type TabKey = "image" | "general" | "workflow" | "automation" | "dependencies" | "about";
 
-export interface AvailableUpdate {
+export interface ReadyUpdate {
   currentVersion: string;
   latestVersion: string;
-  downloadUrl: string;
 }
 
 export interface CompressionItem {
@@ -64,8 +63,8 @@ export interface FolderRule {
 export interface AppState {
   activeTab: TabKey;
   setActiveTab: (tab: TabKey) => void;
-  availableUpdate: AvailableUpdate | null;
-  setAvailableUpdate: (update: AvailableUpdate | null) => void;
+  readyUpdate: ReadyUpdate | null;
+  setReadyUpdate: (update: ReadyUpdate | null) => void;
 
   mode: CompressionMode;
   format: OutputFormat;

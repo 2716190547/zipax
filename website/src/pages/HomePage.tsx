@@ -3,6 +3,7 @@ import { Chip, Link, Typography, buttonVariants } from "@heroui/react";
 import { Icon, type IconName } from "../components/Icon";
 import { SectionHeader } from "../components/SectionHeader";
 import { SectionReveal } from "../components/motion/SectionReveal";
+import { TextReveal } from "../components/motion/TextReveal";
 import { HeroParticleLogo } from "../components/particles/HeroParticleLogo";
 import { docsForLocale, type DocSection } from "../data/docs";
 import { release } from "../data/downloads";
@@ -28,10 +29,13 @@ export function HomePage({ t, locale, platform, recommended }: HomePageProps) {
   return (
     <>
       <section className="hero-section home-hero">
+        <div className="hero-product" role="img" aria-label="zipax particle logo">
+          <HeroParticleLogo />
+        </div>
         <div className="hero-copy">
-          <Typography.Heading className="hero-brand-title" level={1}>zipax</Typography.Heading>
-          <Typography.Heading className="hero-lead" level={2}>{t.heroLead}</Typography.Heading>
-          <Typography.Paragraph className="hero-text">{t.heroText}</Typography.Paragraph>
+          <TextReveal className="hero-brand-reveal"><Typography.Heading className="hero-brand-title" level={1}>zipax</Typography.Heading></TextReveal>
+          <TextReveal className="hero-lead-reveal" delay={0.05}><Typography.Heading className="hero-lead" level={2}>{t.heroLead}</Typography.Heading></TextReveal>
+          <TextReveal className="hero-text-reveal" delay={0.1}><Typography.Paragraph className="hero-text">{t.heroText}</Typography.Paragraph></TextReveal>
           <div className="hero-actions">
             <Link className={buttonVariants({ variant: "primary", size: "lg" })} href={recommended?.href ?? release.latest}>
               <ArrowDownToLine width={18} height={18} aria-hidden="true" />
@@ -44,9 +48,6 @@ export function HomePage({ t, locale, platform, recommended }: HomePageProps) {
           <div className="hero-proof" aria-label="Product highlights">
             {proof.map((item) => <Chip key={item} size="sm" variant="secondary"><CircleCheck width={14} height={14} />{item}</Chip>)}
           </div>
-        </div>
-        <div className="hero-product" role="img" aria-label="zipax particle logo">
-          <HeroParticleLogo />
         </div>
       </section>
       <FeatureGrid t={t} descriptions={featureDescriptions} intro={t.heroText} />

@@ -7,7 +7,7 @@ export type UpdateHint = { text: string; tone: "success" | "danger" } | null;
 
 export function useUpdateCheck() {
   const { t } = useI18n();
-  const setAvailableUpdate = useAppStore((s) => s.setAvailableUpdate);
+  const setReadyUpdate = useAppStore((s) => s.setReadyUpdate);
   const [checking, setChecking] = useState(false);
   const [hint, setHint] = useState<UpdateHint>(null);
 
@@ -21,13 +21,12 @@ export function useUpdateCheck() {
         return;
       }
 
-      setAvailableUpdate({
+      setReadyUpdate({
         currentVersion: result.currentVersion,
         latestVersion: result.latestVersion,
-        downloadUrl: result.downloadUrl,
       });
       setHint({
-        text: t("general.updateAvailable", { version: result.latestVersion }),
+        text: t("general.updateReady"),
         tone: "success",
       });
     } catch {
@@ -35,7 +34,7 @@ export function useUpdateCheck() {
     } finally {
       setChecking(false);
     }
-  }, [setAvailableUpdate, t]);
+  }, [setReadyUpdate, t]);
 
   return { checking, hint, checkNow };
 }

@@ -5,11 +5,23 @@ import { getAppInfo } from "@/lib/tauri";
 
 export type UpdateCheckResult =
   | { status: "latest"; currentVersion: string }
-  | { status: "available"; currentVersion: string; latestVersion: string; downloadUrl: string };
+  | { status: "ready"; currentVersion: string; latestVersion: string };
 
-let pendingUpdate: Update | null = null;
+type ReadyUpdateResult = Extract<UpdateCheckResult, { status: "ready" }>;
+
+let readyUpdate: ReadyUpdateResult | null = null;
+let preparationTask: Promise<UpdateCheckResult> | null = null;
+let stagedUpdate: Update | null = null;
 
 export async function checkForUpdate(): Promise<UpdateCheckResult> {
+  if (readyUpdate) return readyUpdate;
+  preparationTask ??= prepareUpdate().finally(() => {
+    preparationTask = null;
+  });
+  return preparationTask;
+}
+
+async function prepareUpdate(): Promise<UpdateCheckResult> {
   const update = await check();
 
   if (!update) {
@@ -17,25 +29,24 @@ export async function checkForUpdate(): Promise<UpdateCheckResult> {
     return { status: "latest", currentVersion: appInfo.version };
   }
 
-  pendingUpdate = update;
+  try {
+    await update.download();
+  } catch (error) {
+    await update.close().catch(() => {});
+    throw error;
+  }
 
-  return {
-    status: "available",
+  stagedUpdate = update;
+  readyUpdate = {
+    status: "ready",
     currentVersion: update.currentVersion,
     latestVersion: update.version,
-    downloadUrl: "",
   };
+  return readyUpdate;
 }
 
-export async function downloadAndInstallUpdate(
-  onEvent?: (event: { event: string; data?: unknown }) => void,
-): Promise<void> {
-  const update = pendingUpdate;
-  if (!update) throw new Error("没有待下载的更新");
-
-  await update.downloadAndInstall((event) => {
-    onEvent?.(event);
-  });
-
+export async function restartToApplyUpdate(): Promise<void> {
+  if (!stagedUpdate) throw new Error("没有已准备好的更新");
+  await stagedUpdate.install();
   await relaunch();
 }
