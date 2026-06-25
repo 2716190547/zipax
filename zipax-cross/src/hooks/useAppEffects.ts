@@ -1,5 +1,5 @@
 import { listen } from "@tauri-apps/api/event";
-import { useEffect } from "react";
+import { useEffect, useLayoutEffect } from "react";
 import { isRtl, resolveLocale } from "@/i18n";
 import { checkForUpdate } from "@/lib/update";
 import {
@@ -28,6 +28,16 @@ interface TrayToggleOptions {
 interface AutoUpdateOptions {
   enabled: boolean;
   setReadyUpdate: (update: ReadyUpdate) => void;
+}
+
+function detectPlatform() {
+  return /windows/i.test(navigator.userAgent) ? "windows" : "default";
+}
+
+export function usePlatformClass() {
+  useLayoutEffect(() => {
+    document.documentElement.dataset.platform = detectPlatform();
+  }, []);
 }
 
 export function useAppearanceSync(

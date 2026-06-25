@@ -25,16 +25,14 @@ function readContentWidth(element: HTMLElement) {
 }
 
 function readContentSize(element: HTMLElement) {
-  const width = readContentWidth(element);
+  const contentWidth = readContentWidth(element);
 
-  document.documentElement.style.setProperty("--zipax-content-width", `${width}px`);
+  document.documentElement.style.setProperty("--zipax-content-width", `${contentWidth}px`);
 
-  const shell = element.querySelector(".zipax-shell");
-  const target = shell instanceof HTMLElement ? shell : element;
-  const rect = target.getBoundingClientRect();
+  const rect = element.getBoundingClientRect();
   return {
-    width,
-    height: Math.ceil(Math.max(rect.height, target.scrollHeight)),
+    width: Math.ceil(rect.width),
+    height: Math.ceil(Math.max(rect.height, element.scrollHeight)),
   };
 }
 

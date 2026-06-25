@@ -15,6 +15,7 @@ import {
   useAutostartRefresh,
   useCloseToTraySync,
   useDocumentLocale,
+  usePlatformClass,
   useTrayStatusSync,
   useTrayToggleSync,
 } from "@/hooks/useAppEffects";
@@ -36,6 +37,7 @@ export default function App() {
   const totalCount = useAppStore((s) => s.totalCount);
   const shellRef = useRef<HTMLDivElement>(null);
 
+  usePlatformClass();
   useAutoWindowSize(shellRef, [activeTab, appearanceMode, languageMode, themeColor]);
   useAppearanceSync(appearanceMode, themeColor, setThemeColor);
   useDocumentLocale(languageMode);

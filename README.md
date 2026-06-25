@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  <img alt="release" src="https://img.shields.io/badge/release-v0.24.3-2DA44E">
+  <img alt="release" src="https://img.shields.io/badge/release-v0.24.4-2DA44E">
   <img alt="platform" src="https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-0A84FF">
   <img alt="core" src="https://img.shields.io/badge/core-Rust-DEA584">
   <img alt="desktop" src="https://img.shields.io/badge/desktop-Tauri-24C8DB">
@@ -46,7 +46,7 @@
 
 ## What's New in v0.24.3
 
-zipax v0.24.3 includes website documentation improvements, app window refinements, and update prompt polish.
+zipax v0.24.4 includes app window improvements and UI polish.
 
 ### Rust Core
 
@@ -136,7 +136,7 @@ If zipax saves you a little time, there is a bilingual support page here: [Suppo
 </p>
 
 <p align="center">
-  <img alt="release" src="https://img.shields.io/badge/release-v0.24.3-2DA44E">
+  <img alt="release" src="https://img.shields.io/badge/release-v0.24.4-2DA44E">
   <img alt="platform" src="https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-0A84FF">
   <img alt="core" src="https://img.shields.io/badge/core-Rust-DEA584">
   <img alt="desktop" src="https://img.shields.io/badge/desktop-Tauri-24C8DB">
@@ -163,7 +163,7 @@ If zipax saves you a little time, there is a bilingual support page here: [Suppo
 
 ## v0.24.3 更新内容
 
-zipax v0.24.3 包含官网文档完善、桌面窗口优化和更新提示改进。
+zipax v0.24.4 包含桌面窗口优化和 UI 样式调整。
 
 ### Rust 核心重构
 

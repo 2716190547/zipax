@@ -2,6 +2,8 @@
 @layer base {
   :root {
     --zipax-content-width: 430px;
+    --zipax-window-padding: 0px;
+    --zipax-window-width: calc(var(--zipax-content-width) + var(--zipax-window-padding) * 2);
     --zipax-gap: 22px;
     --zipax-window-radius: 24px;
     --background: oklch(0.985 0 0);
@@ -180,7 +182,7 @@
   body {
     color: var(--foreground);
     background: transparent;
-    width: var(--zipax-content-width);
+    width: var(--zipax-window-width);
     min-height: 0;
     margin: 0;
     overflow: hidden;
@@ -191,7 +193,7 @@
   }
 
   #root {
-    width: var(--zipax-content-width);
+    width: var(--zipax-window-width);
     min-height: 0;
     background: transparent;
   }
