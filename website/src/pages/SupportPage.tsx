@@ -1,28 +1,56 @@
-import { Bug, Code } from "@gravity-ui/icons";
-import { Card, Link } from "@heroui/react";
-import { SectionHeader } from "../components/SectionHeader";
+import { BookOpen, Bug, Code, Tag } from "@gravity-ui/icons";
+import { ActionCard } from "../components/cards";
+import { PageHeader } from "../components/PageHeader";
 import { SectionReveal } from "../components/motion/SectionReveal";
+import { release } from "../data/downloads";
 import { type messages } from "../i18n/messages";
 
 export function SupportPage({ t }: { t: ReturnType<typeof messages> }) {
+  const supportItems = [
+    {
+      href: "https://github.com/2716190547/zipax/issues",
+      title: t.issuesTitle,
+      description: t.issuesDescription,
+      icon: <Bug width={22} height={22} />,
+      external: true,
+    },
+    {
+      href: "#/docs",
+      title: t.documentationLabel,
+      description: t.docsLead,
+      icon: <BookOpen width={22} height={22} />,
+    },
+    {
+      href: "https://github.com/2716190547/zipax",
+      title: t.repositoryTitle,
+      description: t.repositoryDescription,
+      icon: <Code width={22} height={22} />,
+      external: true,
+    },
+    {
+      href: release.latest,
+      title: t.releaseLabel,
+      description: `zipax ${release.version}`,
+      icon: <Tag width={22} height={22} />,
+      external: true,
+    },
+  ];
+
   return (
     <section className="page-section support-layout">
-      <SectionHeader title={t.supportTitle} description={t.supportLead} level={1} />
+      <PageHeader title={t.supportTitle} description={t.supportLead} />
       <SectionReveal as="div" className="support-grid" delay={0.04}>
-        <Link className="card-link" href="https://github.com/2716190547/zipax/issues" target="_blank" rel="noreferrer">
-          <Card className="support-card" variant="default">
-            <Card.Header><Bug width={24} height={24} /></Card.Header>
-            <Card.Content><Card.Title>{t.issuesTitle}</Card.Title><Card.Description>{t.issuesDescription}</Card.Description></Card.Content>
-            <Card.Footer><Link.Icon /></Card.Footer>
-          </Card>
-        </Link>
-        <Link className="card-link" href="https://github.com/2716190547/zipax" target="_blank" rel="noreferrer">
-          <Card className="support-card" variant="default">
-            <Card.Header><Code width={24} height={24} /></Card.Header>
-            <Card.Content><Card.Title>{t.repositoryTitle}</Card.Title><Card.Description>{t.repositoryDescription}</Card.Description></Card.Content>
-            <Card.Footer><Link.Icon /></Card.Footer>
-          </Card>
-        </Link>
+        {supportItems.map((item) => (
+          <ActionCard
+            className="support-card"
+            href={item.href}
+            title={item.title}
+            description={item.description}
+            icon={item.icon}
+            external={item.external}
+            key={item.href}
+          />
+        ))}
       </SectionReveal>
     </section>
   );

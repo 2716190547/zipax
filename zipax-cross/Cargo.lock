@@ -6730,7 +6730,7 @@ dependencies = [
 
 [[package]]
 name = "zipax-app"
-version = "0.24.3"
+version = "0.24.4"
 dependencies = [
  "anyhow",
  "auto-launch",
@@ -6754,7 +6754,7 @@ dependencies = [
 
 [[package]]
 name = "zipax-cli"
-version = "0.24.3"
+version = "0.24.4"
 dependencies = [
  "anyhow",
  "clap",
@@ -6768,7 +6768,7 @@ dependencies = [
 
 [[package]]
 name = "zipax-core"
-version = "0.24.3"
+version = "0.24.4"
 dependencies = [
  "anyhow",
  "flate2",

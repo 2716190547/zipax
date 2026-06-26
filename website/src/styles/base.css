@@ -19,6 +19,11 @@
   --radius-control: 10px;
   --radius-card: 14px;
   --radius-display: 18px;
+  --page-header-gap: 48px;
+  --card-gap: 16px;
+  --card-padding: 24px;
+  --card-radius: 24px;
+  --card-icon-radius: 14px;
   --motion-fast: 140ms;
   --motion-medium: 180ms;
   --motion-section: 320ms;

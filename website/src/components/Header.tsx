@@ -94,7 +94,7 @@ export function Header({ route, t, locale, theme, onLocale, onTheme, downloadHre
           <span className="mobile-settings-label">{t.theme}</span>
           <ButtonGroup className="theme-options" fullWidth variant="secondary" aria-label={t.theme}>
             {(["system", "light", "dark"] as ThemeMode[]).map((mode) => (
-              <Button key={mode} variant={theme === mode ? "primary" : "secondary"} aria-pressed={theme === mode} onPress={() => onTheme(mode)}>
+              <Button key={mode} className={theme === mode ? "theme-option-active" : ""} variant="secondary" aria-pressed={theme === mode} onPress={() => onTheme(mode)}>
                 {mode === "system" ? <Gear /> : mode === "light" ? <Sun /> : <Moon />}
                 {mode === "system" ? t.system : mode === "light" ? t.light : t.dark}
               </Button>

@@ -83,18 +83,29 @@ main {
 }
 
 .home-hero {
+  overflow: hidden;
+  isolation: isolate;
   min-height: calc(100svh - 76px);
   grid-template-columns: 1fr;
-  grid-template-rows: minmax(272px, 1fr) auto;
-  align-items: stretch;
-  align-content: stretch;
-  gap: 0;
+  grid-template-rows: 1fr;
+  place-items: center;
   padding-top: clamp(16px, 2.4svh, 28px);
   padding-bottom: clamp(24px, 3svh, 40px);
 }
 
 @supports (height: 100dvh) {
   .home-hero { min-height: calc(100dvh - 76px); }
+}
+
+.home-hero-stage {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  display: grid;
+  grid-template-rows: auto auto;
+  justify-items: center;
+  align-content: center;
+  transform: translateY(clamp(8px, 2svh, 24px));
 }
 
 .home-hero .hero-copy {
@@ -107,10 +118,10 @@ main {
 .home-hero .hero-product {
   align-self: center;
   width: min(1120px, 100%);
-  height: 100%;
-  min-height: 272px;
-  max-height: 680px;
-  margin: 0 auto clamp(-40px, -3svh, -24px);
+  height: clamp(300px, 40svh, 560px);
+  min-height: 0;
+  max-height: none;
+  margin: 0 auto clamp(-24px, -2.2svh, -12px);
 }
 
 .hero-actions {

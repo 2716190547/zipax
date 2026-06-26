@@ -10,7 +10,7 @@ export function Footer({ t }: { t: ReturnType<typeof messages> }) {
       <div className="footer-content">
         <div className="footer-brand">
           <Link className="footer-logo" href="#/" aria-label="zipax home">
-            <ZipaxWordmark size="md" iconVariant="full" />
+            <ZipaxWordmark size="md" />
           </Link>
           <Typography.Paragraph className="footer-tagline">{t.footer}</Typography.Paragraph>
         </div>

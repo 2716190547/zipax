@@ -3,6 +3,11 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes heroGlowDrift {
+  from { transform: translate3d(-1.6%, -0.8%, 0) scale(1); }
+  to { transform: translate3d(1.4%, 1%, 0) scale(1.06); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  <img alt="release" src="https://img.shields.io/badge/release-v0.24.4-2DA44E">
+  <img alt="release" src="https://img.shields.io/badge/release-v0.24.5-2DA44E">
   <img alt="platform" src="https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-0A84FF">
   <img alt="core" src="https://img.shields.io/badge/core-Rust-DEA584">
   <img alt="desktop" src="https://img.shields.io/badge/desktop-Tauri-24C8DB">
@@ -44,9 +44,9 @@
 | --- | --- |
 | <img src="docs/assets/zipax-light-en.png" alt="zipax light mode"> | <img src="docs/assets/zipax-dark-en.png" alt="zipax dark mode"> |
 
-## What's New in v0.24.3
+## What's New in v0.24.5
 
-zipax v0.24.4 includes app window improvements and UI polish.
+zipax v0.24.5 includes website page improvements, better responsive layout, and style refinements.
 
 ### Rust Core
 
@@ -117,8 +117,8 @@ cargo run -q -p zipax-cli -- compress a.png b.png --output-format webp
 Pushing a version tag builds native app packages on GitHub Actions:
 
 ```bash
-git tag v0.24.3
-git push origin v0.24.3
+git tag v0.24.5
+git push origin v0.24.5
 ```
 
 The release workflow creates a draft GitHub Release with macOS, Windows, and Linux artifacts attached.
@@ -136,7 +136,7 @@ If zipax saves you a little time, there is a bilingual support page here: [Suppo
 </p>
 
 <p align="center">
-  <img alt="release" src="https://img.shields.io/badge/release-v0.24.4-2DA44E">
+  <img alt="release" src="https://img.shields.io/badge/release-v0.24.5-2DA44E">
   <img alt="platform" src="https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-0A84FF">
   <img alt="core" src="https://img.shields.io/badge/core-Rust-DEA584">
   <img alt="desktop" src="https://img.shields.io/badge/desktop-Tauri-24C8DB">
@@ -161,9 +161,9 @@ If zipax saves you a little time, there is a bilingual support page here: [Suppo
 | --- | --- |
 | <img src="docs/assets/zipax-light-zh.png" alt="zipax 浅色模式"> | <img src="docs/assets/zipax-dark-zh.png" alt="zipax 深色模式"> |
 
-## v0.24.3 更新内容
+## v0.24.5 更新内容
 
-zipax v0.24.4 包含桌面窗口优化和 UI 样式调整。
+zipax v0.24.5 包含官网页面改进、响应式布局优化和样式精调。
 
 ### Rust 核心重构
 
@@ -234,8 +234,8 @@ cargo run -q -p zipax-cli -- compress a.png b.png --output-format webp
 推送版本标签即可触发 GitHub Actions 构建原生安装包：
 
 ```bash
-git tag v0.24.3
-git push origin v0.24.3
+git tag v0.24.5
+git push origin v0.24.5
 ```
 
 GitHub Actions 的发布工作流会自动创建包含 macOS、Windows 和 Linux 构建产物的草稿 Release。

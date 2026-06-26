@@ -29,24 +29,27 @@ export function HomePage({ t, locale, platform, recommended }: HomePageProps) {
   return (
     <>
       <section className="hero-section home-hero">
-        <div className="hero-product" role="img" aria-label="zipax particle logo">
-          <HeroParticleLogo />
-        </div>
-        <div className="hero-copy">
-          <TextReveal className="hero-brand-reveal"><Typography.Heading className="hero-brand-title" level={1}>zipax</Typography.Heading></TextReveal>
-          <TextReveal className="hero-lead-reveal" delay={0.05}><Typography.Heading className="hero-lead" level={2}>{t.heroLead}</Typography.Heading></TextReveal>
-          <TextReveal className="hero-text-reveal" delay={0.1}><Typography.Paragraph className="hero-text">{t.heroText}</Typography.Paragraph></TextReveal>
-          <div className="hero-actions">
-            <Link className={buttonVariants({ variant: "primary", size: "lg" })} href={recommended?.href ?? release.latest}>
-              <ArrowDownToLine width={18} height={18} aria-hidden="true" />
-              {t.downloadTitle}
-            </Link>
-            <Link className={buttonVariants({ variant: "secondary", size: "lg" })} href={firstDocHref(locale)}>{t.viewDocs}</Link>
-            <Link className="hero-github-link" href="https://github.com/2716190547/zipax" target="_blank" rel="noreferrer">{t.github}<Link.Icon /></Link>
+        <div className="home-hero-background" aria-hidden="true" />
+        <div className="home-hero-stage">
+          <div className="hero-product" role="img" aria-label="zipax particle logo">
+            <HeroParticleLogo />
           </div>
-          <span className="hero-platform-note">{t.downloadFor} {downloadLabel}</span>
-          <div className="hero-proof" aria-label="Product highlights">
-            {proof.map((item) => <Chip key={item} size="sm" variant="secondary"><CircleCheck width={14} height={14} />{item}</Chip>)}
+          <div className="hero-copy">
+            <TextReveal className="hero-brand-reveal"><Typography.Heading className="hero-brand-title" level={1}>zipax</Typography.Heading></TextReveal>
+            <TextReveal className="hero-lead-reveal" delay={0.05}><Typography.Heading className="hero-lead" level={2}>{t.heroLead}</Typography.Heading></TextReveal>
+            <TextReveal className="hero-text-reveal" delay={0.1}><Typography.Paragraph className="hero-text">{t.heroText}</Typography.Paragraph></TextReveal>
+            <div className="hero-actions">
+              <Link className={buttonVariants({ variant: "primary", size: "lg" })} href={recommended?.href ?? release.latest}>
+                <ArrowDownToLine width={18} height={18} aria-hidden="true" />
+                {t.downloadTitle}
+              </Link>
+              <Link className={buttonVariants({ variant: "secondary", size: "lg" })} href={firstDocHref(locale)}>{t.viewDocs}</Link>
+              <Link className="hero-github-link" href="https://github.com/2716190547/zipax" target="_blank" rel="noreferrer">{t.github}<Link.Icon /></Link>
+            </div>
+            <span className="hero-platform-note">{t.downloadFor} {downloadLabel}</span>
+            <div className="hero-proof" aria-label="Product highlights">
+              {proof.map((item) => <Chip key={item} size="sm" variant="secondary"><CircleCheck width={14} height={14} />{item}</Chip>)}
+            </div>
           </div>
         </div>
       </section>
