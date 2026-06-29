@@ -9,7 +9,11 @@ export type Route =
   | { name: "support" };
 
 export function routeFromHash(locale: Locale): Route {
-  const parts = window.location.hash.replace(/^#\/?/, "").split("/").filter(Boolean);
+  return routeFromHashValue(locale, window.location.hash);
+}
+
+export function routeFromHashValue(locale: Locale, hash: string): Route {
+  const parts = hash.replace(/^#\/?/, "").split("/").filter(Boolean);
   const [page, slug] = parts;
 
   if (page === "download") return { name: "download" };

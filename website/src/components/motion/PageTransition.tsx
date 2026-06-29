@@ -18,15 +18,17 @@ export function PageTransition({ children }: { children: ReactNode }) {
   return (
     <motion.main
       ref={mainRef}
-      initial={{ opacity: 0, y: reduceMotion ? 0 : 8 }}
-      animate={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0, y: reduceMotion ? 0 : 35, filter: reduceMotion ? "none" : "blur(6px)" }}
+      animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
       exit={{
         opacity: 0,
-        y: reduceMotion ? 0 : -3,
-        transition: { duration: reduceMotion ? 0.01 : 0.1, ease: exitEase },
+        y: reduceMotion ? 0 : -35,
+        filter: reduceMotion ? "none" : "blur(6px)",
+        transition: { duration: reduceMotion ? 0.01 : 0.45, ease: exitEase },
       }}
       transition={{
-        duration: reduceMotion ? 0.01 : 0.26,
+        duration: reduceMotion ? 0.01 : 0.85,
+        delay: reduceMotion ? 0 : 0.22,
         ease: appEase,
       }}
     >

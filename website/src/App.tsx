@@ -1,12 +1,11 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence } from "framer-motion";
 import { Footer } from "./components/Footer";
 import { Header } from "./components/Header";
 import { PageTransition } from "./components/motion/PageTransition";
-import { RouteLoadingOverlay } from "./components/motion/RouteLoadingOverlay";
-import { RouteParticleBridge } from "./components/particles/RouteParticleBridge";
+import { RouteTransitionMask } from "./components/motion/RouteTransitionMask";
 import { recommendedDownload } from "./data/downloads";
-import { routeFromHash, routeKey, type Route } from "./data/routes";
+import { routeFromHash, routeFromHashValue, routeKey, type Route } from "./data/routes";
 import { locales, matchLocale, messages, type Locale } from "./i18n/messages";
 import { detectPlatform } from "./lib/platform";
 import { resolveTheme, type ThemeMode } from "./lib/theme";
@@ -16,6 +15,9 @@ import { DocsIndexPage } from "./pages/DocsIndexPage";
 import { DownloadPage } from "./pages/DownloadPage";
 import { HomePage } from "./pages/HomePage";
 import { SupportPage } from "./pages/SupportPage";
+
+const routeSwitchDelay = 560;
+const routeMaskDuration = 1120;
 
 export function App() {
   const [platform] = useState(detectPlatform);
@@ -29,39 +31,84 @@ export function App() {
     return stored === "light" || stored === "dark" || stored === "system" ? stored : "system";
   });
   const [transitionId, setTransitionId] = useState(0);
-  const pendingRouteUpdate = useRef<number | null>(null);
-  const routeListenerReady = useRef(false);
+  const [maskActive, setMaskActive] = useState(false);
+  const routeSwitchTimer = useRef<number | null>(null);
+  const maskTimer = useRef<number | null>(null);
 
   const t = useMemo(() => messages(locale), [locale]);
   const releaseDownloads = useLatestRelease();
   const recommended = recommendedDownload(platform, releaseDownloads.downloads);
   const currentRouteKey = routeKey(route);
-  const overlayRouteKey = transitionId > 0 ? `transition-${transitionId}` : currentRouteKey;
+  const currentRouteKeyRef = useRef(currentRouteKey);
 
   useEffect(() => {
+    currentRouteKeyRef.current = currentRouteKey;
+  }, [currentRouteKey]);
+
+  const startRouteTransition = useCallback((nextRoute: Route, nextRouteKey: string) => {
+    if (nextRouteKey === currentRouteKeyRef.current) {
+      return;
+    }
+
+    if (routeSwitchTimer.current) window.clearTimeout(routeSwitchTimer.current);
+    if (maskTimer.current) window.clearTimeout(maskTimer.current);
+
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      currentRouteKeyRef.current = nextRouteKey;
+      setRoute(nextRoute);
+      return;
+    }
+
+    setTransitionId((value) => value + 1);
+    setMaskActive(true);
+    routeSwitchTimer.current = window.setTimeout(() => {
+      currentRouteKeyRef.current = nextRouteKey;
+      setRoute(nextRoute);
+      routeSwitchTimer.current = null;
+    }, routeSwitchDelay);
+    maskTimer.current = window.setTimeout(() => {
+      setMaskActive(false);
+      maskTimer.current = null;
+    }, routeMaskDuration);
+  }, []);
+
+  useEffect(() => {
+    const transitionToHash = (hash: string) => {
+      const nextRoute = routeFromHashValue(locale, hash);
+      const nextRouteKey = routeKey(nextRoute);
+      if (nextRouteKey === currentRouteKeyRef.current) return;
+
+      window.history.pushState(null, "", hash);
+      startRouteTransition(nextRoute, nextRouteKey);
+    };
+
     const onHashChange = () => {
       const nextRoute = routeFromHash(locale);
-      if (!routeListenerReady.current) {
-        routeListenerReady.current = true;
-        setRoute(nextRoute);
+      startRouteTransition(nextRoute, routeKey(nextRoute));
+    };
+
+    const onDocumentClick = (event: MouseEvent) => {
+      if (event.defaultPrevented || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) {
         return;
       }
 
-      if (pendingRouteUpdate.current) window.clearTimeout(pendingRouteUpdate.current);
-      setTransitionId((value) => value + 1);
-      pendingRouteUpdate.current = window.setTimeout(() => {
-        setRoute(nextRoute);
-        pendingRouteUpdate.current = null;
-      }, 420);
+      const target = event.target instanceof Element ? event.target.closest<HTMLAnchorElement>('a[href^="#/"]') : null;
+      const href = target?.getAttribute("href");
+      if (!href || target?.target) return;
+
+      event.preventDefault();
+      transitionToHash(href);
     };
 
+    document.addEventListener("click", onDocumentClick, true);
     window.addEventListener("hashchange", onHashChange);
-    onHashChange();
     return () => {
+      document.removeEventListener("click", onDocumentClick, true);
       window.removeEventListener("hashchange", onHashChange);
-      if (pendingRouteUpdate.current) window.clearTimeout(pendingRouteUpdate.current);
+      if (routeSwitchTimer.current) window.clearTimeout(routeSwitchTimer.current);
+      if (maskTimer.current) window.clearTimeout(maskTimer.current);
     };
-  }, [locale]);
+  }, [locale, startRouteTransition]);
 
   useEffect(() => {
     const resolved = resolveTheme(theme);
@@ -88,8 +135,7 @@ export function App() {
         onTheme={setTheme}
         downloadHref={recommended?.href ?? releaseDownloads.release.latest}
       />
-      <RouteLoadingOverlay routeKey={overlayRouteKey} />
-      <RouteParticleBridge routeKey={currentRouteKey} />
+      <RouteTransitionMask active={maskActive} transitionId={transitionId} />
       <AnimatePresence mode="wait" initial={false}>
         <PageTransition key={currentRouteKey}>
           {route.name === "home" && <HomePage t={t} locale={locale} platform={platform} recommended={recommended} />}

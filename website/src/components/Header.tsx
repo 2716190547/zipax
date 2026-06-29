@@ -32,14 +32,14 @@ export function Header({ route, t, locale, theme, onLocale, onTheme, downloadHre
 
   return (
     <header className={`site-header ${menuOpen ? "mobile-expanded" : ""}`.trim()}>
-      <Link className="brand" href="#/" aria-label="zipax home">
+      <a className="brand" href="#/" aria-label="zipax home">
         <ZipaxWordmark size="md" />
-      </Link>
+      </a>
       <nav className="nav-links" aria-label="Primary">
         {navItems.map((item) => (
-          <Link className={item.active ? "active" : ""} href={item.href} key={item.key} target={item.external ? "_blank" : undefined} rel={item.external ? "noreferrer" : undefined}>
+          <a className={item.active ? "active" : ""} href={item.href} key={item.key} target={item.external ? "_blank" : undefined} rel={item.external ? "noreferrer" : undefined}>
             {item.label}{item.external && <Link.Icon />}
-          </Link>
+          </a>
         ))}
       </nav>
       <div className="header-controls">
@@ -74,7 +74,7 @@ export function Header({ route, t, locale, theme, onLocale, onTheme, downloadHre
       <div className="mobile-nav-panel" aria-hidden={!menuOpen}>
         <nav className="mobile-nav" aria-label="Mobile primary">
           {navItems.map((item) => (
-            <Link
+            <a
               className={item.active ? "active" : ""}
               href={item.href}
               key={item.key}
@@ -87,7 +87,7 @@ export function Header({ route, t, locale, theme, onLocale, onTheme, downloadHre
               <span className="mobile-nav-icon" aria-hidden="true">
                 {item.external ? <Link.Icon /> : <ArrowRight width={18} height={18} />}
               </span>
-            </Link>
+            </a>
           ))}
         </nav>
         <div className="mobile-settings">
