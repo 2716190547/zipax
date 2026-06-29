@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/nicktomlin/tauri/tauri-v2/crates/tauri-cli/schema.json",
   "productName": "zipax",
-  "version": "0.24.5",
+  "version": "0.25.0",
   "identifier": "com.zipax.desktop",
   "build": {
     "frontendDist": "../dist",

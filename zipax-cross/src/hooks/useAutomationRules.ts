@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { listen } from "@tauri-apps/api/event";
 import { open } from "@tauri-apps/plugin-dialog";
 import type { CompressionSettingsEditorValue } from "@/components/CompressionSettingsEditor";
 import { stopAllWatchers, watchFolder, type WatchFolderRequest } from "@/lib/tauri";
@@ -19,6 +20,15 @@ const buildWatchRequest = (rule: FolderRule): WatchFolderRequest => ({
   max_height: rule.maxHeight,
   allow_upscale: false,
 });
+
+interface AutomationResultEvent {
+  rule_path: string;
+  file_path: string;
+  file_name: string;
+  output: string | null;
+  saved_bytes: number;
+  error: string | null;
+}
 
 export const getRuleEditorValue = (rule: FolderRule): CompressionSettingsEditorValue => ({
   mode: rule.compressionMode,
@@ -65,29 +75,6 @@ export function useAutomationRules() {
   useEffect(() => {
     ensureUniqueFolderRuleIds();
   }, [ensureUniqueFolderRuleIds]);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    const syncWatchers = async () => {
-      await stopAllWatchers();
-      if (!globalAutomationEnabled || cancelled) return;
-
-      for (const rule of folderRules.filter((r) => r.isEnabled)) {
-        if (cancelled) return;
-        try {
-          await watchFolder(buildWatchRequest(rule));
-        } catch {
-          // Keep syncing the rest of the rules.
-        }
-      }
-    };
-
-    syncWatchers();
-    return () => {
-      cancelled = true;
-    };
-  }, [folderRules, globalAutomationEnabled]);
 
   const addFolder = useCallback(async () => {
     try {
@@ -140,4 +127,93 @@ export function useAutomationRules() {
     toggleRuleEditor,
     updateRuleSettings,
   };
+}
+
+export function useAutomationSync() {
+  const folderRules = useAppStore((s) => s.folderRules);
+  const ensureUniqueFolderRuleIds = useAppStore((s) => s.ensureUniqueFolderRuleIds);
+  const globalAutomationEnabled = useAppStore((s) => s.globalAutomationEnabled);
+  const updateFolderRule = useAppStore((s) => s.updateFolderRule);
+  const addErrorRecord = useAppStore((s) => s.addErrorRecord);
+  const recordCompression = useAppStore((s) => s.recordCompression);
+
+  useEffect(() => {
+    ensureUniqueFolderRuleIds();
+  }, [ensureUniqueFolderRuleIds]);
+
+  const watcherSignature = JSON.stringify(
+    folderRules
+      .filter((rule) => rule.isEnabled)
+      .map((rule) => ({
+        path: rule.path,
+        isEnabled: rule.isEnabled,
+        overwriteOriginal: rule.overwriteOriginal,
+        compressionMode: rule.compressionMode,
+        outputFormat: rule.outputFormat,
+        level: rule.level,
+        targetSizeKB: rule.targetSizeKB,
+        targetSizePercent: rule.targetSizePercent,
+        preserveMetadata: rule.preserveMetadata,
+        maxWidth: rule.maxWidth,
+        maxHeight: rule.maxHeight,
+      })),
+  );
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const syncWatchers = async () => {
+      await stopAllWatchers();
+      if (!globalAutomationEnabled || cancelled) return;
+
+      const activeRules = useAppStore.getState().folderRules.filter((rule) => rule.isEnabled);
+      for (const rule of activeRules) {
+        if (cancelled) return;
+        try {
+          await watchFolder(buildWatchRequest(rule));
+        } catch (error) {
+          addErrorRecord({
+            fileName: rule.path,
+            reason: String(error),
+            occurredAt: new Date(),
+          });
+        }
+      }
+    };
+
+    syncWatchers();
+    return () => {
+      cancelled = true;
+    };
+  }, [addErrorRecord, globalAutomationEnabled, watcherSignature]);
+
+  useEffect(() => {
+    const unlisten = listen<AutomationResultEvent>("zipax://automation-result", (event) => {
+      const payload = event.payload;
+      const processedAt = new Date().toLocaleString();
+      const matchedRule = useAppStore
+        .getState()
+        .folderRules
+        .find((rule) => rule.path === payload.rule_path);
+
+      if (matchedRule) {
+        updateFolderRule(matchedRule.id, { lastProcessedAt: processedAt });
+      }
+
+      if (payload.error) {
+        addErrorRecord({
+          fileName: payload.file_name || payload.file_path,
+          reason: payload.error,
+          occurredAt: new Date(),
+        });
+        return;
+      }
+
+      recordCompression(payload.saved_bytes);
+    });
+
+    return () => {
+      unlisten.then((dispose) => dispose()).catch(() => {});
+    };
+  }, [addErrorRecord, recordCompression, updateFolderRule]);
 }

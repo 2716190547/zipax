@@ -12,7 +12,7 @@ import { ActionCard, FeaturedCard } from "../components/cards";
 import { PageHeader } from "../components/PageHeader";
 import { SectionHeader } from "../components/SectionHeader";
 import { SectionReveal } from "../components/motion/SectionReveal";
-import { downloads, release, type DownloadItem } from "../data/downloads";
+import { type DownloadItem, type ReleaseDownloads } from "../data/downloads";
 import { type messages } from "../i18n/messages";
 import type { Platform } from "../lib/platform";
 
@@ -20,6 +20,7 @@ type DownloadPageProps = {
   t: ReturnType<typeof messages>;
   platform: Platform;
   recommended?: { href: string; label: string; detail: string; size: string };
+  releaseDownloads: ReleaseDownloads;
 };
 
 type PlatformIcon = ComponentType<SVGProps<SVGSVGElement>>;
@@ -41,15 +42,15 @@ function platformLabel(platform: DownloadItem["platform"]) {
   return { macos: "macOS", windows: "Windows", linux: "Linux", source: "GitHub" }[platform];
 }
 
-export function DownloadPage({ t, recommended }: DownloadPageProps) {
-  const recommendedItem = downloads.find((item) => item.href === recommended?.href);
+export function DownloadPage({ t, recommended, releaseDownloads }: DownloadPageProps) {
+  const recommendedItem = releaseDownloads.downloads.find((item) => item.href === recommended?.href);
 
   return (
     <section className="page-section download-page">
       <PageHeader
         title={t.downloadTitle}
         description={t.downloadLead}
-        meta={<Chip size="sm" variant="secondary">v{release.version}</Chip>}
+        meta={<Chip size="sm" variant="secondary">v{releaseDownloads.release.version}</Chip>}
       />
 
       {recommended && recommendedItem && (
@@ -71,7 +72,7 @@ export function DownloadPage({ t, recommended }: DownloadPageProps) {
 
       <SectionHeader title={t.allPackages} className="subhead" />
       <SectionReveal as="div" className="download-grid" delay={0.04}>
-        {downloads.map((item) => (
+        {releaseDownloads.downloads.map((item) => (
           <ActionCard
             className="download-item"
             href={item.href}

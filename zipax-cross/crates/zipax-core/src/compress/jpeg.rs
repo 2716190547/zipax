@@ -5,6 +5,7 @@ use std::path::Path;
 
 use crate::config::CompressOptions;
 use crate::error::{Error, Result};
+use crate::image_io::open_image;
 
 /// Compress a JPEG image.
 ///
@@ -16,8 +17,7 @@ pub fn compress(
     _options: &CompressOptions,
 ) -> Result<()> {
     // Read source image into raw RGBA pixels.
-    let img =
-        image::open(source).map_err(|e| Error::ImageDecode(format!("读取 JPEG 失败: {e}")))?;
+    let img = open_image(source).map_err(|e| Error::ImageDecode(format!("读取 JPEG 失败: {e}")))?;
 
     let rgba = img.to_rgba8();
     let (width, height) = rgba.dimensions();

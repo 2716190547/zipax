@@ -9,6 +9,7 @@ use flate2::Compression;
 
 use crate::config::CompressOptions;
 use crate::error::{Error, Result};
+use crate::image_io::open_image;
 
 /// Convert an image to a PDF with one page that matches the image aspect ratio.
 ///
@@ -86,7 +87,7 @@ pub fn convert(
 }
 
 fn open_image_for_pdf(source: &Path) -> Result<image::DynamicImage> {
-    match image::open(source) {
+    match open_image(source) {
         Ok(img) => Ok(img),
         Err(primary_error) => {
             if !matches!(

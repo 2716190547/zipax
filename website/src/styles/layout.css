@@ -103,9 +103,10 @@ main {
   width: 100%;
   display: grid;
   grid-template-rows: auto auto;
+  gap: clamp(2px, 0.8svh, 12px);
   justify-items: center;
   align-content: center;
-  transform: translateY(clamp(8px, 2svh, 24px));
+  transform: translateY(clamp(0px, 1svh, 14px));
 }
 
 .home-hero .hero-copy {
@@ -117,11 +118,11 @@ main {
 
 .home-hero .hero-product {
   align-self: center;
-  width: min(1120px, 100%);
-  height: clamp(300px, 40svh, 560px);
+  width: min(1180px, 100%);
+  height: clamp(320px, 43svh, 590px);
   min-height: 0;
   max-height: none;
-  margin: 0 auto clamp(-24px, -2.2svh, -12px);
+  margin: 0 auto clamp(-18px, -1.4svh, -8px);
 }
 
 .hero-actions {

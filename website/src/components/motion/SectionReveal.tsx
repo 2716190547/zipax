@@ -20,10 +20,10 @@ export function SectionReveal(props: SectionRevealProps) {
     <Component
       className={className}
       aria-label={ariaLabel}
-      initial={{ opacity: reduceMotion ? 1 : 0, y: reduceMotion ? 0 : 14 }}
+      initial={{ opacity: reduceMotion ? 1 : 0, y: reduceMotion ? 0 : 28 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.14, margin: "0px 0px -8% 0px" }}
-      transition={{ duration: reduceMotion ? 0.01 : 0.48, delay: reduceMotion ? 0 : delay, ease: appEase }}
+      viewport={{ once: false, amount: 0.08, margin: "12% 0px -22% 0px" }}
+      transition={{ duration: reduceMotion ? 0.01 : 0.66, delay: reduceMotion ? 0 : delay, ease: appEase }}
     >
       {children}
     </Component>

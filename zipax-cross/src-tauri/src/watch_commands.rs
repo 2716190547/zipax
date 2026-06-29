@@ -1,8 +1,8 @@
 use std::path::PathBuf;
 
-use serde::Deserialize;
-use tauri::State;
-use zipax_core::compress_file as core_compress;
+use serde::{Deserialize, Serialize};
+use tauri::{AppHandle, Emitter, State};
+use zipax_core::{compress_file as core_compress, ImageKind};
 
 use crate::commands::default_level;
 use crate::compression_options::{build_options_for_path, CompressionRequestOptions};
@@ -34,6 +34,16 @@ pub struct WatchFolderRequest {
     pub max_height: Option<u32>,
     #[serde(default)]
     pub allow_upscale: bool,
+}
+
+#[derive(Clone, Serialize)]
+struct AutomationResultEvent {
+    rule_path: String,
+    file_path: String,
+    file_name: String,
+    output: Option<String>,
+    saved_bytes: u64,
+    error: Option<String>,
 }
 
 impl CompressionRequestOptions for WatchFolderRequest {
@@ -85,6 +95,7 @@ impl CompressionRequestOptions for WatchFolderRequest {
 /// Start watching a folder for new files.
 #[tauri::command]
 pub fn watch_folder(
+    app: AppHandle,
     request: WatchFolderRequest,
     state: State<'_, WatcherState>,
 ) -> Result<(), String> {
@@ -93,10 +104,16 @@ pub fn watch_folder(
         return Err(format!("文件夹不存在: {}", request.path));
     }
 
+    let rule_path = request.path.clone();
     let watcher = FolderWatcher::start(path, move |file_path| {
         tracing::info!("新文件检测: {:?}", file_path);
 
         if request.auto_compress {
+            if !is_supported_input(&file_path) {
+                tracing::debug!("跳过非支持文件: {:?}", file_path);
+                return;
+            }
+
             if is_compressed_output(&file_path) {
                 tracing::info!("跳过已压缩输出: {:?}", file_path);
                 return;
@@ -105,15 +122,38 @@ pub fn watch_folder(
             let options = build_options_for_path(&request, &file_path);
             match core_compress(&file_path, &options) {
                 Ok(result) => {
+                    let saved_bytes = result.saved_bytes();
                     tracing::info!(
                         "自动压缩完成: {} -> {} ({:.1}% 减少)",
                         result.source,
                         result.output,
                         result.ratio()
                     );
+                    emit_automation_result(
+                        &app,
+                        AutomationResultEvent {
+                            rule_path: rule_path.clone(),
+                            file_path: file_path.to_string_lossy().to_string(),
+                            file_name: display_name(&file_path),
+                            output: Some(result.output),
+                            saved_bytes,
+                            error: None,
+                        },
+                    );
                 }
                 Err(e) => {
                     tracing::error!("自动压缩失败: {}: {}", file_path.display(), e);
+                    emit_automation_result(
+                        &app,
+                        AutomationResultEvent {
+                            rule_path: rule_path.clone(),
+                            file_path: file_path.to_string_lossy().to_string(),
+                            file_name: display_name(&file_path),
+                            output: None,
+                            saved_bytes: 0,
+                            error: Some(e.to_string()),
+                        },
+                    );
                 }
             }
         }
@@ -142,4 +182,21 @@ fn is_compressed_output(path: &std::path::Path) -> bool {
         .and_then(|stem| stem.to_str())
         .map(|stem| stem.ends_with("#C") || stem.rsplit_once("#C-").is_some())
         .unwrap_or(false)
+}
+
+fn is_supported_input(path: &std::path::Path) -> bool {
+    ImageKind::from_path(path).is_some()
+}
+
+fn display_name(path: &std::path::Path) -> String {
+    path.file_name()
+        .and_then(|name| name.to_str())
+        .map(str::to_string)
+        .unwrap_or_else(|| path.to_string_lossy().to_string())
+}
+
+fn emit_automation_result(app: &AppHandle, payload: AutomationResultEvent) {
+    if let Err(error) = app.emit("zipax://automation-result", payload) {
+        tracing::warn!(%error, "failed to emit automation result");
+    }
 }

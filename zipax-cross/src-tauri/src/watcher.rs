@@ -1,11 +1,12 @@
 //! Folder watcher: monitors directories for new files.
 //! Includes file stability detection to avoid processing files still being written.
 
-use std::path::PathBuf;
-use std::sync::{mpsc, Arc};
-use std::time::Duration;
+use std::collections::{HashMap, HashSet};
+use std::path::{Path, PathBuf};
+use std::sync::{mpsc, Arc, Mutex};
+use std::time::{Duration, Instant};
 
-use notify::{Event, EventKind, RecommendedWatcher, RecursiveMode, Watcher};
+use notify::{event::ModifyKind, Event, EventKind, RecommendedWatcher, RecursiveMode, Watcher};
 
 /// Wait until a file's size stabilizes (stops changing).
 /// Returns Ok(()) if stable, Err if still changing after max attempts.
@@ -40,6 +41,8 @@ pub struct FolderWatcher {
     _watcher: RecommendedWatcher,
 }
 
+const PROCESSED_COOLDOWN: Duration = Duration::from_secs(20);
+
 impl FolderWatcher {
     /// Start watching a folder. Calls `on_new_file` when a new file is detected
     /// and its size has stabilized.
@@ -49,6 +52,8 @@ impl FolderWatcher {
     ) -> Result<Self, notify::Error> {
         let (tx, rx) = mpsc::channel::<notify::Result<Event>>();
         let on_new_file = Arc::new(on_new_file);
+        let pending_paths = Arc::new(Mutex::new(HashSet::<PathBuf>::new()));
+        let processed_paths = Arc::new(Mutex::new(HashMap::<PathBuf, Instant>::new()));
 
         let mut watcher = RecommendedWatcher::new(
             tx,
@@ -58,21 +63,32 @@ impl FolderWatcher {
         watcher.watch(&path, RecursiveMode::NonRecursive)?;
 
         let callback = on_new_file.clone();
+        let pending = pending_paths.clone();
+        let processed = processed_paths.clone();
         std::thread::spawn(move || {
             for res in rx {
                 match res {
                     Ok(event) => {
-                        if matches!(event.kind, EventKind::Create(_)) {
+                        if is_candidate_event(&event.kind) {
                             for path in event.paths {
-                                if path.is_file() {
+                                if path.is_file() && !is_ignored_path(&path) {
                                     let cb = callback.clone();
+                                    let pending = pending.clone();
+                                    let processed = processed.clone();
+                                    if is_recently_processed(&processed, &path) {
+                                        continue;
+                                    }
+                                    if !mark_pending(&pending, &path) {
+                                        continue;
+                                    }
                                     // 在新线程中等待文件稳定，避免阻塞事件循环
                                     std::thread::spawn(move || {
                                         // 等待文件大小稳定（最多 5 次，每次 500ms）
                                         match wait_until_stable(&path, 5, 500) {
                                             Ok(()) => {
                                                 tracing::info!("文件稳定: {:?}", path);
-                                                cb(path);
+                                                cb(path.clone());
+                                                mark_processed(&processed, &path);
                                             }
                                             Err(e) => {
                                                 tracing::warn!(
@@ -82,6 +98,7 @@ impl FolderWatcher {
                                                 );
                                             }
                                         }
+                                        clear_pending(&pending, &path);
                                     });
                                 }
                             }
@@ -95,5 +112,59 @@ impl FolderWatcher {
         });
 
         Ok(Self { _watcher: watcher })
+    }
+}
+
+fn is_candidate_event(kind: &EventKind) -> bool {
+    matches!(
+        kind,
+        EventKind::Create(_)
+            | EventKind::Modify(ModifyKind::Data(_))
+            | EventKind::Modify(ModifyKind::Name(_))
+            | EventKind::Modify(ModifyKind::Any)
+            | EventKind::Any
+    )
+}
+
+fn mark_pending(pending_paths: &Mutex<HashSet<PathBuf>>, path: &Path) -> bool {
+    pending_paths
+        .lock()
+        .map(|mut pending| pending.insert(path.to_path_buf()))
+        .unwrap_or(false)
+}
+
+fn clear_pending(pending_paths: &Mutex<HashSet<PathBuf>>, path: &Path) {
+    if let Ok(mut pending) = pending_paths.lock() {
+        pending.remove(path);
+    }
+}
+
+fn is_ignored_path(path: &Path) -> bool {
+    let Some(file_name) = path.file_name().and_then(|name| name.to_str()) else {
+        return true;
+    };
+    let Some(stem) = path.file_stem().and_then(|stem| stem.to_str()) else {
+        return true;
+    };
+
+    file_name.starts_with('.')
+        || file_name.starts_with("zipax-")
+        || file_name.ends_with(".tmp")
+        || stem.ends_with("#C")
+        || stem.rsplit_once("#C-").is_some()
+}
+
+fn is_recently_processed(processed_paths: &Mutex<HashMap<PathBuf, Instant>>, path: &Path) -> bool {
+    let Ok(mut processed) = processed_paths.lock() else {
+        return false;
+    };
+    let now = Instant::now();
+    processed.retain(|_, processed_at| now.duration_since(*processed_at) < PROCESSED_COOLDOWN);
+    processed.contains_key(path)
+}
+
+fn mark_processed(processed_paths: &Mutex<HashMap<PathBuf, Instant>>, path: &Path) {
+    if let Ok(mut processed) = processed_paths.lock() {
+        processed.insert(path.to_path_buf(), Instant::now());
     }
 }

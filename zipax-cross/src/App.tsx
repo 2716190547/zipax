@@ -8,6 +8,7 @@ import DependenciesView from "@/components/DependenciesView";
 import AboutView from "@/components/AboutView";
 import { WindowFrame } from "@/components/WindowFrame";
 import { UpdatePrompt } from "@/components/UpdatePrompt";
+import { useAutomationSync } from "@/hooks/useAutomationRules";
 import { useAutoWindowSize } from "@/hooks/useAutoWindowSize";
 import {
   useAppearanceSync,
@@ -46,6 +47,7 @@ export default function App() {
   useTrayStatusSync({ autoCheckUpdates, globalAutomationEnabled, totalSaved, totalCount });
   useTrayToggleSync({ setAutoCheckUpdates, setGlobalAutomationEnabled });
   useAutostartRefresh();
+  useAutomationSync();
 
   return (
     <div className="zipax-app text-foreground" ref={shellRef}>

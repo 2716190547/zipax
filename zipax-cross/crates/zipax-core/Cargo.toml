@@ -20,6 +20,7 @@ webp = { workspace = true }
 ravif = { workspace = true }
 rgb = { workspace = true }
 mozjpeg = { workspace = true }
+libheif-rs = { workspace = true }
 png = "0.17"
 flate2 = "1"
 

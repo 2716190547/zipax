@@ -2,10 +2,10 @@ import { BookOpen, Bug, Code, Tag } from "@gravity-ui/icons";
 import { ActionCard } from "../components/cards";
 import { PageHeader } from "../components/PageHeader";
 import { SectionReveal } from "../components/motion/SectionReveal";
-import { release } from "../data/downloads";
+import { type ReleaseInfo } from "../data/downloads";
 import { type messages } from "../i18n/messages";
 
-export function SupportPage({ t }: { t: ReturnType<typeof messages> }) {
+export function SupportPage({ t, releaseInfo }: { t: ReturnType<typeof messages>; releaseInfo: ReleaseInfo }) {
   const supportItems = [
     {
       href: "https://github.com/2716190547/zipax/issues",
@@ -28,9 +28,9 @@ export function SupportPage({ t }: { t: ReturnType<typeof messages> }) {
       external: true,
     },
     {
-      href: release.latest,
+      href: releaseInfo.latest,
       title: t.releaseLabel,
-      description: `zipax ${release.version}`,
+      description: `zipax ${releaseInfo.version}`,
       icon: <Tag width={22} height={22} />,
       external: true,
     },

@@ -1,78 +1,84 @@
-//! HEIC compression via ImageMagick.
-//!
-//! Requires ImageMagick (`magick`) to be installed and available in PATH.
-//! On macOS: `brew install imagemagick`
-//! On Linux: `apt install imagemagick`
-//! On Windows: download from https://imagemagick.org
+//! HEIC/HEIF compression using bundled libheif bindings.
 
 use std::path::Path;
-use std::sync::OnceLock;
+
+use libheif_rs::{
+    Channel, ColorSpace, CompressionFormat, EncoderQuality, HeifContext, Image, LibHeif, RgbChroma,
+};
 
 use crate::config::CompressOptions;
 use crate::error::{Error, Result};
-use crate::process::background_command;
+use crate::image_io::open_image;
 
-/// Compress an image to HEIC format using ImageMagick.
+/// Compress or convert an image to HEIC/HEIF.
 pub fn compress(
     source: &Path,
     output: &Path,
     quality: f32,
     _options: &CompressOptions,
 ) -> Result<()> {
-    let magick = find_imagemagick()?;
+    let img = open_image(source)?;
+    let rgb = img.to_rgb8();
+    let (width, height) = rgb.dimensions();
+    let image = create_heif_image(rgb.as_raw(), width, height)?;
 
-    // ImageMagick quality for HEIC: 0-100 (higher = better quality)
-    let quality_pct = (quality * 100.0).clamp(1.0, 100.0) as u32;
+    let lib_heif = LibHeif::new();
+    let mut context =
+        HeifContext::new().map_err(|e| Error::ImageEncode(format!("HEIC 上下文创建失败: {e}")))?;
+    let mut encoder = lib_heif
+        .encoder_for_format(CompressionFormat::Hevc)
+        .map_err(|e| {
+            Error::ImageEncode(format!(
+                "内置 HEIC 编码器不可用: {e}。请确认打包时包含 HEVC 编码 codec。"
+            ))
+        })?;
+    encoder
+        .set_quality(EncoderQuality::Lossy(heic_quality(quality)))
+        .map_err(|e| Error::ImageEncode(format!("HEIC 质量设置失败: {e}")))?;
 
-    let status = background_command(&magick)
-        .arg(source)
-        .args([
-            "-quality",
-            &quality_pct.to_string(),
-            "-define",
-            "heic:speed=6",
-            output
-                .to_str()
-                .ok_or_else(|| Error::Other("输出路径无效".into()))?,
-        ])
-        .status()
-        .map_err(|e| Error::ImageEncode(format!("执行 ImageMagick 失败: {e}")))?;
+    context
+        .encode_image(&image, &mut encoder, None)
+        .map_err(|e| Error::ImageEncode(format!("HEIC 编码失败: {e}")))?;
 
-    if !status.success() {
-        return Err(Error::ImageEncode(format!(
-            "ImageMagick HEIC 编码失败，退出码: {:?}",
-            status.code()
-        )));
-    }
+    let output = output
+        .to_str()
+        .ok_or_else(|| Error::ImageEncode("HEIC 输出路径无效".into()))?;
+    context
+        .write_to_file(output)
+        .map_err(|e| Error::ImageEncode(format!("HEIC 写入失败: {e}")))?;
 
     Ok(())
 }
 
-/// Find the ImageMagick executable.
-fn find_imagemagick() -> Result<String> {
-    static IMAGEMAGICK: OnceLock<Option<String>> = OnceLock::new();
+fn create_heif_image(rgb: &[u8], width: u32, height: u32) -> Result<Image> {
+    let mut image = Image::new(width, height, ColorSpace::Rgb(RgbChroma::Rgb))
+        .map_err(|e| Error::ImageEncode(format!("HEIC 图像创建失败: {e}")))?;
+    image
+        .create_plane(Channel::Interleaved, width, height, 24)
+        .map_err(|e| Error::ImageEncode(format!("HEIC 像素平面创建失败: {e}")))?;
 
-    if let Some(name) = IMAGEMAGICK.get_or_init(find_imagemagick_command).clone() {
-        return Ok(name);
+    let planes = image.planes_mut();
+    let plane = planes
+        .interleaved
+        .ok_or_else(|| Error::ImageEncode("HEIC 像素平面不可用".into()))?;
+    let row_bytes = width as usize * 3;
+    let expected_bytes = row_bytes * height as usize;
+    if rgb.len() < expected_bytes {
+        return Err(Error::ImageEncode("HEIC 输入像素数据不完整".into()));
     }
 
-    Err(Error::Other(
-        "未找到 ImageMagick，请安装: brew install imagemagick".into(),
-    ))
+    for (src, dst) in rgb.chunks_exact(row_bytes).zip(
+        plane
+            .data
+            .chunks_exact_mut(plane.stride)
+            .take(height as usize),
+    ) {
+        dst[..row_bytes].copy_from_slice(src);
+    }
+
+    Ok(image)
 }
 
-fn find_imagemagick_command() -> Option<String> {
-    // Try common names.
-    for name in &["magick", "convert"] {
-        if background_command(name)
-            .arg("--version")
-            .output()
-            .map(|o| o.status.success())
-            .unwrap_or(false)
-        {
-            return Some(name.to_string());
-        }
-    }
-
-    None
+fn heic_quality(quality: f32) -> u8 {
+    (quality * 100.0).round().clamp(1.0, 100.0) as u8
 }

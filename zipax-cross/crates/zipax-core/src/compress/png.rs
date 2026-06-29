@@ -4,6 +4,8 @@ use std::path::Path;
 
 use crate::config::CompressOptions;
 use crate::error::{Error, Result};
+use crate::image_io::open_image;
+use crate::utils;
 
 /// Compress a PNG image.
 ///
@@ -14,7 +16,7 @@ pub fn compress(
     quality: f32,
     _options: &CompressOptions,
 ) -> Result<()> {
-    let img = image::open(source).map_err(|e| Error::ImageDecode(format!("读取 PNG 失败: {e}")))?;
+    let img = open_image(source).map_err(|e| Error::ImageDecode(format!("读取 PNG 失败: {e}")))?;
 
     let rgba = img.to_rgba8();
     let (width, height) = rgba.dimensions();
@@ -45,8 +47,8 @@ pub fn compress(
         .remapped(&mut image)
         .map_err(|e| Error::ImageEncode(format!("PNG 重映射失败: {e}")))?;
 
-    // Write as indexed PNG to a temp file, then optimize with oxipng.
-    let temp_path = output.with_extension("png.tmp");
+    // Keep intermediate files outside watched folders to avoid automation loops.
+    let temp_path = utils::temp_output_path("png");
     write_indexed_png(&temp_path, width, height, &palette, &pixels)?;
 
     // oxipng optimization.

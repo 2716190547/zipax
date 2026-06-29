@@ -7,6 +7,7 @@ pub mod compress;
 pub mod config;
 pub mod error;
 pub mod format;
+mod image_io;
 pub mod plan;
 mod process;
 pub mod utils;

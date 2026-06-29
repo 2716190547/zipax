@@ -1,9 +1,9 @@
 import { Link, Separator, Typography } from "@heroui/react";
 import { ZipaxWordmark } from "./ZipaxWordmark";
-import { release } from "../data/downloads";
+import { type ReleaseInfo } from "../data/downloads";
 import { type messages } from "../i18n/messages";
 
-export function Footer({ t }: { t: ReturnType<typeof messages> }) {
+export function Footer({ t, releaseInfo }: { t: ReturnType<typeof messages>; releaseInfo: ReleaseInfo }) {
   return (
     <footer className="site-footer">
       <Separator className="footer-separator" />
@@ -18,7 +18,7 @@ export function Footer({ t }: { t: ReturnType<typeof messages> }) {
         <div className="footer-links">
           <div className="footer-column">
             <Typography.Heading level={3}>{t.product}</Typography.Heading>
-            <Link href={release.url}>{t.releaseLabel} {release.version}</Link>
+            <Link href={releaseInfo.url}>{t.releaseLabel} {releaseInfo.version}</Link>
             <Link href="#/download">{t.downloadLabel}</Link>
             <Link href="#/docs">{t.documentationLabel}</Link>
           </div>

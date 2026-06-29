@@ -10,6 +10,7 @@ type Particle = {
   size: number;
   alpha: number;
   phase: number;
+  drift: number;
 };
 
 const ASSEMBLY_DURATION = 760;
@@ -68,6 +69,7 @@ function createParticles(count: number): Particle[] {
         size: 0.75 + random() * 1.35,
         alpha: 0.42 + random() * 0.48,
         phase: random() * Math.PI * 2,
+        drift: 0.7 + random() * 1.25,
       });
     }
   }
@@ -87,7 +89,7 @@ export function HeroParticleLogo() {
     const finePointer = window.matchMedia("(pointer: fine)").matches;
     const compact = window.matchMedia("(max-width: 620px)").matches;
     const tablet = window.matchMedia("(max-width: 900px)").matches;
-    const particles = createParticles(compact ? 280 : tablet ? 480 : 720);
+    const particles = createParticles(compact ? 260 : tablet ? 440 : 680);
     const pointer = { x: 0, y: 0, active: false };
     let width = 1;
     let height = 1;
@@ -111,28 +113,32 @@ export function HeroParticleLogo() {
       const minSize = Math.min(width, height);
       const elapsed = reducedMotion ? ASSEMBLY_DURATION + 200 : now - startTime;
       const settled = Math.min(1, elapsed / (ASSEMBLY_DURATION + 120));
-      const breath = reducedMotion ? 1 : 1 + Math.sin(elapsed * 0.00125) * 0.028 * settled;
-      const roll = reducedMotion ? 0 : Math.sin(elapsed * 0.00018) * 0.075 * settled;
-      const yaw = reducedMotion ? 0 : Math.sin(elapsed * 0.00014) * 0.09 * settled + (pointer.active ? pointer.x * 0.085 : 0);
+      const introEase = 1 - Math.pow(1 - settled, 3);
+      const breathWave = Math.sin(elapsed * 0.00105);
+      const breath = reducedMotion ? 1 : 1 + breathWave * 0.034 * introEase;
+      const floatX = reducedMotion ? 0 : Math.sin(elapsed * 0.00024) * minSize * 0.012 * introEase;
+      const floatY = reducedMotion ? 0 : Math.cos(elapsed * 0.0002) * minSize * 0.014 * introEase;
+      const roll = reducedMotion ? 0 : Math.sin(elapsed * 0.00016) * 0.064 * introEase;
+      const yaw = reducedMotion ? 0 : Math.sin(elapsed * 0.00012) * 0.075 * introEase + (pointer.active ? pointer.x * 0.07 : 0);
       const cosRoll = Math.cos(roll);
       const sinRoll = Math.sin(roll);
       const cosYaw = Math.cos(yaw);
       const sinYaw = Math.sin(yaw);
-      const centerX = width / 2;
-      const centerY = height / 2;
-      const adaptiveProgress = Math.max(0, Math.min(1, (minSize - 360) / 240));
-      const logoScale = 0.46 + adaptiveProgress * 0.035;
-      const particleScale = Math.max(0.86, Math.min(1.35, minSize / 440));
-      const interactionRadius = Math.max(128, Math.min(220, minSize * 0.34));
+      const centerX = width / 2 + floatX;
+      const centerY = height * (compact ? 0.53 : 0.52) + floatY;
+      const adaptiveProgress = Math.max(0, Math.min(1, (minSize - 320) / 260));
+      const logoScale = compact ? 0.51 : 0.5 + adaptiveProgress * 0.05;
+      const particleScale = Math.max(0.9, Math.min(1.42, minSize / 410));
+      const interactionRadius = Math.max(126, Math.min(218, minSize * 0.32));
 
       context.globalCompositeOperation = "source-over";
       for (const particle of particles) {
         const layer = ZIPAX_LOGO_LAYERS[particle.layer];
         const progress = Math.max(0, Math.min(1, (elapsed - layer.delay) / ASSEMBLY_DURATION));
         const eased = 1 - Math.pow(1 - progress, 3);
-        const layerBreath = reducedMotion ? 1 : 1 + Math.sin(elapsed * 0.00092 + particle.layer * 1.7) * 0.012 * settled;
-        const ambientX = reducedMotion ? 0 : Math.sin(elapsed * 0.00072 + particle.phase) * 1.7 * settled;
-        const ambientY = reducedMotion ? 0 : Math.cos(elapsed * 0.0006 + particle.phase * 0.83) * 2.1 * settled;
+        const layerBreath = reducedMotion ? 1 : 1 + Math.sin(elapsed * 0.00086 + particle.layer * 1.7) * 0.014 * introEase;
+        const ambientX = reducedMotion ? 0 : Math.sin(elapsed * 0.00058 * particle.drift + particle.phase) * 2.2 * introEase;
+        const ambientY = reducedMotion ? 0 : Math.cos(elapsed * 0.0005 * particle.drift + particle.phase * 0.83) * 2.6 * introEase;
         const baseX = (particle.startX + (particle.x * 0.9 - particle.startX) * eased) * minSize * logoScale * breath * layerBreath + ambientX;
         const baseY = (particle.startY + (particle.y * 0.9 - particle.startY) * eased) * minSize * logoScale * breath * layerBreath + ambientY;
         const depth = layer.depth * minSize;
@@ -148,14 +154,14 @@ export function HeroParticleLogo() {
           const distance = Math.hypot(dx, dy);
           const influence = Math.max(0, interactionRadius - distance);
           if (influence > 0 && distance > 0.1) {
-            const push = Math.min(interactionRadius * 0.41, influence * 0.46);
+            const push = Math.min(interactionRadius * 0.34, influence * 0.38);
             screenX += (dx / distance) * push;
             screenY += (dy / distance) * push;
           }
         }
 
-        const alphaBreath = reducedMotion ? 1 : 0.92 + Math.sin(elapsed * 0.00105 + particle.phase) * 0.08;
-        context.globalAlpha = particle.alpha * (0.45 + eased * 0.55) * alphaBreath;
+        const alphaBreath = reducedMotion ? 1 : 0.9 + Math.sin(elapsed * 0.00092 + particle.phase) * 0.1;
+        context.globalAlpha = particle.alpha * (0.38 + eased * 0.62) * alphaBreath;
         context.fillStyle = colors[particle.layer];
         context.beginPath();
         context.arc(screenX, screenY, particle.size * particleScale * perspective, 0, Math.PI * 2);

@@ -38,7 +38,24 @@ jobs:
         if: matrix.platform == 'ubuntu-22.04'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev patchelf nasm
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev patchelf nasm cmake pkg-config libde265-dev libkvazaar-dev
+
+      - name: Install macOS HEIC dependencies
+        if: matrix.platform == 'macos-latest'
+        run: brew install cmake libde265 kvazaar
+
+      - name: Install Windows HEIC dependencies
+        if: matrix.platform == 'windows-latest'
+        shell: pwsh
+        run: |
+          $vcpkgRoot = $env:VCPKG_INSTALLATION_ROOT
+          if (-not $vcpkgRoot) {
+            $vcpkgRoot = "C:\vcpkg"
+          }
+          $vcpkg = Join-Path $vcpkgRoot "vcpkg.exe"
+          & $vcpkg install "libheif[hevc]:x64-windows-static-md"
+          "VCPKG_ROOT=$vcpkgRoot" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "VCPKGRS_DYNAMIC=0" | Out-File -FilePath $env:GITHUB_ENV -Append
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -53,6 +70,16 @@ jobs:
       - name: Install frontend dependencies
         working-directory: zipax-cross
         run: npm ci
+
+      - name: Verify HEIC codec
+        shell: bash
+        run: |
+          cd zipax-cross
+          cargo run -p zipax-cli -- compress src-tauri/icons/128x128.png --format heic --json
+          test -s "src-tauri/icons/128x128#C.heic"
+          cargo run -p zipax-cli -- compress "src-tauri/icons/128x128#C.heic" --format jpeg --json
+          test -s "src-tauri/icons/128x128#C#C.jpg"
+          rm -f "src-tauri/icons/128x128#C.heic" "src-tauri/icons/128x128#C#C.jpg"
 
       - name: Validate Windows icon resources
         if: matrix.platform == 'windows-latest'
@@ -144,3 +171,14 @@ jobs:
             $bitmap.Dispose()
             $icon.Dispose()
           }
+
+      - name: Report bundle sizes
+        shell: bash
+        run: |
+          echo "### Bundle sizes (${{ matrix.platform }})" >> "$GITHUB_STEP_SUMMARY"
+          find zipax-cross/target/release/bundle -type f \
+            \( -name "*.dmg" -o -name "*.msi" -o -name "*.exe" -o -name "*.AppImage" -o -name "*.deb" -o -name "*.rpm" \) \
+            -print | sort | while read -r file; do
+              size=$(du -h "$file" | awk '{print $1}')
+              echo "- \`$(basename "$file")\`: $size" >> "$GITHUB_STEP_SUMMARY"
+            done

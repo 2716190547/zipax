@@ -8,6 +8,233 @@
   to { transform: translate3d(1.4%, 1%, 0) scale(1.06); }
 }
 
+@keyframes routeGlowPulse {
+  from { opacity: 0; transform: scale(0.88); }
+  45% { opacity: 0.88; }
+  to { opacity: 0.72; transform: scale(1.04); }
+}
+
+@keyframes routeLayerCover {
+  0% {
+    transform: translate3d(84%, 84%, 0) rotate(-18deg) scale(1.24);
+  }
+  30% {
+    transform: translate3d(0%, 0%, 0) rotate(-18deg) scale(1.24);
+  }
+  66% {
+    transform: translate3d(0%, 0%, 0) rotate(-18deg) scale(1.24);
+  }
+  100% {
+    transform: translate3d(84%, -84%, 0) rotate(-18deg) scale(1.24);
+  }
+}
+
+@keyframes routeSurfaceHold {
+  0%, 10% {
+    opacity: 0;
+  }
+  30%, 66% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes routeLightSweep {
+  0%, 18% {
+    opacity: 0;
+    transform: translate3d(-28%, 12%, 0) rotate(-8deg);
+  }
+  42% {
+    opacity: 0.42;
+  }
+  74% {
+    opacity: 0.28;
+    transform: translate3d(14%, -4%, 0) rotate(-8deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(34%, -18%, 0) rotate(-8deg);
+  }
+}
+
+@keyframes routeVeilPlay {
+  0%, 20% {
+    opacity: 0;
+  }
+  36%, 68% {
+    opacity: 0.74;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes routeGlowPlay {
+  0%, 22% {
+    opacity: 0;
+    transform: translate3d(0, 12px, 0) scale(0.88);
+  }
+  38% {
+    opacity: 0.9;
+    transform: translate3d(0, -4px, 0) scale(1);
+  }
+  64% {
+    opacity: 0.78;
+    transform: translate3d(0, -4px, 0) scale(1.06);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(0, -14px, 0) scale(0.96);
+  }
+}
+
+@keyframes routeBrandPlay {
+  0%, 24% {
+    opacity: 0;
+    transform: translate3d(0, 18px, 0) scale(0.94);
+  }
+  40%, 66% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(0, -18px, 0) scale(0.98);
+  }
+}
+
+@keyframes routeStatusPlay {
+  0%, 34% {
+    opacity: 0;
+    letter-spacing: 0.24em;
+  }
+  46%, 68% {
+    opacity: 1;
+    letter-spacing: 0.16em;
+  }
+  100% {
+    opacity: 0;
+    letter-spacing: 0.22em;
+  }
+}
+
+@keyframes routeOverlayBloom {
+  from {
+    opacity: 0;
+    transform: scale(0.985);
+    clip-path: inset(8% 8% 8% 8% round 34px);
+  }
+  42% {
+    opacity: 1;
+    clip-path: inset(0% 0% 0% 0% round 0);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+    clip-path: inset(0% 0% 0% 0% round 0);
+  }
+}
+
+@keyframes routeOverlaySweep {
+  from {
+    opacity: 0;
+    transform: translate3d(-24%, 0, 0) rotate(-8deg);
+  }
+  36% { opacity: 0.42; }
+  to {
+    opacity: 0.22;
+    transform: translate3d(18%, 0, 0) rotate(-8deg);
+  }
+}
+
+@keyframes routeLogoPrimarySettle {
+  from {
+    opacity: 0;
+    transform: translate3d(18px, 12px, 0) rotate(9deg) scale(0.9);
+  }
+  58% { opacity: 1; }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+  }
+}
+
+@keyframes routeLogoSecondarySettle {
+  from {
+    opacity: 0;
+    transform: translate3d(-18px, -3px, 0) rotate(-10deg) scale(0.9);
+  }
+  58% { opacity: 0.84; }
+  to {
+    opacity: 0.82;
+    transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+  }
+}
+
+@keyframes routeLogoTertiarySettle {
+  from {
+    opacity: 0;
+    transform: translate3d(-10px, -20px, 0) rotate(18deg) scale(0.88);
+  }
+  58% { opacity: 0.7; }
+  to {
+    opacity: 0.64;
+    transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+  }
+}
+
+@keyframes routeWordIn {
+  from {
+    opacity: 0;
+    transform: translate3d(-5px, 0, 0);
+    filter: blur(3px);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+    filter: blur(0);
+  }
+}
+
+@keyframes routeParticleIn {
+  from {
+    opacity: 0;
+    transform: rotate(var(--angle)) translateX(126px) scale(0.4);
+  }
+  45% {
+    opacity: 0.78;
+  }
+  to {
+    opacity: 0.3;
+    transform: rotate(var(--angle)) translateX(76px) scale(0.86);
+  }
+}
+
+@keyframes routeShardSettle {
+  from {
+    opacity: 0;
+    transform: rotate(var(--shard-angle)) translateX(92px) rotate(34deg) scale(0.54);
+  }
+  48% { opacity: 0.54; }
+  to {
+    opacity: 0.16;
+    transform: rotate(var(--shard-angle)) translateX(52px) rotate(0deg) scale(0.88);
+  }
+}
+
+@keyframes cardSurfaceIn {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

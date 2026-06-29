@@ -285,3 +285,58 @@ fn compute_output_path(
         dir.join(format!("{stem}#C.{ext}"))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use image::{Rgb, RgbImage};
+    use tempfile::tempdir;
+
+    use super::compress_file;
+    use crate::config::{CompressOptions, OutputFormat};
+    use crate::format::ImageKind;
+
+    fn write_sample_png(path: &std::path::Path) {
+        let mut image = RgbImage::new(48, 36);
+        for (x, y, pixel) in image.enumerate_pixels_mut() {
+            *pixel = Rgb([
+                ((x * 5) % 255) as u8,
+                ((y * 7) % 255) as u8,
+                (((x + y) * 3) % 255) as u8,
+            ]);
+        }
+        image.save(path).expect("sample png should be written");
+    }
+
+    #[test]
+    fn encodes_heic_and_decodes_it_for_jpeg_output() {
+        let temp = tempdir().expect("tempdir should be created");
+        let png_path = temp.path().join("sample.png");
+        write_sample_png(&png_path);
+
+        let heic = compress_file(
+            &png_path,
+            &CompressOptions {
+                output_format: OutputFormat::Heic,
+                ..CompressOptions::default()
+            },
+        )
+        .expect("png should encode to heic");
+        let heic_path = std::path::PathBuf::from(&heic.output);
+        assert_eq!(ImageKind::from_path(&heic_path), Some(ImageKind::Heic));
+        assert!(heic_path.exists());
+        assert!(heic.compressed_bytes > 0);
+
+        let jpeg = compress_file(
+            &heic_path,
+            &CompressOptions {
+                output_format: OutputFormat::Jpeg,
+                ..CompressOptions::default()
+            },
+        )
+        .expect("heic should decode and encode to jpeg");
+        let jpeg_path = std::path::PathBuf::from(&jpeg.output);
+        assert_eq!(ImageKind::from_path(&jpeg_path), Some(ImageKind::Jpeg));
+        assert!(jpeg_path.exists());
+        assert!(jpeg.compressed_bytes > 0);
+    }
+}

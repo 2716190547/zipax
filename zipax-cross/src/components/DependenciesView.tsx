@@ -16,6 +16,18 @@ export default function DependenciesView() {
           <div className="surface-stack is-loose">
             <div className="surface-row">
               <div className="surface-copy">
+                <p className="surface-title">{t("dependencies.heicRead")}</p>
+                <p className="surface-detail">{t("dependencies.heicReadInfo")}</p>
+              </div>
+            </div>
+            <div className="surface-row">
+              <div className="surface-copy">
+                <p className="surface-title">{t("dependencies.heicWrite")}</p>
+                <p className="surface-detail">{t("dependencies.heicWriteInfo")}</p>
+              </div>
+            </div>
+            <div className="surface-row">
+              <div className="surface-copy">
                 <p className="surface-title">{t("dependencies.bundledToolsPath")}</p>
                 <p className="surface-detail font-mono">
                 zipax.app/Contents/Resources/Tools
