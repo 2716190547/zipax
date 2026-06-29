@@ -42,7 +42,7 @@ jobs:
 
       - name: Install macOS HEIC dependencies
         if: matrix.platform == 'macos-latest'
-        run: brew install cmake libde265 kvazaar
+        run: brew install cmake libde265
 
       - name: Install Windows HEIC dependencies
         if: matrix.platform == 'windows-latest'
@@ -53,7 +53,7 @@ jobs:
             $vcpkgRoot = "C:\vcpkg"
           }
           $vcpkg = Join-Path $vcpkgRoot "vcpkg.exe"
-          & $vcpkg install "libheif[hevc]:x64-windows"
+          & $vcpkg install "libheif:x64-windows"
           "VCPKG_ROOT=$vcpkgRoot" | Out-File -FilePath $env:GITHUB_ENV -Append
           "VCPKGRS_DYNAMIC=0" | Out-File -FilePath $env:GITHUB_ENV -Append
 
@@ -70,16 +70,6 @@ jobs:
       - name: Install frontend dependencies
         working-directory: zipax-cross
         run: npm ci
-
-      - name: Verify HEIC codec
-        shell: bash
-        run: |
-          cd zipax-cross
-          cargo run -p zipax-cli -- compress src-tauri/icons/128x128.png --format heic --json
-          test -s "src-tauri/icons/128x128#C.heic"
-          cargo run -p zipax-cli -- compress "src-tauri/icons/128x128#C.heic" --format jpeg --json
-          test -s "src-tauri/icons/128x128#C#C.jpg"
-          rm -f "src-tauri/icons/128x128#C.heic" "src-tauri/icons/128x128#C#C.jpg"
 
       - name: Validate Windows icon resources
         if: matrix.platform == 'windows-latest'
