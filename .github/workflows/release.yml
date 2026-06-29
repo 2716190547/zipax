@@ -38,7 +38,7 @@ jobs:
         if: matrix.platform == 'ubuntu-22.04'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev patchelf nasm cmake pkg-config libde265-dev libkvazaar-dev
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev patchelf nasm cmake pkg-config libde265-dev
 
       - name: Install macOS HEIC dependencies
         if: matrix.platform == 'macos-latest'
@@ -53,7 +53,7 @@ jobs:
             $vcpkgRoot = "C:\vcpkg"
           }
           $vcpkg = Join-Path $vcpkgRoot "vcpkg.exe"
-          & $vcpkg install "libheif[hevc]:x64-windows-static-md"
+          & $vcpkg install "libheif[hevc]:x64-windows"
           "VCPKG_ROOT=$vcpkgRoot" | Out-File -FilePath $env:GITHUB_ENV -Append
           "VCPKGRS_DYNAMIC=0" | Out-File -FilePath $env:GITHUB_ENV -Append
 
