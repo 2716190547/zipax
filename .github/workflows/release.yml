@@ -53,8 +53,10 @@ jobs:
             $vcpkgRoot = "C:\vcpkg"
           }
           $vcpkg = Join-Path $vcpkgRoot "vcpkg.exe"
-          & $vcpkg install "libheif:x64-windows"
+          & $vcpkg install "libheif:x64-windows-static"
           "VCPKG_ROOT=$vcpkgRoot" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "VCPKG_DEFAULT_TRIPLET=x64-windows-static" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "VCPKG_DEFAULT_HOST_TRIPLET=x64-windows-static" | Out-File -FilePath $env:GITHUB_ENV -Append
           "VCPKGRS_DYNAMIC=0" | Out-File -FilePath $env:GITHUB_ENV -Append
 
       - name: Setup Node.js
@@ -160,6 +162,16 @@ jobs:
           } finally {
             $bitmap.Dispose()
             $icon.Dispose()
+          }
+
+          $dumpbin = Get-Command dumpbin.exe -ErrorAction SilentlyContinue
+          if ($dumpbin) {
+            $dependencies = & $dumpbin.Source /DEPENDENTS $exe.FullName
+            if ($dependencies -match "(?i)\bheif\.dll\b") {
+              throw "Windows executable still depends on heif.dll; libheif must be linked statically or bundled next to the executable."
+            }
+          } else {
+            Write-Warning "dumpbin.exe was not found; skipping heif.dll import validation."
           }
 
       - name: Report bundle sizes
