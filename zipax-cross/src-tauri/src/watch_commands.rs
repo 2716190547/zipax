@@ -6,6 +6,7 @@ use zipax_core::{compress_file as core_compress, ImageKind};
 
 use crate::commands::default_level;
 use crate::compression_options::{build_options_for_path, CompressionRequestOptions};
+use crate::compression_runtime;
 use crate::state::WatcherState;
 use crate::watcher::FolderWatcher;
 
@@ -120,7 +121,7 @@ pub fn watch_folder(
             }
 
             let options = build_options_for_path(&request, &file_path);
-            match core_compress(&file_path, &options) {
+            match compression_runtime::run_serialized(|| core_compress(&file_path, &options)) {
                 Ok(result) => {
                     let saved_bytes = result.saved_bytes();
                     tracing::info!(

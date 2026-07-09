@@ -9,6 +9,7 @@ use zipax_core::{
 };
 
 use crate::compression_options::{build_options, CompressionRequestOptions};
+use crate::compression_runtime;
 
 /// Compression options from the frontend.
 #[derive(Debug, Deserialize)]
@@ -109,7 +110,24 @@ pub struct AppInfo {
 
 /// Compress a single file.
 #[tauri::command]
-pub fn compress_file(request: CompressRequest) -> CompressResponse {
+pub async fn compress_file(request: CompressRequest) -> CompressResponse {
+    tauri::async_runtime::spawn_blocking(move || {
+        compression_runtime::run_serialized(|| compress_request(request))
+    })
+    .await
+    .unwrap_or_else(|error| CompressResponse {
+        source: String::new(),
+        output: String::new(),
+        original_bytes: 0,
+        compressed_bytes: 0,
+        saved_bytes: 0,
+        ratio: 0.0,
+        used_output: false,
+        error: Some(format!("压缩任务失败: {error}")),
+    })
+}
+
+fn compress_request(request: CompressRequest) -> CompressResponse {
     let options = build_options(&request);
 
     match core_compress(&PathBuf::from(&request.path), &options) {
@@ -138,8 +156,23 @@ pub fn compress_file(request: CompressRequest) -> CompressResponse {
 
 /// Compress multiple files.
 #[tauri::command]
-pub fn compress_batch(requests: Vec<CompressRequest>) -> Vec<CompressResponse> {
-    requests.into_iter().map(compress_file).collect()
+pub async fn compress_batch(requests: Vec<CompressRequest>) -> Vec<CompressResponse> {
+    tauri::async_runtime::spawn_blocking(move || {
+        compression_runtime::run_serialized(|| requests.into_iter().map(compress_request).collect())
+    })
+    .await
+    .unwrap_or_else(|error| {
+        vec![CompressResponse {
+            source: String::new(),
+            output: String::new(),
+            original_bytes: 0,
+            compressed_bytes: 0,
+            saved_bytes: 0,
+            ratio: 0.0,
+            used_output: false,
+            error: Some(format!("批量压缩任务失败: {error}")),
+        }]
+    })
 }
 
 /// Plan compression for a file (dry run).

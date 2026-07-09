@@ -4,7 +4,7 @@
 use std::collections::{HashMap, HashSet};
 use std::path::{Path, PathBuf};
 use std::sync::{mpsc, Arc, Mutex};
-use std::time::{Duration, Instant};
+use std::time::{Duration, UNIX_EPOCH};
 
 use notify::{event::ModifyKind, Event, EventKind, RecommendedWatcher, RecursiveMode, Watcher};
 
@@ -41,7 +41,11 @@ pub struct FolderWatcher {
     _watcher: RecommendedWatcher,
 }
 
-const PROCESSED_COOLDOWN: Duration = Duration::from_secs(20);
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+struct FileSignature {
+    len: u64,
+    modified_ms: u128,
+}
 
 impl FolderWatcher {
     /// Start watching a folder. Calls `on_new_file` when a new file is detected
@@ -53,7 +57,7 @@ impl FolderWatcher {
         let (tx, rx) = mpsc::channel::<notify::Result<Event>>();
         let on_new_file = Arc::new(on_new_file);
         let pending_paths = Arc::new(Mutex::new(HashSet::<PathBuf>::new()));
-        let processed_paths = Arc::new(Mutex::new(HashMap::<PathBuf, Instant>::new()));
+        let processed_paths = Arc::new(Mutex::new(HashMap::<PathBuf, FileSignature>::new()));
 
         let mut watcher = RecommendedWatcher::new(
             tx,
@@ -75,9 +79,6 @@ impl FolderWatcher {
                                     let cb = callback.clone();
                                     let pending = pending.clone();
                                     let processed = processed.clone();
-                                    if is_recently_processed(&processed, &path) {
-                                        continue;
-                                    }
                                     if !mark_pending(&pending, &path) {
                                         continue;
                                     }
@@ -86,9 +87,12 @@ impl FolderWatcher {
                                         // 等待文件大小稳定（最多 5 次，每次 500ms）
                                         match wait_until_stable(&path, 5, 500) {
                                             Ok(()) => {
+                                                if !mark_unprocessed_signature(&processed, &path) {
+                                                    clear_pending(&pending, &path);
+                                                    return;
+                                                }
                                                 tracing::info!("文件稳定: {:?}", path);
                                                 cb(path.clone());
-                                                mark_processed(&processed, &path);
                                             }
                                             Err(e) => {
                                                 tracing::warn!(
@@ -154,17 +158,33 @@ fn is_ignored_path(path: &Path) -> bool {
         || stem.rsplit_once("#C-").is_some()
 }
 
-fn is_recently_processed(processed_paths: &Mutex<HashMap<PathBuf, Instant>>, path: &Path) -> bool {
-    let Ok(mut processed) = processed_paths.lock() else {
+fn mark_unprocessed_signature(
+    processed_paths: &Mutex<HashMap<PathBuf, FileSignature>>,
+    path: &Path,
+) -> bool {
+    let Ok(signature) = file_signature(path) else {
         return false;
     };
-    let now = Instant::now();
-    processed.retain(|_, processed_at| now.duration_since(*processed_at) < PROCESSED_COOLDOWN);
-    processed.contains_key(path)
+    let Ok(mut processed) = processed_paths.lock() else {
+        return true;
+    };
+    if processed.get(path) == Some(&signature) {
+        return false;
+    }
+    processed.insert(path.to_path_buf(), signature);
+    true
 }
 
-fn mark_processed(processed_paths: &Mutex<HashMap<PathBuf, Instant>>, path: &Path) {
-    if let Ok(mut processed) = processed_paths.lock() {
-        processed.insert(path.to_path_buf(), Instant::now());
-    }
+fn file_signature(path: &Path) -> Result<FileSignature, String> {
+    let metadata = std::fs::metadata(path).map_err(|e| format!("读取文件状态失败: {e}"))?;
+    let modified_ms = metadata
+        .modified()
+        .map_err(|e| format!("读取文件修改时间失败: {e}"))?
+        .duration_since(UNIX_EPOCH)
+        .map_err(|e| format!("文件修改时间无效: {e}"))?
+        .as_millis();
+    Ok(FileSignature {
+        len: metadata.len(),
+        modified_ms,
+    })
 }

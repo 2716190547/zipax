@@ -4,6 +4,7 @@ mod app_window;
 mod autostart;
 mod commands;
 mod compression_options;
+mod compression_runtime;
 mod file_commands;
 mod state;
 mod tray_commands;

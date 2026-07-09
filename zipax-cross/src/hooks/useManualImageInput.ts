@@ -4,7 +4,7 @@ import { useCallback, useEffect } from "react";
 import { isCompressedFile, useAppStore } from "@/store/app";
 import { saveTempImage } from "@/lib/tauri";
 
-const imageExtensions = ["jpg", "jpeg", "png", "webp", "avif", "heic", "tiff", "pdf"];
+const imageExtensions = ["jpg", "jpeg", "png", "webp", "avif", "heic", "heif", "tiff", "pdf"];
 
 interface ManualImageInputOptions {
   requestAutoCompress: () => void;
