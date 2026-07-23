@@ -18,7 +18,11 @@ export default function WorkflowView() {
           title={t("workflow.autoCopy")}
           info={t("workflow.autoCopyInfo")}
         >
-          <HeroSwitch isSelected={autoCopyAfterCompression} onChange={setAutoCopyAfterCompression} />
+          <HeroSwitch
+            ariaLabel={t("workflow.autoCopy")}
+            isSelected={autoCopyAfterCompression}
+            onChange={setAutoCopyAfterCompression}
+          />
         </SettingRow>
       </SettingsCard>
 
@@ -28,7 +32,11 @@ export default function WorkflowView() {
           title={t("workflow.skipCompressed")}
           info={t("workflow.skipCompressedInfo")}
         >
-          <HeroSwitch isSelected={skipCompressedFiles} onChange={setSkipCompressedFiles} />
+          <HeroSwitch
+            ariaLabel={t("workflow.skipCompressed")}
+            isSelected={skipCompressedFiles}
+            onChange={setSkipCompressedFiles}
+          />
         </SettingRow>
       </SettingsCard>
     </div>

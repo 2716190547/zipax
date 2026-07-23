@@ -38,6 +38,7 @@ interface StatsSettingProps {
 export function AutostartSetting() {
   const { t } = useI18n();
   const [enabled, setEnabled] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   useEffect(() => {
     isAutostartEnabled()
@@ -49,19 +50,28 @@ export function AutostartSetting() {
 
   const handleChange = async (nextEnabled: boolean) => {
     setEnabled(nextEnabled);
+    setIsUpdating(true);
     try {
       if (nextEnabled) await enableAutostart();
       else await disableAutostart();
+      setEnabled(await isAutostartEnabled());
     } catch (error) {
       safeWarn("Failed to update autostart status", error);
       setEnabled(!nextEnabled);
+    } finally {
+      setIsUpdating(false);
     }
   };
 
   return (
     <SettingsCard>
       <SettingRow icon={<Power size={16} strokeWidth={1.75} />} title={t("general.autostart")} info={t("general.autostartInfo")}>
-        <HeroSwitch isSelected={enabled} onChange={handleChange} />
+        <HeroSwitch
+          ariaLabel={t("general.autostart")}
+          isSelected={enabled}
+          isDisabled={isUpdating}
+          onChange={handleChange}
+        />
       </SettingRow>
     </SettingsCard>
   );
@@ -145,7 +155,7 @@ export function CloseToTraySetting({ enabled, onChange }: SwitchSettingProps) {
   return (
     <SettingsCard>
       <SettingRow icon={<Dock size={16} strokeWidth={1.75} />} title={t("general.closeToTray")} info={t("general.closeToTrayInfo")}>
-        <HeroSwitch isSelected={enabled} onChange={onChange} />
+        <HeroSwitch ariaLabel={t("general.closeToTray")} isSelected={enabled} onChange={onChange} />
       </SettingRow>
     </SettingsCard>
   );
@@ -190,7 +200,7 @@ export function AutoUpdateSetting({ enabled, onChange }: SwitchSettingProps) {
       <SettingRow icon={<RefreshCw size={16} strokeWidth={1.75} />} title={t("general.softwareUpdate")}>
         <div className="flex items-center gap-3">
           <span className="text-sm text-foreground/60">{t("general.autoCheckUpdates")}</span>
-          <HeroSwitch isSelected={enabled} onChange={onChange} />
+          <HeroSwitch ariaLabel={t("general.autoCheckUpdates")} isSelected={enabled} onChange={onChange} />
         </div>
       </SettingRow>
     </SettingsCard>

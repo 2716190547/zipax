@@ -2,6 +2,7 @@ import { Switch } from "@heroui/react";
 import type { ReactNode } from "react";
 
 export function HeroSwitch({
+  ariaLabel,
   isSelected,
   defaultSelected,
   onChange,
@@ -9,6 +10,7 @@ export function HeroSwitch({
   size = "lg",
   children,
 }: {
+  ariaLabel: string;
   isSelected?: boolean;
   defaultSelected?: boolean;
   onChange?: (selected: boolean) => void;
@@ -19,15 +21,18 @@ export function HeroSwitch({
   return (
     <Switch
       size={size}
+      aria-label={ariaLabel}
       isSelected={isSelected}
       defaultSelected={defaultSelected}
       onChange={onChange}
       isDisabled={isDisabled}
     >
-      <Switch.Control>
-        <Switch.Thumb />
-      </Switch.Control>
-      {children && <Switch.Content>{children}</Switch.Content>}
+      <Switch.Content>
+        <Switch.Control>
+          <Switch.Thumb />
+        </Switch.Control>
+        {children}
+      </Switch.Content>
     </Switch>
   );
 }
