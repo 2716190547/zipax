@@ -156,6 +156,7 @@ export function CompressionSettingsEditor({
           <>
             <ConfigFieldRow label={t("compression.overwriteOriginal")} control="auto">
               <HeroSwitch
+                ariaLabel={t("compression.overwriteOriginal")}
                 size="sm"
                 isSelected={!isPdfExport && value.overwrite}
                 isDisabled={isPdfExport}
@@ -174,6 +175,7 @@ export function CompressionSettingsEditor({
             </ConfigFieldRow>
             <ConfigFieldRow label={t("compression.preserveMetadata")} control="auto">
               <HeroSwitch
+                ariaLabel={t("compression.preserveMetadata")}
                 size="sm"
                 isSelected={value.preserveMetadata}
                 onChange={(preserveMetadata) => onChange({ preserveMetadata })}
@@ -191,6 +193,7 @@ export function CompressionSettingsEditor({
         info={t("compression.resizeInfo")}
         action={
           <HeroSwitch
+            ariaLabel={t("compression.resize")}
             size="sm"
             isSelected={resizeExpanded}
             onChange={setResizeEnabled}

@@ -60,6 +60,7 @@ export function FolderRuleRow({
       </Button>
 
       <HeroSwitch
+        ariaLabel={displayName}
         size="sm"
         isSelected={isEnabled}
         onChange={onToggle}

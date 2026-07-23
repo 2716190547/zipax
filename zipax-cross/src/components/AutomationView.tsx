@@ -28,7 +28,11 @@ export default function AutomationView() {
     <div className="view-stack">
       <SettingsCard>
         <SettingRow icon={<Zap size={16} strokeWidth={1.75} />} title={t("automation.autoCompressionSaved", { saved: formatBytes(totalSaved) })}>
-          <HeroSwitch isSelected={globalAutomationEnabled} onChange={setGlobalAutomationEnabled} />
+          <HeroSwitch
+            ariaLabel={t("automation.folderCompression")}
+            isSelected={globalAutomationEnabled}
+            onChange={setGlobalAutomationEnabled}
+          />
         </SettingRow>
       </SettingsCard>
 
