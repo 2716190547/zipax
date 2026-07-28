@@ -1,9 +1,8 @@
-# zipax v0.25.1
+# zipax v0.25.2
 
-zipax v0.25.1 是补丁版本，包含 CI 工作流修复和稳定性改进。
+zipax v0.25.2 是补丁版本，修复 Windows 开机自启动路径问题。
 
 ## 更新内容
 
-- 修复 GitHub Actions 多平台 CI 构建问题（移除缺失的 libkvazaar-dev 依赖、修复 vcpkg libheif 安装）。
-- 移除可选的 HEIC 验证步骤，避免阻塞发布流程。
+- 修复 Windows 开机自启动失败：清除注册表路径中的 `\\?\` 前缀和尾部空格。
 - 代码质量改进和小修复。
