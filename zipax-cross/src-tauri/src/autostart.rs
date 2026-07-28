@@ -59,10 +59,23 @@ fn preferred_autostart_path() -> Result<String, String> {
         }
     }
 
-    std::env::current_exe()
+    let path = std::env::current_exe()
         .and_then(|path| path.canonicalize())
-        .map(|path| path.display().to_string())
-        .map_err(|e| e.to_string())
+        .map_err(|e| e.to_string())?;
+
+    let path_str = path.display().to_string();
+
+    #[cfg(target_os = "windows")]
+    {
+        const EXTENDED_PREFIX: &str = "\\\\?\\";
+        let cleaned = path_str
+            .strip_prefix(EXTENDED_PREFIX)
+            .unwrap_or(&path_str);
+        return Ok(cleaned.trim().to_string());
+    }
+
+    #[cfg(not(target_os = "windows"))]
+    Ok(path_str)
 }
 
 fn refresh_legacy_macos_launch_agent() {
