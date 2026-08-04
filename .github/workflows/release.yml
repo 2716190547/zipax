@@ -140,7 +140,7 @@ jobs:
         shell: pwsh
         run: |
           Add-Type -AssemblyName System.Drawing
-          $exe = Get-Item "zipax-cross/target/release/zipax-app.exe"
+          $exe = Get-Item "zipax-cross/target/release/zipax.exe"
           $bytes = [System.IO.File]::ReadAllBytes($exe.FullName)
           $peOffset = [BitConverter]::ToInt32($bytes, 0x3c)
           $optionalHeader = $peOffset + 24

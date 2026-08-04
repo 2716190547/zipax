@@ -1,9 +1,10 @@
 {
   "$schema": "https://raw.githubusercontent.com/nicktomlin/tauri/tauri-v2/crates/tauri-cli/schema.json",
   "productName": "zipax",
-  "version": "0.25.2",
+  "version": "0.25.3",
   "identifier": "com.zipax.desktop",
   "build": {
+    "mainBinaryName": "zipax",
     "frontendDist": "../dist",
     "devUrl": "http://localhost:1420",
     "beforeDevCommand": "npm run dev",
@@ -46,6 +47,14 @@
     "category": "Utility",
     "shortDescription": "轻量级跨平台图像压缩工具",
     "longDescription": "zipax 是一个使用 Rust 核心的跨平台图像/PDF 压缩工具，支持 JPEG、PNG、WebP、AVIF、HEIC 和 PDF 格式。",
+    "linux": {
+      "deb": {
+        "depends": ["libde265-0"]
+      },
+      "rpm": {
+        "depends": ["libde265"]
+      }
+    },
     "macOS": {
       "minimumSystemVersion": "10.15"
     }

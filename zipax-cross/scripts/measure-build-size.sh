@@ -47,7 +47,7 @@ print_size() {
 }
 
 VERSION="$(node -p "require('$PROJECT_DIR/package.json').version")"
-BIN="$PROJECT_DIR/target/release/zipax-app"
+BIN="$PROJECT_DIR/target/release/zipax"
 DMG="$PROJECT_DIR/target/release/bundle/dmg/zipax_${VERSION}_aarch64.dmg"
 UPDATER="$PROJECT_DIR/target/release/bundle/macos/zipax.app.tar.gz"
 SIGNATURE="$PROJECT_DIR/target/release/bundle/macos/zipax.app.tar.gz.sig"

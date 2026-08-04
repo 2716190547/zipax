@@ -52,7 +52,7 @@ fn preferred_autostart_path() -> Result<String, String> {
                 .join("zipax.app")
                 .join("Contents")
                 .join("MacOS")
-                .join("zipax-app");
+                .join("zipax");
             if installed_exe.exists() {
                 return Ok(installed_exe.display().to_string());
             }
