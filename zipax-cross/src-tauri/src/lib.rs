@@ -6,6 +6,7 @@ mod commands;
 mod compression_options;
 mod compression_runtime;
 mod file_commands;
+mod gs_install;
 mod state;
 mod tray_commands;
 mod watch_commands;
@@ -156,6 +157,7 @@ pub fn run() {
             commands::get_app_info,
             autostart::set_autostart_enabled,
             autostart::get_autostart_enabled,
+            gs_install::install_ghostscript,
             tray_commands::set_close_to_tray_enabled,
             tray_commands::get_close_to_tray_enabled,
             tray_commands::set_tray_status,

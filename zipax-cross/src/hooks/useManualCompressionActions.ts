@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef } from "react";
 import { open, save } from "@tauri-apps/plugin-dialog";
 import { copyFile, compressFile } from "@/lib/tauri";
+import { useAppStore } from "@/store/app";
+import { isGhostscriptMissingError } from "@/components/GhostscriptInstallDialog";
 import { sleep } from "@/lib/utils";
 import { useAppStore, type CompressionItem } from "@/store/app";
 
@@ -51,6 +53,9 @@ export function useManualCompressionActions() {
       if (remainingLoadingMs > 0) await sleep(remainingLoadingMs);
 
       if (result.error) {
+        if (isGhostscriptMissingError(result.error)) {
+          useAppStore.getState().setGhostscriptItemId(id);
+        }
         updateItem(id, { status: "error", error: result.error });
       } else if (result.compressed_bytes >= result.original_bytes) {
         updateItem(id, { status: "error", error: "压缩后体积变大，已跳过" });

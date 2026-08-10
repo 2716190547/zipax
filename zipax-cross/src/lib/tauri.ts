@@ -112,3 +112,7 @@ export async function getCloseToTrayEnabled(): Promise<boolean> {
 export async function setTrayStatus(status: TrayStatus): Promise<void> {
   await invoke<void>("set_tray_status", { status });
 }
+
+export async function installGhostscript(): Promise<string> {
+  return invoke<string>("install_ghostscript");
+}

@@ -42,9 +42,7 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "resources": {
-      "gs-resources/**": "Tools/"
-    },
+    "resources": [],
     "externalBin": [],
     "category": "Utility",
     "shortDescription": "轻量级跨平台图像压缩工具",

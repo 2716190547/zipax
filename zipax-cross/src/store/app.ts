@@ -176,6 +176,10 @@ export const useAppStore = create<AppState>()(
           totalCount: s.totalCount + 1,
         })),
       clearStats: () => set({ totalSaved: 0, totalCount: 0 }),
+
+      // Ghostscript install dialog state (transient)
+      ghostscriptItemId: null,
+      setGhostscriptItemId: (id) => set({ ghostscriptItemId: id }),
     }),
     {
       name: "zipax-store",
