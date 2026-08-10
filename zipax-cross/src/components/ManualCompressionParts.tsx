@@ -1,4 +1,5 @@
 import { Button, Card, Spinner, Tooltip } from "@heroui/react";
+import { useState } from "react";
 import { useI18n } from "@/i18n";
 import type { CompressionItem } from "@/store/app";
 import {
@@ -13,6 +14,11 @@ import {
 } from "@/components/icons";
 import { ManualCompressionConfigButton } from "@/components/ManualCompressionConfig";
 import { formatBytes } from "@/lib/format";
+import { installGhostscript } from "@/lib/tauri";
+
+function isGhostscriptMissingError(error: string): boolean {
+  return error.includes("GhostscriptMissing") || error.includes("需要系统安装 Ghostscript");
+}
 
 interface DropZoneProps {
   isConfigOpen: boolean;
@@ -90,8 +96,20 @@ export function CompressionDropZone({ isConfigOpen, onToggleConfig, onPaste, onS
 
 export function CompressionResultList({ items, onSave, onRetry, onRemove }: ResultListProps) {
   const { t } = useI18n();
+  const [gsInstall, setGsInstall] = useState<Record<string, string>>({});
 
   if (items.length === 0) return null;
+
+  const handleGsInstall = async (itemId: string) => {
+    setGsInstall((prev) => ({ ...prev, [itemId]: "installing" }));
+    try {
+      await installGhostscript();
+      setGsInstall((prev) => ({ ...prev, [itemId]: "done" }));
+      setTimeout(() => onRetry(itemId), 800);
+    } catch (err) {
+      setGsInstall((prev) => ({ ...prev, [itemId]: String(err) }));
+    }
+  };
 
   return (
     <Card className="zipax-card compression-list-card">
@@ -119,6 +137,25 @@ export function CompressionResultList({ items, onSave, onRetry, onRemove }: Resu
                 {item.status === "preparing" && <p className="surface-detail">{t("home.reading")}</p>}
                 {item.status === "pending" && <p className="surface-detail">{t("home.preparing")}</p>}
                 {item.status === "error" && <p className="surface-detail text-danger">{item.error}</p>}
+
+                {item.status === "error" &&
+                  item.error &&
+                  isGhostscriptMissingError(item.error) &&
+                  gsInstall[item.id] !== "done" && (
+                    <div className="flex items-center gap-2 mt-2 p-2 bg-warning-50 rounded-lg border border-warning-200">
+                      <Download size={14} />
+                      <span className="text-xs flex-1">PDF 压缩需要 Ghostscript</span>
+                      {gsInstall[item.id] === "installing" ? (
+                        <Spinner size="sm" color="accent" />
+                      ) : gsInstall[item.id] ? (
+                        <p className="text-xs text-danger max-w-[180px] truncate">{gsInstall[item.id]}</p>
+                      ) : (
+                        <Button size="sm" variant="primary" onPress={() => handleGsInstall(item.id)}>
+                          一键安装
+                        </Button>
+                      )}
+                    </div>
+                  )}
               </div>
 
               <div className="compression-result-actions">
