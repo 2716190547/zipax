@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef } from "react";
 import { open, save } from "@tauri-apps/plugin-dialog";
 import { copyFile, compressFile } from "@/lib/tauri";
-import { useAppStore } from "@/store/app";
 import { isGhostscriptMissingError } from "@/components/GhostscriptInstallDialog";
 import { sleep } from "@/lib/utils";
 import { useAppStore, type CompressionItem } from "@/store/app";

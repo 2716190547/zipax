@@ -1,6 +1,6 @@
-import { Button, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@heroui/react";
+import { Button, Spinner } from "@heroui/react";
 import { useState } from "react";
-import { Download, Loader2, AlertTriangle, CheckCircle2, Terminal } from "@/components/icons";
+import { Download, AlertTriangle, CheckCircle, Info } from "@/components/icons";
 import { installGhostscript } from "@/lib/tauri";
 
 interface Props {
@@ -29,38 +29,38 @@ export function GhostscriptInstallDialog({ isOpen, onClose, onInstalled }: Props
     }
   };
 
+  if (!isOpen) return null;
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose} placement="center" size="sm">
-      <ModalContent>
-        <ModalHeader className="flex items-center gap-2 text-base font-semibold">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={onClose}>
+      <div className="bg-background rounded-xl shadow-xl border border-divider w-[360px] max-w-[90vw]" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center gap-2 px-5 pt-4 pb-2 text-base font-semibold">
           {status === "success" ? (
-            <CheckCircle2 size={18} className="text-success" />
+            <CheckCircle size={18} className="text-success shrink-0" />
           ) : status === "error" ? (
-            <AlertTriangle size={18} className="text-danger" />
+            <AlertTriangle size={18} className="text-danger shrink-0" />
           ) : (
-            <Terminal size={18} />
+            <Info size={18} className="shrink-0" />
           )}
           PDF 压缩需要 Ghostscript
-        </ModalHeader>
-        <ModalBody className="text-sm">
+        </div>
+        <div className="px-5 py-3 text-sm space-y-3">
           {status === "idle" && (
-            <div className="space-y-3">
-              <p>
-                Ghostscript 是 PDF 压缩所需的外部工具，尚未在系统中检测到。
-                <br />
-                点击「一键安装」自动下载安装。
-              </p>
-            </div>
+            <p>
+              Ghostscript 是 PDF 压缩所需的外部工具，尚未在系统中检测到。
+              <br />
+              点击「一键安装」自动下载安装。
+            </p>
           )}
           {status === "installing" && (
             <div className="flex items-center gap-2">
-              <Loader2 size={16} className="animate-spin" />
+              <Spinner size="sm" color="accent" />
               <span>正在安装 Ghostscript，请稍候...</span>
             </div>
           )}
           {status === "success" && (
             <div className="flex items-center gap-2">
-              <CheckCircle2 size={16} className="text-success shrink-0" />
+              <CheckCircle size={16} className="text-success shrink-0" />
               <span>{message}</span>
             </div>
           )}
@@ -71,31 +71,31 @@ export function GhostscriptInstallDialog({ isOpen, onClose, onInstalled }: Props
               </p>
             </div>
           )}
-        </ModalBody>
-        <ModalFooter>
+        </div>
+        <div className="flex justify-end gap-2 px-5 pt-2 pb-4">
           {status === "idle" && (
             <>
-              <Button variant="flat" size="sm" onPress={onClose}>取消</Button>
-              <Button color="primary" size="sm" onPress={handleInstall}>
+              <Button variant="ghost" size="sm" onPress={onClose}>取消</Button>
+              <Button variant="primary" size="sm" onPress={handleInstall}>
                 <Download size={15} />
                 一键安装
               </Button>
             </>
           )}
           {status === "installing" && (
-            <Button variant="flat" size="sm" isDisabled>安装中...</Button>
+            <Button variant="primary" size="sm" isDisabled>安装中...</Button>
           )}
           {status === "success" && (
-            <Button color="primary" size="sm" onPress={() => { onInstalled(); onClose(); }}>
+            <Button variant="primary" size="sm" onPress={() => { onInstalled(); onClose(); }}>
               继续压缩
             </Button>
           )}
           {status === "error" && (
-            <Button variant="flat" size="sm" onPress={() => setStatus("idle")}>重试</Button>
+            <Button variant="secondary" size="sm" onPress={() => setStatus("idle")}>重试</Button>
           )}
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+        </div>
+      </div>
+    </div>
   );
 }
 
