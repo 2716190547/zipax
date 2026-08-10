@@ -103,4 +103,3 @@ export function isGhostscriptMissingError(error: string | null): boolean {
   if (!error) return false;
   return error.includes("GhostscriptMissing") || error.includes("需要系统安装 Ghostscript");
 }
-", "filePath": "C:\\Users\\25482\\Desktop\\zipax\\zipax-cross\\src\\components\\GhostscriptInstallDialog.tsx"}
