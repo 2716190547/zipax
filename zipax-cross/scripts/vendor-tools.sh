@@ -38,7 +38,7 @@ copy_binary() {
 
 # ── macOS (Homebrew) ──
 if [[ "$(uname)" == "Darwin" ]]; then
-  copy_binary gs
+  copy_binary gs || true
 
   # Copy ghostscript share resources (Init, Resource, etc.)
   GS_SHARE=""
@@ -90,7 +90,6 @@ if [[ "$(uname)" == "Darwin" ]]; then
   while IFS= read -r binary; do
     chmod u+w "$binary" 2>/dev/null || true
     otool -L "$binary" 2>/dev/null | awk 'NR>1{print$1}' | while read -r dep; do
-      local base
       base="$(basename "$dep")"
       if [[ -f "$LIB_DIR/$base" ]]; then
         install_name_tool -change "$dep" "@loader_path/../lib/$base" "$binary" 2>/dev/null || true
@@ -102,7 +101,6 @@ if [[ "$(uname)" == "Darwin" ]]; then
     chmod u+w "$lib" 2>/dev/null || true
     install_name_tool -id "@loader_path/../lib/$(basename "$lib")" "$lib" 2>/dev/null || true
     otool -L "$lib" 2>/dev/null | awk 'NR>1{print$1}' | while read -r dep; do
-      local base
       base="$(basename "$dep")"
       if [[ -f "$LIB_DIR/$base" ]]; then
         install_name_tool -change "$dep" "@loader_path/$base" "$lib" 2>/dev/null || true
@@ -169,5 +167,5 @@ fi
 
 echo ""
 echo "vendor-tools: contents of $RESOURCE_DIR:"
-find "$RESOURCE_DIR" -type f 2>/dev/null | head -20
+find "$RESOURCE_DIR" -type f 2>/dev/null | head -20 || true
 echo "vendor-tools: done."
