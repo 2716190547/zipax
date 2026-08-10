@@ -1,6 +1,6 @@
 //! PDF compression via Ghostscript.
 
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::sync::OnceLock;
 
 use crate::config::CompressOptions;
@@ -20,7 +20,10 @@ pub fn compress(
 
     let pdf_setting = quality_to_pdf_setting(quality);
 
-    let status = background_command(&gs)
+    let mut cmd = background_command(&gs);
+    prepare_gs_environment(&mut cmd, &gs);
+
+    let status = cmd
         .args([
             "-sDEVICE=pdfwrite",
             "-dCompatibilityLevel=1.4",
@@ -56,7 +59,12 @@ fn find_ghostscript() -> Result<String> {
 }
 
 fn find_ghostscript_command() -> Option<String> {
-    // Try common names.
+    // First, check if Ghostscript is bundled in the app's resource directory.
+    if let Some(path) = bundled_ghostscript() {
+        return Some(path);
+    }
+
+    // Fall back to system PATH.
     for name in &["gs", "gswin64c", "gswin32c"] {
         if background_command(name)
             .arg("--version")
@@ -69,6 +77,83 @@ fn find_ghostscript_command() -> Option<String> {
     }
 
     None
+}
+
+/// Check if Ghostscript is bundled alongside the app.
+fn bundled_ghostscript() -> Option<String> {
+    let exe_path = std::env::current_exe().ok()?;
+    let exe_dir = exe_path.parent()?;
+
+    // Try paths relative to the executable (varies by platform and bundle layout).
+    let candidates: &[PathBuf] = &[
+        // macOS: binary at zipax.app/Contents/MacOS/zipax,
+        //         resources at zipax.app/Contents/Resources/Tools/bin/gs
+        exe_dir
+            .parent()
+            .map(|p| p.join("Resources").join("Tools").join("bin").join("gs"))
+            .unwrap_or_default(),
+        // Windows / Linux flat layout: Tools/bin/gs next to exe
+        exe_dir.join("Tools").join("bin").join("gs"),
+        // Fallback: gs next to exe
+        exe_dir.join("gs"),
+    ];
+
+    for candidate in candidates {
+        if !candidate.exists() {
+            continue;
+        }
+        if std::process::Command::new(candidate)
+            .arg("--version")
+            .output()
+            .map(|o| o.status.success())
+            .unwrap_or(false)
+        {
+            return Some(candidate.to_string_lossy().to_string());
+        }
+    }
+
+    None
+}
+
+/// Set environment variables for the Ghostscript subprocess so it can find
+/// its shared libraries and initialization files when bundled.
+fn prepare_gs_environment(cmd: &mut std::process::Command, gs_path: &str) {
+    // Only set env vars for bundled (non-PATH) Ghostscript.
+    let is_bundled = gs_path.contains('/') || gs_path.contains('\\');
+    if !is_bundled {
+        return;
+    }
+
+    let gs_dir = Path::new(gs_path).parent().unwrap_or(Path::new(""));
+    let tools_dir = gs_dir.parent().unwrap_or(gs_dir);
+    let lib_dir = tools_dir.join("lib");
+    let share_dir = tools_dir.join("share");
+
+    #[cfg(target_os = "macos")]
+    {
+        if lib_dir.exists() {
+            let existing = std::env::var("DYLD_LIBRARY_PATH").unwrap_or_default();
+            let mut paths = std::env::split_paths(&existing).collect::<Vec<_>>();
+            paths.push(lib_dir.to_path_buf());
+            cmd.env("DYLD_LIBRARY_PATH", std::env::join_paths(paths).unwrap_or_default());
+        }
+        if share_dir.join("ghostscript").exists() {
+            cmd.env("GS_LIB", share_dir.join("ghostscript"));
+        }
+    }
+
+    #[cfg(target_os = "linux")]
+    {
+        if lib_dir.exists() {
+            let existing = std::env::var("LD_LIBRARY_PATH").unwrap_or_default();
+            let mut paths = std::env::split_paths(&existing).collect::<Vec<_>>();
+            paths.push(lib_dir.to_path_buf());
+            cmd.env("LD_LIBRARY_PATH", std::env::join_paths(paths).unwrap_or_default());
+        }
+        if share_dir.join("ghostscript").exists() {
+            cmd.env("GS_LIB", share_dir.join("ghostscript"));
+        }
+    }
 }
 
 /// Map quality float to Ghostscript PDFSETTINGS.

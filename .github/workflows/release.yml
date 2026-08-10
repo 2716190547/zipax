@@ -74,6 +74,27 @@ jobs:
         working-directory: zipax-cross
         run: npm ci
 
+      - name: Install Ghostscript
+        shell: bash
+        run: |
+          case "${{ matrix.platform }}" in
+            macos-latest)
+              brew install ghostscript
+              ;;
+            ubuntu-22.04)
+              sudo apt-get install -y ghostscript
+              ;;
+            windows-latest)
+              choco install ghostscript --no-progress -y 2>/dev/null || \
+              echo "::warning::Ghostscript not installed via Chocolatey; PDF compression may fail on Windows."
+              ;;
+          esac
+
+      - name: Vendor Ghostscript into app resources
+        shell: bash
+        working-directory: zipax-cross
+        run: bash scripts/vendor-tools.sh
+
       - name: Validate Windows icon resources
         if: matrix.platform == 'windows-latest'
         shell: pwsh
