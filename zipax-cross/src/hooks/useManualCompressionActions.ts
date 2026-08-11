@@ -89,10 +89,12 @@ export function useManualCompressionActions() {
   const saveItem = useCallback(async (item: CompressionItem) => {
     if (!item.result) return;
 
+    const ext = item.result.output.split(".").pop() || "jpg";
+
     try {
       const dest = await save({
         defaultPath: outputFileName(item),
-        filters: [{ name: "图片", extensions: [item.result.output.split(".").pop() || "jpg"] }],
+        filters: [{ name: ext.toUpperCase(), extensions: [ext] }],
       });
       if (dest) await copyFile(item.result.output, dest);
     } catch {

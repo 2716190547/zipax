@@ -94,27 +94,112 @@ export function CompressionDropZone({ isConfigOpen, onToggleConfig, onPaste, onS
   );
 }
 
+type GsInstallState = "idle" | "installing" | "installed" | "failed";
+
+function GhostscriptInstallBanner({
+  state,
+  error,
+  affectedCount,
+  onInstall,
+}: {
+  state: GsInstallState;
+  error: string | null;
+  affectedCount: number;
+  onInstall: () => void;
+}) {
+  const { t } = useI18n();
+
+  return (
+    <div className={`gs-install-banner is-${state}`} role="status" aria-live="polite">
+      <div className="gs-install-banner-icon">
+        {state === "installing" ? (
+          <Spinner size="sm" color="accent" />
+        ) : state === "installed" ? (
+          <CheckCircle size={18} strokeWidth={2} />
+        ) : (
+          <Download size={18} strokeWidth={1.9} />
+        )}
+      </div>
+      <div className="gs-install-banner-copy">
+        <p className="gs-install-banner-title">
+          {state === "failed"
+            ? t("home.gsFailed")
+            : state === "installed"
+              ? t("home.gsInstalled")
+              : t("home.gsTitle")}
+        </p>
+        <p className="gs-install-banner-detail">
+          {state === "installing"
+            ? t("home.gsInstalling")
+            : state === "installed"
+              ? t("home.gsRetryingCount", { n: affectedCount })
+              : state === "failed" && error
+                ? error
+                : t("home.gsDetail")}
+        </p>
+      </div>
+      {state === "idle" && (
+        <div className="gs-install-banner-actions">
+          <Button size="sm" variant="primary" onPress={onInstall}>
+            {t("home.gsInstall")}
+          </Button>
+        </div>
+      )}
+      {state === "failed" && (
+        <div className="gs-install-banner-actions">
+          <Button size="sm" variant="secondary" onPress={onInstall}>
+            {t("home.gsRetry")}
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function CompressionResultList({ items, onSave, onRetry, onRemove }: ResultListProps) {
   const { t } = useI18n();
-  const [gsInstall, setGsInstall] = useState<Record<string, string>>({});
+  const [gsState, setGsState] = useState<GsInstallState>("idle");
+  const [gsError, setGsError] = useState<string | null>(null);
+
+  const gsAffected = items.filter(
+    (item) => item.status === "error" && item.error && isGhostscriptMissingError(item.error)
+  );
 
   if (items.length === 0) return null;
 
-  const handleGsInstall = async (itemId: string) => {
-    setGsInstall((prev) => ({ ...prev, [itemId]: "installing" }));
+  const handleGsInstall = async () => {
+    setGsState("installing");
+    setGsError(null);
     try {
       await installGhostscript();
-      setGsInstall((prev) => ({ ...prev, [itemId]: "done" }));
-      setTimeout(() => onRetry(itemId), 800);
+      setGsState("installed");
+      const affectedIds = gsAffected.map((item) => item.id);
+      setTimeout(() => {
+        setGsState("idle");
+        for (const id of affectedIds) onRetry(id);
+      }, 800);
     } catch (err) {
-      setGsInstall((prev) => ({ ...prev, [itemId]: String(err) }));
+      setGsError(String(err));
+      setGsState("failed");
     }
   };
+
+  const showGsBanner = gsAffected.length > 0 && gsState !== "installed";
 
   return (
     <Card className="zipax-card compression-list-card">
       <Card.Content className="compression-list-content">
         <div className="compression-result-list">
+          {showGsBanner && (
+            <div className="gs-install-banner-row">
+              <GhostscriptInstallBanner
+                state={gsState}
+                error={gsError}
+                affectedCount={gsAffected.length}
+                onInstall={handleGsInstall}
+              />
+            </div>
+          )}
           {items.map((item) => (
             <div key={item.id} className={`compression-result-row is-${item.status}`}>
               <div className="compression-status-icon" aria-hidden="true">
@@ -137,25 +222,6 @@ export function CompressionResultList({ items, onSave, onRetry, onRemove }: Resu
                 {item.status === "preparing" && <p className="surface-detail">{t("home.reading")}</p>}
                 {item.status === "pending" && <p className="surface-detail">{t("home.preparing")}</p>}
                 {item.status === "error" && <p className="surface-detail text-danger">{item.error}</p>}
-
-                {item.status === "error" &&
-                  item.error &&
-                  isGhostscriptMissingError(item.error) &&
-                  gsInstall[item.id] !== "done" && (
-                    <div className="flex items-center gap-2 mt-2 p-2 bg-warning-50 rounded-lg border border-warning-200">
-                      <Download size={14} />
-                      <span className="text-xs flex-1">PDF 压缩需要 Ghostscript</span>
-                      {gsInstall[item.id] === "installing" ? (
-                        <Spinner size="sm" color="accent" />
-                      ) : gsInstall[item.id] ? (
-                        <p className="text-xs text-danger max-w-[180px] truncate">{gsInstall[item.id]}</p>
-                      ) : (
-                        <Button size="sm" variant="primary" onPress={() => handleGsInstall(item.id)}>
-                          一键安装
-                        </Button>
-                      )}
-                    </div>
-                  )}
               </div>
 
               <div className="compression-result-actions">

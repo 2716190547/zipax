@@ -274,6 +274,87 @@
   gap: 6px;
 }
 
+.gs-install-banner-row {
+  padding: 10px 12px 0;
+}
+
+.gs-install-banner {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 54px;
+  padding: 10px 12px;
+  border: 1px solid color-mix(in oklab, var(--accent) 24%, var(--border));
+  border-radius: var(--radius-section);
+  background: color-mix(in oklab, var(--accent) 8%, var(--surface));
+  box-shadow: 0 10px 24px color-mix(in oklab, var(--accent) 10%, transparent);
+  animation: card-in var(--motion-medium) var(--motion-ease) both;
+}
+
+.gs-install-banner.is-failed {
+  border-color: color-mix(in oklab, var(--danger) 34%, var(--border));
+  background: color-mix(in oklab, var(--danger) 7%, var(--surface));
+  box-shadow: 0 10px 24px color-mix(in oklab, var(--danger) 10%, transparent);
+}
+
+.gs-install-banner.is-failed .gs-install-banner-icon {
+  color: var(--danger);
+  background: color-mix(in oklab, var(--danger) 12%, transparent);
+}
+
+.gs-install-banner.is-failed .gs-install-banner-title {
+  color: var(--danger);
+}
+
+.gs-install-banner-icon {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  color: var(--accent);
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--accent) 12%, transparent);
+}
+
+.gs-install-banner-copy {
+  min-width: 0;
+}
+
+.gs-install-banner-title,
+.gs-install-banner-detail {
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gs-install-banner-title {
+  color: var(--foreground);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.gs-install-banner-detail {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 520;
+  line-height: 1.2;
+}
+
+.gs-install-banner.is-failed .gs-install-banner-detail {
+  white-space: pre-line;
+  overflow: visible;
+}
+
+.gs-install-banner-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .is-spinning {
   animation: icon-spin 900ms linear infinite;
 }

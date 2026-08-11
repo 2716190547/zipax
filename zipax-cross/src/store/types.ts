@@ -125,7 +125,4 @@ export interface AppState {
   totalCount: number;
   recordCompression: (savedBytes: number) => void;
   clearStats: () => void;
-
-  ghostscriptItemId: string | null;
-  setGhostscriptItemId: (id: string | null) => void;
 }
