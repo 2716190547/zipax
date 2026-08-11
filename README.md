@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  <img alt="release" src="https://img.shields.io/badge/release-v0.25.5-2DA44E">
+  <img alt="release" src="https://img.shields.io/badge/release-v0.25.6-2DA44E">
   <img alt="platform" src="https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-0A84FF">
   <img alt="core" src="https://img.shields.io/badge/core-Rust-DEA584">
   <img alt="desktop" src="https://img.shields.io/badge/desktop-Tauri-24C8DB">
@@ -43,6 +43,19 @@
 | Light Mode | Dark Mode |
 | --- | --- |
 | <img src="docs/assets/zipax-light-en.png" alt="zipax light mode"> | <img src="docs/assets/zipax-dark-en.png" alt="zipax dark mode"> |
+
+## What's New in v0.25.6
+
+zipax v0.25.6 redesigned the Ghostscript install interaction for PDF compression.
+
+- Global install banner at the top of the result list (single state machine, one install for all affected PDFs).
+- Auto-retries every affected compression item after a successful install.
+- Full error message shown on failure (including manual install commands), with a retry button.
+- All banner copy is i18n-ed (Chinese / English / Traditional Chinese, and more).
+- Save dialog filter names now match the output extension (PDF → "PDF").
+- Removed dead code (unused install dialog component and store state).
+
+Design spec: `docs/design-spec-pdf-ghostscript-ux.md`.
 
 ## What's New in v0.25.5
 
@@ -127,8 +140,8 @@ cargo run -q -p zipax-cli -- compress a.png b.png --output-format webp
 Pushing a version tag builds native app packages on GitHub Actions:
 
 ```bash
-git tag v0.25.5
-git push origin v0.25.5
+git tag v0.25.6
+git push origin v0.25.6
 ```
 
 The release workflow creates a draft GitHub Release with macOS, Windows, and Linux artifacts attached.
@@ -146,7 +159,7 @@ If zipax saves you a little time, there is a bilingual support page here: [Suppo
 </p>
 
 <p align="center">
-  <img alt="release" src="https://img.shields.io/badge/release-v0.25.5-2DA44E">
+  <img alt="release" src="https://img.shields.io/badge/release-v0.25.6-2DA44E">
   <img alt="platform" src="https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-0A84FF">
   <img alt="core" src="https://img.shields.io/badge/core-Rust-DEA584">
   <img alt="desktop" src="https://img.shields.io/badge/desktop-Tauri-24C8DB">
@@ -170,6 +183,19 @@ If zipax saves you a little time, there is a bilingual support page here: [Suppo
 | 浅色模式 | 深色模式 |
 | --- | --- |
 | <img src="docs/assets/zipax-light-zh.png" alt="zipax 浅色模式"> | <img src="docs/assets/zipax-dark-zh.png" alt="zipax 深色模式"> |
+
+## v0.25.6 更新内容
+
+zipax v0.25.6 重新设计了 PDF 压缩的 Ghostscript 安装交互。
+
+- 结果列表顶部显示全局安装横幅（单一状态机，所有受影响的 PDF 只触发一次安装）。
+- 安装成功后自动重试所有受影响的压缩项。
+- 失败时完整显示错误信息（含手动安装命令），并提供重试按钮。
+- 横幅文案全部 i18n 化（中/英/繁等）。
+- 保存对话框过滤器名按输出扩展名生成（PDF → "PDF"）。
+- 清理死代码（未使用的安装弹窗组件与 store 状态）。
+
+设计规范见 `docs/design-spec-pdf-ghostscript-ux.md`。
 
 ## v0.25.5 更新内容
 
@@ -254,8 +280,8 @@ cargo run -q -p zipax-cli -- compress a.png b.png --output-format webp
 推送版本标签即可触发 GitHub Actions 构建原生安装包：
 
 ```bash
-git tag v0.25.5
-git push origin v0.25.5
+git tag v0.25.6
+git push origin v0.25.6
 ```
 
 GitHub Actions 的发布工作流会自动创建包含 macOS、Windows 和 Linux 构建产物的草稿 Release。
