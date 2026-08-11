@@ -1,7 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { dispatchZipaxResize } from "@/lib/utils";
 import { ManualCompressionConfigTray } from "@/components/ManualCompressionConfig";
-import { CompressionDropZone, CompressionResultList, ManualActionBar } from "@/components/ManualCompressionParts";
+import {
+  CompressionDropZone,
+  CompressionResultList,
+  GhostscriptInstallBanner,
+  ManualActionBar,
+} from "@/components/ManualCompressionParts";
 import { useManualCompressionActions } from "@/hooks/useManualCompressionActions";
 import { useManualImageInput } from "@/hooks/useManualImageInput";
 
@@ -35,6 +40,8 @@ export default function ManualCompression() {
       />
 
       {isConfigOpen && <ManualCompressionConfigTray />}
+
+      <GhostscriptInstallBanner items={items} onRetry={compressItem} />
 
       <CompressionResultList items={items} onSave={saveItem} onRetry={compressItem} onRemove={removeItem} />
 

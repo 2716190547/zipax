@@ -93,3 +93,21 @@ idle ──点击「一键安装」──▶ installing ──成功──▶ in
 - [ ] 横幅视觉与 update-prompt 一致（同色系、同圆角、同动效）
 - [ ] `npm run build`（tsc + vite）无错误
 - [ ] 删除死代码：`store.ghostscriptItemId`、`GhostscriptInstallDialog.tsx`
+
+## 8. 下载可靠性（v0.25.6 补充）
+
+### 问题
+
+Windows 一键安装的下载流程仅从 GitHub 官方单一源下载，且使用 PowerShell `Invoke-WebRequest`（无重试、无超时、PS 5.1 默认 TLS 1.0），在弱网络环境（尤其国内访问 GitHub）下极易下载失败。
+
+### 方案
+
+1. **多镜像回退**：`GS_URLS` 依次尝试 GitHub 官方 → gh-proxy 加速 → ghproxy 加速镜像，全部失败才报错。
+2. **优先 curl.exe**（Windows 10 1803+ 自带）：`-L --fail --retry 3 --connect-timeout 20 --max-time 600 --ssl-no-revoke`，失败自动重试。
+3. **curl 失败回退 PowerShell**：强制 `Tls12` 并设 `-TimeoutSec 600`。
+4. **文件校验**：下载后校验大小 ≥ 5MB，防止错误页/0 字节被误判成功。
+5. **错误信息**：附带手动下载地址（GitHub Releases + Ghostscript 官网）。
+
+### 布局（v0.25.6 补充）
+
+`GhostscriptInstallBanner` 作为**独立卡片**渲染于结果列表卡片同级（`ManualCompression.tsx` 中位于 `CompressionResultList` 之前），不再嵌套于列表内部；采用 `zipax-card` 卡片规格（surface 背景、radius-card、shadow-card）。
