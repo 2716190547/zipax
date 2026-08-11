@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  <img alt="release" src="https://img.shields.io/badge/release-v0.25.6-2DA44E">
+  <img alt="release" src="https://img.shields.io/badge/release-v0.25.7-2DA44E">
   <img alt="platform" src="https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-0A84FF">
   <img alt="core" src="https://img.shields.io/badge/core-Rust-DEA584">
   <img alt="desktop" src="https://img.shields.io/badge/desktop-Tauri-24C8DB">
@@ -43,6 +43,15 @@
 | Light Mode | Dark Mode |
 | --- | --- |
 | <img src="docs/assets/zipax-light-en.png" alt="zipax light mode"> | <img src="docs/assets/zipax-dark-en.png" alt="zipax dark mode"> |
+
+## What's New in v0.25.7
+
+zipax v0.25.7 improves Ghostscript download reliability and the install banner layout.
+
+- **Download reliability (Windows)**: multi-mirror fallback (GitHub → gh-proxy → ghproxy), curl.exe with auto-retry/timeouts (falls back to PowerShell with forced TLS 1.2), ≥5MB file size validation, and manual download links in error messages.
+- **Layout**: the Ghostscript install banner is now a standalone card, shown at the same level as the error list instead of nested inside it.
+
+Design spec: `docs/design-spec-pdf-ghostscript-ux.md`.
 
 ## What's New in v0.25.6
 
@@ -140,8 +149,8 @@ cargo run -q -p zipax-cli -- compress a.png b.png --output-format webp
 Pushing a version tag builds native app packages on GitHub Actions:
 
 ```bash
-git tag v0.25.6
-git push origin v0.25.6
+git tag v0.25.7
+git push origin v0.25.7
 ```
 
 The release workflow creates a draft GitHub Release with macOS, Windows, and Linux artifacts attached.
@@ -159,7 +168,7 @@ If zipax saves you a little time, there is a bilingual support page here: [Suppo
 </p>
 
 <p align="center">
-  <img alt="release" src="https://img.shields.io/badge/release-v0.25.6-2DA44E">
+  <img alt="release" src="https://img.shields.io/badge/release-v0.25.7-2DA44E">
   <img alt="platform" src="https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-0A84FF">
   <img alt="core" src="https://img.shields.io/badge/core-Rust-DEA584">
   <img alt="desktop" src="https://img.shields.io/badge/desktop-Tauri-24C8DB">
@@ -183,6 +192,15 @@ If zipax saves you a little time, there is a bilingual support page here: [Suppo
 | 浅色模式 | 深色模式 |
 | --- | --- |
 | <img src="docs/assets/zipax-light-zh.png" alt="zipax 浅色模式"> | <img src="docs/assets/zipax-dark-zh.png" alt="zipax 深色模式"> |
+
+## v0.25.7 更新内容
+
+zipax v0.25.7 提升 Ghostscript 下载可靠性，并优化安装横幅布局。
+
+- **下载可靠性提升**（Windows）：多镜像回退（GitHub → gh-proxy → ghproxy），优先使用 `curl.exe`（自动重试 + 超时），失败回退 PowerShell（强制 TLS 1.2）；下载后校验文件大小（≥5MB），失败时提供手动下载地址。
+- **布局优化**：Ghostscript 安装横幅改为独立卡片，与报错项同级展示，不再嵌套在列表内部。
+
+设计规范见 `docs/design-spec-pdf-ghostscript-ux.md`。
 
 ## v0.25.6 更新内容
 
@@ -280,8 +298,8 @@ cargo run -q -p zipax-cli -- compress a.png b.png --output-format webp
 推送版本标签即可触发 GitHub Actions 构建原生安装包：
 
 ```bash
-git tag v0.25.6
-git push origin v0.25.6
+git tag v0.25.7
+git push origin v0.25.7
 ```
 
 GitHub Actions 的发布工作流会自动创建包含 macOS、Windows 和 Linux 构建产物的草稿 Release。
