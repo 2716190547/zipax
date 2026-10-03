@@ -1,3 +1,15 @@
+# zipax v0.25.8
+
+zipax v0.25.8 修复 Linux AppImage 缺少 `.DirIcon` 的问题，确保顺利收录进入 AppImage 官方目录。
+
+## 更新内容
+
+- **修复 AppImage 打包缺陷**：
+  - 升级 `@tauri-apps/cli` 至 `2.12.1`（修复 `tauri#15596`）。
+  - 解决 AppImage 打包时 `.DirIcon` 与 `.desktop` 软链接使用绝对路径导致挂载测试报错 `FATAL: .DirIcon is missing` 的问题。
+
+---
+
 # zipax v0.25.7
 
 zipax v0.25.7 提升 Ghostscript 下载可靠性，并优化安装横幅布局。
