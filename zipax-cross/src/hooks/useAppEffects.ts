@@ -9,7 +9,6 @@ import {
   setCloseToTrayEnabled,
   setTrayStatus,
 } from "@/lib/tauri";
-import { safeWarn } from "@/lib/utils";
 import type { AppearanceMode, LanguageMode, ThemeColor } from "@/store/app";
 import type { ReadyUpdate } from "@/store/types";
 
@@ -79,7 +78,7 @@ export function useDocumentLocale(languageMode: LanguageMode) {
 export function useCloseToTraySync(closeToTray: boolean) {
   useEffect(() => {
     setCloseToTrayEnabled(closeToTray).catch((error) => {
-      safeWarn("Failed to update close behavior", error);
+      console.warn("Failed to update close behavior", error);
     });
   }, [closeToTray]);
 }
@@ -113,7 +112,7 @@ export function useTrayStatusSync(options: TrayStatusOptions) {
       total_saved: totalSaved,
       total_count: totalCount,
     }).catch((error) => {
-      safeWarn("Failed to sync tray status", error);
+      console.warn("Failed to sync tray status", error);
     });
   }, [autoCheckUpdates, globalAutomationEnabled, totalSaved, totalCount]);
 }
@@ -145,7 +144,7 @@ export function useAutostartRefresh() {
         await disableAutostart();
         await enableAutostart();
       } catch (error) {
-        safeWarn("Failed to refresh autostart registration", error);
+        console.warn("Failed to refresh autostart registration", error);
       }
     };
     refreshAutostartRegistration();

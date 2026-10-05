@@ -13,7 +13,7 @@ import {
   X,
 } from "@/components/icons";
 import { ManualCompressionConfigButton } from "@/components/ManualCompressionConfig";
-import { formatBytes } from "@/lib/format";
+import { formatBytes } from "@/lib/utils";
 import { installGhostscript } from "@/lib/tauri";
 
 function isGhostscriptMissingError(error: string): boolean {

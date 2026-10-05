@@ -4,9 +4,8 @@ import { languageOptions, useI18n } from "@/i18n";
 import { BarChart3, Dock, Ellipsis, Languages, Palette, Power, RefreshCw, SunMoon, Tag } from "@/components/icons";
 import { HeroSelect, HeroSwitch, SettingsCard, SettingRow, SettingTitle, StatCard } from "@/components/ui";
 import { useUpdateCheck } from "@/hooks/useUpdateCheck";
-import { formatBytes } from "@/lib/format";
 import { disableAutostart, enableAutostart, getAppInfo, isAutostartEnabled } from "@/lib/tauri";
-import { safeWarn } from "@/lib/utils";
+import { formatBytes } from "@/lib/utils";
 import type { AppearanceMode, LanguageMode, ThemeColor } from "@/store/app";
 
 interface AppearanceSettingProps {
@@ -44,7 +43,7 @@ export function AutostartSetting() {
     isAutostartEnabled()
       .then(setEnabled)
       .catch((error) => {
-        safeWarn("Failed to read autostart status", error);
+        console.warn("Failed to read autostart status", error);
       });
   }, []);
 
@@ -56,7 +55,7 @@ export function AutostartSetting() {
       else await disableAutostart();
       setEnabled(await isAutostartEnabled());
     } catch (error) {
-      safeWarn("Failed to update autostart status", error);
+      console.warn("Failed to update autostart status", error);
       setEnabled(!nextEnabled);
     } finally {
       setIsUpdating(false);

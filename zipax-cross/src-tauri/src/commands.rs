@@ -8,83 +8,15 @@ use zipax_core::{
     CompressionMode, ImageKind,
 };
 
-use crate::compression_options::{build_options, CompressionRequestOptions};
+use crate::compression_options::CompressionParams;
 use crate::compression_runtime;
 
 /// Compression options from the frontend.
 #[derive(Debug, Deserialize)]
 pub struct CompressRequest {
     pub path: String,
-    #[serde(default)]
-    pub mode: Option<String>,
-    #[serde(default)]
-    pub format: Option<String>,
-    #[serde(default = "default_level")]
-    pub level: u8,
-    #[serde(default)]
-    pub target_size_kb: Option<u32>,
-    #[serde(default)]
-    pub target_size_percent: Option<u8>,
-    #[serde(default)]
-    pub preserve_metadata: bool,
-    #[serde(default)]
-    pub overwrite: bool,
-    #[serde(default)]
-    pub max_width: Option<u32>,
-    #[serde(default)]
-    pub max_height: Option<u32>,
-    #[serde(default)]
-    pub allow_upscale: bool,
-}
-
-impl CompressionRequestOptions for CompressRequest {
-    fn path(&self) -> &str {
-        &self.path
-    }
-
-    fn mode(&self) -> Option<&str> {
-        self.mode.as_deref()
-    }
-
-    fn format(&self) -> Option<&str> {
-        self.format.as_deref()
-    }
-
-    fn level(&self) -> u8 {
-        self.level
-    }
-
-    fn target_size_kb(&self) -> Option<u32> {
-        self.target_size_kb
-    }
-
-    fn target_size_percent(&self) -> Option<u8> {
-        self.target_size_percent
-    }
-
-    fn preserve_metadata(&self) -> bool {
-        self.preserve_metadata
-    }
-
-    fn overwrite(&self) -> bool {
-        self.overwrite
-    }
-
-    fn max_width(&self) -> Option<u32> {
-        self.max_width
-    }
-
-    fn max_height(&self) -> Option<u32> {
-        self.max_height
-    }
-
-    fn allow_upscale(&self) -> bool {
-        self.allow_upscale
-    }
-}
-
-pub fn default_level() -> u8 {
-    3
+    #[serde(flatten)]
+    pub params: CompressionParams,
 }
 
 /// Compression result returned to the frontend.
@@ -128,7 +60,9 @@ pub async fn compress_file(request: CompressRequest) -> CompressResponse {
 }
 
 fn compress_request(request: CompressRequest) -> CompressResponse {
-    let options = build_options(&request);
+    let options = request
+        .params
+        .to_compress_options(std::path::Path::new(&request.path));
 
     match core_compress(&PathBuf::from(&request.path), &options) {
         Ok(result) => CompressResponse {

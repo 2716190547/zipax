@@ -1,4 +1,4 @@
-use std::sync::{Arc, Mutex};
+use std::sync::Mutex;
 
 use serde::{Deserialize, Serialize};
 use tauri::menu::{CheckMenuItem, MenuItem};
@@ -7,30 +7,35 @@ use tauri::Wry;
 use crate::watcher::FolderWatcher;
 
 /// Shared state for folder watchers.
+#[derive(Default)]
 pub struct WatcherState {
-    pub watchers: Arc<Mutex<Vec<FolderWatcher>>>,
+    pub watchers: Mutex<Vec<FolderWatcher>>,
 }
 
 impl WatcherState {
     pub fn new() -> Self {
-        Self {
-            watchers: Arc::new(Mutex::new(Vec::new())),
-        }
+        Self::default()
     }
 }
 
 /// Shared app behavior flags.
 pub struct AppBehaviorState {
-    close_to_tray: Arc<Mutex<bool>>,
-    tray_status: Arc<Mutex<TrayStatus>>,
+    close_to_tray: Mutex<bool>,
+    tray_status: Mutex<TrayStatus>,
+}
+
+impl Default for AppBehaviorState {
+    fn default() -> Self {
+        Self {
+            close_to_tray: Mutex::new(true),
+            tray_status: Mutex::new(TrayStatus::default()),
+        }
+    }
 }
 
 impl AppBehaviorState {
     pub fn new() -> Self {
-        Self {
-            close_to_tray: Arc::new(Mutex::new(true)),
-            tray_status: Arc::new(Mutex::new(TrayStatus::default())),
-        }
+        Self::default()
     }
 
     pub fn close_to_tray(&self) -> bool {

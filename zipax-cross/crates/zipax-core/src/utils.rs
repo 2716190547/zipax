@@ -34,16 +34,11 @@ pub fn file_size(path: &Path) -> u64 {
 
 /// Create a temporary file path in the system temp directory.
 pub fn temp_output_path(extension: &str) -> std::path::PathBuf {
-    let name = format!("zipax-{}", uuid_v4());
-    std::env::temp_dir().join(format!("{name}.{extension}"))
-}
-
-/// Simple UUID v4-like random string (no external dependency).
-fn uuid_v4() -> String {
-    use std::time::{SystemTime, UNIX_EPOCH};
-    let t = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .unwrap_or_default()
-        .as_nanos();
-    format!("{t:032x}")
+    let suffix = format!(".{extension}");
+    if let Ok(file) = tempfile::Builder::new().prefix("zipax-").suffix(&suffix).tempfile() {
+        if let Ok((_, path)) = file.keep() {
+            return path;
+        }
+    }
+    std::env::temp_dir().join(format!("zipax-{}.{extension}", std::process::id()))
 }

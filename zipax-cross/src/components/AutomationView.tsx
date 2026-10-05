@@ -1,7 +1,7 @@
 import { Button, Tooltip } from "@heroui/react";
 import { useI18n } from "@/i18n";
 import { useAppStore } from "@/store/app";
-import { formatBytes } from "@/lib/format";
+import { formatBytes } from "@/lib/utils";
 import { getRuleEditorValue, useAutomationRules } from "@/hooks/useAutomationRules";
 import { HeroSwitch, SettingsCard, SettingTitle, SettingRow, FolderRuleRow } from "@/components/ui";
 import { CompressionSettingsEditor } from "@/components/CompressionSettingsEditor";

@@ -1,7 +1,6 @@
 import { Button, Tooltip } from "@heroui/react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { Minus, X } from "@/components/icons";
-import { safeWarn } from "@/lib/utils";
 
 export function WindowControls() {
   const appWindow = getCurrentWindow();
@@ -18,7 +17,7 @@ export function WindowControls() {
             aria-label="最小化"
             onPress={() => {
               appWindow.minimize().catch((error) => {
-                safeWarn("Failed to minimize window", error);
+                console.warn("Failed to minimize window", error);
               });
             }}
           >
@@ -37,7 +36,7 @@ export function WindowControls() {
             aria-label="关闭"
             onPress={() => {
               appWindow.close().catch((error) => {
-                safeWarn("Failed to close window", error);
+                console.warn("Failed to close window", error);
               });
             }}
           >

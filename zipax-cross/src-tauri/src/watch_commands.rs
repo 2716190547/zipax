@@ -4,8 +4,7 @@ use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Emitter, State};
 use zipax_core::{compress_file as core_compress, ImageKind};
 
-use crate::commands::default_level;
-use crate::compression_options::{build_options_for_path, CompressionRequestOptions};
+use crate::compression_options::CompressionParams;
 use crate::compression_runtime;
 use crate::state::WatcherState;
 use crate::watcher::FolderWatcher;
@@ -15,26 +14,8 @@ use crate::watcher::FolderWatcher;
 pub struct WatchFolderRequest {
     pub path: String,
     pub auto_compress: bool,
-    #[serde(default)]
-    pub mode: Option<String>,
-    #[serde(default)]
-    pub format: Option<String>,
-    #[serde(default = "default_level")]
-    pub level: u8,
-    #[serde(default)]
-    pub target_size_kb: Option<u32>,
-    #[serde(default)]
-    pub target_size_percent: Option<u8>,
-    #[serde(default)]
-    pub preserve_metadata: bool,
-    #[serde(default)]
-    pub overwrite: bool,
-    #[serde(default)]
-    pub max_width: Option<u32>,
-    #[serde(default)]
-    pub max_height: Option<u32>,
-    #[serde(default)]
-    pub allow_upscale: bool,
+    #[serde(flatten)]
+    pub params: CompressionParams,
 }
 
 #[derive(Clone, Serialize)]
@@ -45,52 +26,6 @@ struct AutomationResultEvent {
     output: Option<String>,
     saved_bytes: u64,
     error: Option<String>,
-}
-
-impl CompressionRequestOptions for WatchFolderRequest {
-    fn path(&self) -> &str {
-        &self.path
-    }
-
-    fn mode(&self) -> Option<&str> {
-        self.mode.as_deref()
-    }
-
-    fn format(&self) -> Option<&str> {
-        self.format.as_deref()
-    }
-
-    fn level(&self) -> u8 {
-        self.level
-    }
-
-    fn target_size_kb(&self) -> Option<u32> {
-        self.target_size_kb
-    }
-
-    fn target_size_percent(&self) -> Option<u8> {
-        self.target_size_percent
-    }
-
-    fn preserve_metadata(&self) -> bool {
-        self.preserve_metadata
-    }
-
-    fn overwrite(&self) -> bool {
-        self.overwrite
-    }
-
-    fn max_width(&self) -> Option<u32> {
-        self.max_width
-    }
-
-    fn max_height(&self) -> Option<u32> {
-        self.max_height
-    }
-
-    fn allow_upscale(&self) -> bool {
-        self.allow_upscale
-    }
 }
 
 /// Start watching a folder for new files.
@@ -120,7 +55,7 @@ pub fn watch_folder(
                 return;
             }
 
-            let options = build_options_for_path(&request, &file_path);
+            let options = request.params.to_compress_options(&file_path);
             match compression_runtime::run_serialized(|| core_compress(&file_path, &options)) {
                 Ok(result) => {
                     let saved_bytes = result.saved_bytes();
