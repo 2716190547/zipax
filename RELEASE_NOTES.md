@@ -1,3 +1,20 @@
+# zipax v0.25.10
+
+zipax v0.25.10 全面清理过度工程、精简依赖与代码，大幅降低维护复杂性。
+
+## 更新内容
+
+- **全库工程精简**：彻底删除已废弃的原生 Swift 遗留源码（3500+ 行）、遗留构建脚本及依赖描述，减少仓库冗余。
+- **依赖与 Trait 简化**：
+  - 移除未使用的 `tauri-plugin-autostart` 及 `@tauri-apps/plugin-autostart` 依赖，统一使用轻量原生方式。
+  - 将包含 11 个 getter 的 `CompressionRequestOptions` trait 重构为统一可序列化的平铺结构体 `CompressionParams`。
+- **状态与核心工具类优化**：
+  - 消除 Tauri 共享状态中冗余的双层 `Arc`，直接使用 `Mutex<...>` 并规范实现 `Default`。
+  - 核心模块改用标准库与 workspace 的 `tempfile::Builder`，移除自研纳秒时间戳伪 UUID。
+  - 前端微小单函数文件合并，统一使用原生调试输出替代不必要包装。
+
+---
+
 # zipax v0.25.9
 
 zipax v0.25.9 提升 Linux 兼容性与 AppImage 稳定性。

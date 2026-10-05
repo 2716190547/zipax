@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  <img alt="release" src="https://img.shields.io/badge/release-v0.25.9-2DA44E">
+  <img alt="release" src="https://img.shields.io/badge/release-v0.25.10-2DA44E">
   <img alt="platform" src="https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-0A84FF">
   <img alt="core" src="https://img.shields.io/badge/core-Rust-DEA584">
   <img alt="desktop" src="https://img.shields.io/badge/desktop-Tauri-24C8DB">
@@ -43,6 +43,15 @@
 | Light Mode | Dark Mode |
 | --- | --- |
 | <img src="docs/assets/zipax-light-en.png" alt="zipax light mode"> | <img src="docs/assets/zipax-dark-en.png" alt="zipax dark mode"> |
+
+## What's New in v0.25.10
+
+zipax v0.25.10 delivers codebase simplification, dead code removal, and Linux packaging improvements.
+
+- **Codebase Simplification**: Deleted 3,900+ lines of dead legacy Swift code and unneeded build scripts.
+- **Dependency & Trait Cleanup**: Removed unused autostart plugin; simplified the 11-getter `CompressionRequestOptions` trait into a clean serde-flattened parameter struct.
+- **State & Utils Refactoring**: Streamlined Tauri shared state Mutex management and replaced hand-rolled tempfile generation with workspace `tempfile` builder.
+- **Linux AppImage & Tray**: Hardened Linux startup with dynamic `libayatana-appindicator3` linking and safe tray fallback protection.
 
 ## What's New in v0.25.7
 
@@ -149,8 +158,8 @@ cargo run -q -p zipax-cli -- compress a.png b.png --output-format webp
 Pushing a version tag builds native app packages on GitHub Actions:
 
 ```bash
-git tag v0.25.9
-git push origin v0.25.9
+git tag v0.25.10
+git push origin v0.25.10
 ```
 
 The release workflow creates a draft GitHub Release with macOS, Windows, and Linux artifacts attached.
@@ -168,7 +177,7 @@ If zipax saves you a little time, there is a bilingual support page here: [Suppo
 </p>
 
 <p align="center">
-  <img alt="release" src="https://img.shields.io/badge/release-v0.25.9-2DA44E">
+  <img alt="release" src="https://img.shields.io/badge/release-v0.25.10-2DA44E">
   <img alt="platform" src="https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-0A84FF">
   <img alt="core" src="https://img.shields.io/badge/core-Rust-DEA584">
   <img alt="desktop" src="https://img.shields.io/badge/desktop-Tauri-24C8DB">
@@ -192,6 +201,15 @@ If zipax saves you a little time, there is a bilingual support page here: [Suppo
 | 浅色模式 | 深色模式 |
 | --- | --- |
 | <img src="docs/assets/zipax-light-zh.png" alt="zipax 浅色模式"> | <img src="docs/assets/zipax-dark-zh.png" alt="zipax 深色模式"> |
+
+## v0.25.10 更新内容
+
+zipax v0.25.10 全面清理过度工程、精简依赖与代码，并完善 Linux 兼容性。
+
+- **全库工程精简**：彻底删除已废弃的原生 Swift 遗留源码（3500+ 行）及陈旧构建脚本，仓库体积与结构大幅瘦身。
+- **依赖与 Trait 收敛**：移除冗余的自启动插件依赖；将 11 个 getter 的 `CompressionRequestOptions` trait 重构为平铺参数结构体。
+- **状态与工具函数优化**：去除 Tauri 共享状态中多余的双层 `Arc` 包装；用标准 `tempfile` builder 替代自研时间戳伪 UUID。
+- **Linux AppImage 与托盘稳定性**：显式动态链接 `libayatana-appindicator3` 并增加托盘安全回退保护，已顺利通过官方 AppImage 目录自动化检验。
 
 ## v0.25.7 更新内容
 
@@ -298,8 +316,8 @@ cargo run -q -p zipax-cli -- compress a.png b.png --output-format webp
 推送版本标签即可触发 GitHub Actions 构建原生安装包：
 
 ```bash
-git tag v0.25.9
-git push origin v0.25.9
+git tag v0.25.10
+git push origin v0.25.10
 ```
 
 GitHub Actions 的发布工作流会自动创建包含 macOS、Windows 和 Linux 构建产物的草稿 Release。
