@@ -1,3 +1,16 @@
+# zipax v0.25.9
+
+zipax v0.25.9 提升 Linux 兼容性与 AppImage 稳定性。
+
+## 更新内容
+
+- **提升 Linux 系统托盘与窗口启动兼容性**：
+  - 构建时显式链接 `libayatana-appindicator3`，使 AppImage 打包时收录该依赖。
+  - 为托盘图标初始化增加安全防崩溃保护（`catch_unwind`），在缺少托盘运行库的环境中优雅回退，防止主进程崩溃。
+  - 启动后确保主窗口及时展现，适配沙箱测试与各类桌面环境。
+
+---
+
 # zipax v0.25.8
 
 zipax v0.25.8 修复 Linux AppImage 缺少 `.DirIcon` 的问题，确保顺利收录进入 AppImage 官方目录。

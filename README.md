@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  <img alt="release" src="https://img.shields.io/badge/release-v0.25.8-2DA44E">
+  <img alt="release" src="https://img.shields.io/badge/release-v0.25.9-2DA44E">
   <img alt="platform" src="https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-0A84FF">
   <img alt="core" src="https://img.shields.io/badge/core-Rust-DEA584">
   <img alt="desktop" src="https://img.shields.io/badge/desktop-Tauri-24C8DB">
@@ -149,8 +149,8 @@ cargo run -q -p zipax-cli -- compress a.png b.png --output-format webp
 Pushing a version tag builds native app packages on GitHub Actions:
 
 ```bash
-git tag v0.25.8
-git push origin v0.25.8
+git tag v0.25.9
+git push origin v0.25.9
 ```
 
 The release workflow creates a draft GitHub Release with macOS, Windows, and Linux artifacts attached.
@@ -168,7 +168,7 @@ If zipax saves you a little time, there is a bilingual support page here: [Suppo
 </p>
 
 <p align="center">
-  <img alt="release" src="https://img.shields.io/badge/release-v0.25.8-2DA44E">
+  <img alt="release" src="https://img.shields.io/badge/release-v0.25.9-2DA44E">
   <img alt="platform" src="https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-0A84FF">
   <img alt="core" src="https://img.shields.io/badge/core-Rust-DEA584">
   <img alt="desktop" src="https://img.shields.io/badge/desktop-Tauri-24C8DB">
@@ -298,8 +298,8 @@ cargo run -q -p zipax-cli -- compress a.png b.png --output-format webp
 推送版本标签即可触发 GitHub Actions 构建原生安装包：
 
 ```bash
-git tag v0.25.8
-git push origin v0.25.8
+git tag v0.25.9
+git push origin v0.25.9
 ```
 
 GitHub Actions 的发布工作流会自动创建包含 macOS、Windows 和 Linux 构建产物的草稿 Release。

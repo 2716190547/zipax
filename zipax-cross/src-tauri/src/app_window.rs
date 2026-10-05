@@ -59,6 +59,15 @@ pub(crate) fn configure_main_window<R: Runtime>(app: &AppHandle<R>) {
             log_result("set main window icon", window.set_icon(icon));
         }
     }
+
+    #[cfg(target_os = "linux")]
+    {
+        let app_handle = app.clone();
+        thread::spawn(move || {
+            thread::sleep(Duration::from_millis(500));
+            show_main_window(&app_handle);
+        });
+    }
 }
 
 fn log_result(action: &str, result: tauri::Result<()>) {

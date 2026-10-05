@@ -125,8 +125,10 @@ pub fn run() {
                     }
                 });
 
-            let _tray = tray
-                .menu(&menu)
+            let app_handle = app.handle().clone();
+            let tray_menu = menu.clone();
+            let tray_builder = tray
+                .menu(&tray_menu)
                 .tooltip("zipax - 图片压缩")
                 .on_menu_event(move |app, event| match event.id().as_ref() {
                     "open" => app_window::show_main_window(app),
@@ -134,8 +136,21 @@ pub fn run() {
                     "toggle_automation" => tray_commands::toggle_tray_automation(app),
                     "quit" => app.exit(0),
                     _ => {}
-                })
-                .build(app)?;
+                });
+
+            let tray_build_result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(move || {
+                tray_builder.build(&app_handle)
+            }));
+
+            match tray_build_result {
+                Ok(Ok(_tray)) => {}
+                Ok(Err(error)) => {
+                    tracing::warn!(%error, "failed to build tray icon");
+                }
+                Err(_) => {
+                    tracing::warn!("system tray initialization panicked (libayatana-appindicator unavailable)");
+                }
+            }
 
             app_window::configure_main_window(app.handle());
 

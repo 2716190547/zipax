@@ -185,3 +185,18 @@ jobs:
               size=$(du -h "$file" | awk '{print $1}')
               echo "- \`$(basename "$file")\`: $size" >> "$GITHUB_STEP_SUMMARY"
             done
+
+  publish:
+    name: Publish Release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Publish draft release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ github.ref_name }}"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TAG="v${{ inputs.version }}"
+          fi
+          gh release edit "$TAG" --repo "${{ github.repository }}" --draft=false || true
